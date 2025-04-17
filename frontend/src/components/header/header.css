@@ -1,0 +1,30 @@
+.header-wrapper {
+    background-color: #8273fe;
+    padding: 8px;
+    color: white;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.menubar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-x: scroll;
+}
+
+.menu {
+    width: fit-content;
+    text-align: center;
+    background: white;
+    color: black;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    word-wrap: break-word;
+    min-width: 100px;
+    max-width: 150px;
+    cursor: pointer;
+}

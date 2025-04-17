@@ -1,0 +1,9 @@
+.cardbox {
+    background-color: red;
+    width: 100px;
+    padding: 20px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    border-radius: 20px;
+}

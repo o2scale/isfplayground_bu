@@ -1,0 +1,4 @@
+1. Export mongodb dump file from the atlas URI
+
+mongodump --uri=mongodb+srv://admin:admin0987@cluster1.kkubs.mongodb.net/isfplayground --out=dump
+
