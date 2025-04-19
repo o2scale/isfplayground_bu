@@ -1,7 +1,7 @@
 // src/contexts/RBACContext.js
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
 import axios from 'axios';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
 
 const RBACContext = createContext(null);
 
@@ -22,7 +22,7 @@ export const RBACProvider = ({ children }) => {
             try {
                 setIsLoading(true);
 
-                const response = await axios.get('https://playground.initiativesewafoundation.com/server/api//roles/getAllRolePermissions');
+                const response = await axios.get('http://localhost:5001/api/roles/getAllRolePermissions');
 
                 console.log('Roles API response:', response.data);
 

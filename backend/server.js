@@ -14,11 +14,13 @@ const musicRoute = require("./routes/v1/music")
 const purchaseAndRepair = require("./routes/v1/purchaseAndRepair")
 const trainingSession = require("./routes/v1/trainingSession")
 const moodTracker = require("./routes/studentMoodTrackerRoutes")
+const offlineRequestQueueRoutes = require('./routes/offlineRequestQueue');
 const { swaggerUi, swaggerDocs } = require('./swagger');
 const { exec } = require('child_process'); // For executing shell commands
 const fs = require('fs'); // For file system operations
 const path = require('path');
 const faceapi = require('face-api.js');
+const { getPendingOfflineRequests } = require('./services/offlineRequestQueue');
 
 // if (!process.env.JWT_SECRET) {
 //     console.error('JWT_SECRET is not defined in environment variables');
@@ -45,6 +47,7 @@ app.use("/api/v1/music", musicRoute)
 app.use("/api/v1/purchase-repair", purchaseAndRepair)
 app.use("/api/v1/training-session", trainingSession)
 app.use("/api/v1/mood-tracker", moodTracker)
+app.use('/api/offline-requests', offlineRequestQueueRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 const dbConnection = process.env.NODE_ENV === 'local'
@@ -112,5 +115,14 @@ async function loadModels() {
     await faceapi.nets.ssdMobilenetv1.loadFromDisk('./weights');
     await faceapi.nets.faceLandmark68Net.loadFromDisk('./weights');
     await faceapi.nets.faceRecognitionNet.loadFromDisk('./weights');
+    console.log('model load complete');
 }
 loadModels();
+
+
+
+// Execute getPendingOfflineRequests every 1 minute to process offline requests
+// setTimeout(() => {
+//     console.log('Checking for pending offline requests...');
+//     getPendingOfflineRequests();
+// }, 10000); // 60000 ms = 1 minute

@@ -1,3 +1,6 @@
+const path = require('path');
+
+
 exports.isValidEmail = (email) => {
     // Regular expression for email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

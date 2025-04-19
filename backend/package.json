@@ -14,6 +14,7 @@
     "@aws-sdk/client-s3": "^3.772.0",
     "@logtail/pino": "^0.5.2",
     "@tensorflow/tfjs-node": "^4.22.0",
+    "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "canvas": "^3.1.0",
     "cors": "^2.8.5",

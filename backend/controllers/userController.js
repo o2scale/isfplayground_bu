@@ -6,6 +6,7 @@ const Attendance = require('../services/attendenance');
 const { UserTypes } = require('../constants/users');
 const { updateNextActionDate } = require('../data-access/medicalRecords');
 const { isRequestFromLocalhost } = require('../utils/helper');
+const { createOfflineRequest } = require('../services/offlineRequestQueue');
 
 exports.getAllUsers = async (_, res) => {
     try {
@@ -114,7 +115,7 @@ exports.deleteUser = async (req, res) => {
 // API for create User 
 exports.createUserV1 = async (req, res) => {
     try {
-
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
         const logData = { ...req.body };
         delete logData.password;
         req.body.createdBy = req.user._id;
@@ -122,7 +123,7 @@ exports.createUserV1 = async (req, res) => {
         // req.body.facialData = req.files['facialData']
         req.body.facialData = req.files.filter(file => file.fieldname === 'facialData')[0];
         // req.body.medicalHistory = req.files['medicalHistory']
-
+        let fileCpy = JSON.parse(JSON.stringify(req.files))
 
         const medicalHistory = extractMedicalHistory(req);
         req.body.medicalHistory = medicalHistory
@@ -135,6 +136,18 @@ exports.createUserV1 = async (req, res) => {
         let result = await createUser(req.body)
         if (result.success) {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: logData }, `User registered successfully`);
+            if (isOfflineReq) {
+                let result = await createOfflineRequest({
+                    operation: "create_user",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    attachmentString: JSON.stringify(fileCpy),
+                    token: req.headers['authorization'],
+                })
+                console.log('result', result)
+            }
             res.status(201).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: logData }, `Error occurred while user registration: ${result.message}`);

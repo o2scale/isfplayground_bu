@@ -2,7 +2,7 @@ import axios from 'axios';
 const macAddress = localStorage.getItem('macAddress');
 
 export const api = axios.create({
-  baseURL: 'https://playground.initiativesewafoundation.com/server',
+  baseURL: 'http://localhost:5001',
   headers: {
     'Content-Type': 'application/json',
     'MAC-Address': `${macAddress}`,
@@ -11,7 +11,7 @@ export const api = axios.create({
 });
 
 export const apiWithoutContentType = axios.create({
-  baseURL: 'https://playground.initiativesewafoundation.com/server',
+  baseURL: 'http://localhost:5001',
   headers: {
     'MAC-Address': `${macAddress}`,
     'mode': 'no-cors'
