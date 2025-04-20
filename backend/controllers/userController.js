@@ -117,7 +117,7 @@ exports.deleteUser = async (req, res) => {
 exports.createUserV1 = async (req, res) => {
     try {
         // generate a unique random id for the user 
-        req.body.generatedId = generateRandomString();
+        req.body.generatedId = req.body?.generatedId || generateRandomString();
         const reqCpy = JSON.parse(JSON.stringify(req.body))
         const logData = { ...req.body };
         delete logData.password;

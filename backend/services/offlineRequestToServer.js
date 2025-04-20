@@ -68,7 +68,8 @@ exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
 
 // Function for fetch the user id by generated id from server through api call 
 exports.getUserIdFromGeneratedIdFromServer = async ({ generatedId, token }) => {
-    return await axios.get(`https://playground.initiativesewafoundation.com/server/api/v1/user/generated/${generatedId}`, {
+    let url = `https://playground.initiativesewafoundation.com/server/api/v1/users/generated/${generatedId}`
+    return await axios.get(url, {
         headers: {
             'Authorization': token
         }

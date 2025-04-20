@@ -215,6 +215,13 @@ exports.getPendingOfflineRequests = async () => {
                 switch (requestName) {
                     case "create_user":
                         {
+                            // add generatedId to the payload
+                            let generatedId = result.data[i].generatedId
+                            let payload = JSON.parse(result.data[i].payload)
+                            payload.generatedId = generatedId;
+                            // convert to string 
+                            payload = JSON.stringify(payload)
+                            result.data[i].payload = payload
                             exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
                         }
                         break;
