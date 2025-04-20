@@ -98,7 +98,10 @@ const loadMongoDump = () => {
 app.get('/', (req, res) => {
     res.send('Welcome to the API! Use /api/users for user routes or /api-docs for API documentation.');
 });
-
+// Health Check API
+app.get('/health', (req, res) => {
+    res.status(200).json({ success: true, message: 'Server is healthy' });
+});
 app.use((err, req, res, next) => {
     console.error('❌ Error:', err.message);
     res.status(500).json({ message: 'Internal Server Error', error: err.message });
