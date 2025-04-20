@@ -2,6 +2,7 @@ const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
 const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
+const { OfflineReqNames } = require('../constants/general');
 /**
  * Create a new offline request entry in the queue
  */
@@ -213,7 +214,7 @@ exports.getPendingOfflineRequests = async () => {
                     continue;
                 }
                 switch (requestName) {
-                    case "create_user":
+                    case OfflineReqNames.CREATE_USER:
                         {
                             // add generatedId to the payload
                             let generatedId = result.data[i].generatedId
@@ -225,7 +226,7 @@ exports.getPendingOfflineRequests = async () => {
                             exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
                         }
                         break;
-                    case "edit_user":
+                    case OfflineReqNames.EDIT_USER:
                         {
                             let generatedId = result.data[i].generatedId
                             let userId = await getUserIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
@@ -237,6 +238,18 @@ exports.getPendingOfflineRequests = async () => {
                             exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: userEditAPIPath } }) // include updated API path
                             break;
                         }
+                    case OfflineReqNames.DELETE_USER:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let userId = await getUserIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (userId.success && userId.data) {
+                                userId = userId.data.id;
+                            }
+                            let userDeleteAPI = result.data[i].apiPath
+                            let userDeleteAPIPath = userDeleteAPI.replace(/\/[0-9a-fA-F]{24}/, `/${userId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: userDeleteAPIPath } }) // include updated API path
+                        }
+                        break;
                     default:
                         logger.warn(`Unhandled request type: ${requestName}`);
                         break;
