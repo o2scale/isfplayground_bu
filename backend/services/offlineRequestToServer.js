@@ -6,6 +6,14 @@ const { getIdByGeneratedId } = require('../data-access/User');
 exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
     try {
         // parse the payload
+        // set the reqData attachment upload
+        if (reqData.attachmentString == null || reqData.attachmentString == undefined || reqData.attachmentString == '') {
+            reqData.attachmentString = '[]';
+        }
+        if (reqData.payload == null || reqData.payload == undefined || reqData.payload == '') {
+            reqData.payload = '{}';
+        }
+
         let filesData = JSON.parse(reqData.attachmentString);
 
         // parse the payload 

@@ -9,7 +9,7 @@ const { OfflineReqNames } = require('../constants/general');
 exports.createOfflineRequest = async ({ operation, apiPath, method, payload, attachments = [], attachmentString, token = "", generatedId }) => {
     try {
         // Validate required fields
-        if (!operation || !apiPath || !payload) {
+        if (!operation || !apiPath) {
             return {
                 success: false,
                 message: "Operation, API path, and payload are required"
@@ -20,7 +20,7 @@ exports.createOfflineRequest = async ({ operation, apiPath, method, payload, att
             operation,
             apiPath,
             method: method || "POST",
-            payload,
+            payload: payload || "",
             attachments,
             attachmentString,
             status: "pending",
@@ -30,10 +30,10 @@ exports.createOfflineRequest = async ({ operation, apiPath, method, payload, att
 
         const result = await OfflineRequestQueueDA.createOfflineRequest(offlineRequest);
 
-        logger.info(`Offline request created for operation: ${operation}, path: ${apiPath}`);
+        console.log(`Offline request created for operation: ${operation}, path: ${apiPath}`);
         return result;
     } catch (error) {
-        logger.error(`Error creating offline request: ${error.message}`);
+        console.log('error', error)
         return {
             success: false,
             message: "Error creating offline request",

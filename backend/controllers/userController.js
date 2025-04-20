@@ -115,7 +115,7 @@ exports.deleteUser = async (req, res) => {
                 operation: "delete_user",
                 apiPath: req.originalUrl,
                 method: req.method,
-                payload: null,
+                payload: "",
                 attachments: [],
                 generatedId: user.generatedId || null,
                 token: req.headers['authorization'],
