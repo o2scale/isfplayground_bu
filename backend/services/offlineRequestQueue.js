@@ -308,3 +308,21 @@ exports.syncOfflineRequestToServer = async () => {
     }
 
 }
+
+// function for sync the remote db to local db
+exports.syncRemoteDBToLocalDB = async () => {
+    try {
+        // get the pending request 
+        // use the mongodb atlas url to copy the entire database to the localhost db 
+
+    } catch (error) {
+        console.log('error', error)
+        logger.error(`Error syncing offline request to server: ${error.message}`);
+        return {
+            success: false,
+            message: "Error syncing offline request to server",
+            error: error.message
+        };
+    }
+
+}
