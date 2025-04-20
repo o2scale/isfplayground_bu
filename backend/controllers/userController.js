@@ -103,9 +103,23 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
+        let isOfflineReq = isRequestFromLocalhost(req);
+
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+        if (isOfflineReq) {
+
+            await createOfflineRequest({
+                operation: "delete_user",
+                apiPath: req.originalUrl,
+                method: req.method,
+                payload: null,
+                attachments: [],
+                generatedId: user.generatedId || null,
+                token: req.headers['authorization'],
+            });
         }
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {

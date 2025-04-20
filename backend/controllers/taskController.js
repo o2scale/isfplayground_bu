@@ -405,7 +405,7 @@ exports.addOrUpdateTaskAttachment = async (req, res) => {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully updated task attachment`);
 			if (isOfflineReq) {
 				let result = await createOfflineRequest({
-					operation: "add_or_update_task_attachment",
+					operation: "add_or_update_task_attachments",
 					apiPath: req.originalUrl,
 					method: req.method,
 					payload: JSON.stringify(reqCpy),
@@ -474,7 +474,7 @@ exports.deleteTaskComment = async (req, res) => {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully deleted task comment`);
 			if (isOfflineReq) {
 				let result = await createOfflineRequest({
-					operation: "delete_task_comment",
+					operation: "delete_task_comments",
 					apiPath: req.originalUrl,
 					method: req.method,
 					payload: JSON.stringify(reqCpy),
