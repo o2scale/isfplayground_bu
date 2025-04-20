@@ -230,7 +230,7 @@ exports.getPendingOfflineRequests = async () => {
                             let generatedId = result.data[i].generatedId
                             let userId = await getUserIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (userId.success && userId.data) {
-                                userId = userId.data._id;
+                                userId = userId.data.id;
                             }
                             let userEditAPI = result.data[i].apiPath
                             let userEditAPIPath = userEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${userId}`) // replace the userId in the payload
