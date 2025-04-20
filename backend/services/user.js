@@ -419,3 +419,26 @@ exports.getUserListByAssignedBalagruhaByRole = async ({ role, userId }) => {
 
     }
 }
+
+
+// Server request for fetch the user id by generated id 
+exports.getUserIdFromGeneratedId = async ({ generatedId }) => {
+    try {
+        let userInfo = await UserDataAccess.getIdByGeneratedId({ generatedId: generatedId });
+        if (userInfo.success && userInfo.data) {
+            return {
+                success: true,
+                data: userInfo.data._id,
+                message: "User ID fetched successfully"
+            }
+        } else {
+            return {
+                success: false,
+                message: "User ID not found"
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching user ID from generated ID:', error);
+        throw error;
+    }
+}

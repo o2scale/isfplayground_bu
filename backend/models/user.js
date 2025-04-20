@@ -125,6 +125,18 @@ userSchema.methods.resetLoginAttempts = async function () {
         $unset: { lockUntil: 1 }
     });
 };
+// Function for fetch the userId by generatedId
+userSchema.statics.getUserIdFromGeneratedId = async function (generatedId) {
+    try {
+        const user = await this.findOne({ generatedId: generatedId });
+        if (!user) {
+            return { success: false, message: 'User not found' };
+        }
+        return { success: true, data: user };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+};
 
 const User = mongoose.model('User', userSchema);
 

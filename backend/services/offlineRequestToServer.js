@@ -1,5 +1,6 @@
 const axios = require('axios');
 const fs = require('fs');
+const { getIdByGeneratedId } = require('../data-access/User');
 
 // Function for send offline request to server
 exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
@@ -63,4 +64,19 @@ exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
         console.error('Error sending offline request to server:', error);
         throw error;
     }
+}
+
+// Function for fetch the user id by generated id from server through api call 
+exports.getUserIdFromGeneratedIdFromServer = async ({ generatedId, token }) => {
+    return await axios.get(`https://playground.initiativesewafoundation.com/server/api/v1/user/generated/${generatedId}`, {
+        headers: {
+            'Authorization': token
+        }
+    }).then(response => {
+        console.log('User ID fetched successfully:', response.data);
+        return response.data;
+    }).catch(error => {
+        console.error('Failed to fetch user ID:', error);
+        throw error;
+    });
 }

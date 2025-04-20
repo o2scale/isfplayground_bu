@@ -1,6 +1,6 @@
 const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
-const { sendOfflineRequestToServer } = require('./offlineRequestToServer');
+const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
 /**
  * Create a new offline request entry in the queue
@@ -217,10 +217,14 @@ exports.getPendingOfflineRequests = async () => {
                         {
                             exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
                         }
+                        break;
                     case "edit_user":
                         {
                             let generatedId = result.data[i].generatedId
-                            let userId = await getIdByGeneratedId({ generatedId: generatedId })
+                            let userId = await getUserIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (userId.success && userId.data) {
+                                userId = userId.data._id;
+                            }
                             let userEditAPI = result.data[i].apiPath
                             let userEditAPIPath = userEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${userId}`) // replace the userId in the payload
                             exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: userEditAPIPath } }) // include updated API path

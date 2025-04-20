@@ -7,6 +7,7 @@ const { UserTypes } = require('../constants/users');
 const { updateNextActionDate } = require('../data-access/medicalRecords');
 const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
 const { createOfflineRequest } = require('../services/offlineRequestQueue');
+const { getUserIdFromGeneratedId } = require('../services/user');
 
 exports.getAllUsers = async (_, res) => {
     try {
@@ -587,5 +588,39 @@ exports.getUserListByAssignedBalagruhaByRole = async (req, res) => {
     } catch (error) {
         errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: req.body }, `Error occurred while processing the request for assigning balagruha to the user: ${error.message}`);
         res.status(400).json({ message: error.message });
+    }
+}
+
+
+// API for fetch the userId by generatedId
+exports.getUserIdFromGeneratedId = async (req, res) => {
+    try {
+        const generatedId = req.params.generatedId;
+        if (!generatedId || generatedId == ':generatedId') {
+            return res.status(400).json({
+                success: false,
+                message: "Generated ID is required"
+            });
+        }
+        logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { generatedId } },
+            `Request received for fetching user ID by generated ID: ${generatedId}`);
+        let result = await getUserIdFromGeneratedId({ generatedId })
+        if (result.success) {
+            logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
+                `Successfully fetched user ID by generated ID`);
+            res.status(201).json({ success: true, data: { id: result.data }, message: "User ID fetched successfully" });
+        } else {
+            errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
+                `Error occurred while fetching user ID by generated ID`);
+            res.status(400).json(result);
+        }
+    } catch (error) {
+        errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { error: error.message } },
+            `Error occurred while processing the request for fetching user ID by generated ID: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
     }
 }
