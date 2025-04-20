@@ -146,7 +146,6 @@ exports.createUserV1 = async (req, res) => {
                     attachmentString: JSON.stringify(fileCpy),
                     token: req.headers['authorization'],
                 })
-                console.log('result', result)
             }
             res.status(201).json(result);
         } else {
@@ -444,6 +443,8 @@ exports.updateUserDetails = async (req, res) => {
                 message: "User ID is required"
             });
         }
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
+        let fileCpy = JSON.parse(JSON.stringify(req.files))
 
         req.body.updatedBy = req.user._id;
         // check the request if from localhost/ offline case
@@ -476,6 +477,18 @@ exports.updateUserDetails = async (req, res) => {
             }
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
                 `Successfully updated user details for ID: ${userId}`);
+            if (isOfflineReq) {
+                let result = await createOfflineRequest({
+                    operation: "edit_user",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    attachmentString: JSON.stringify(fileCpy),
+                    token: req.headers['authorization'],
+                })
+                console.log('result', result)
+            }
             return res.status(200).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
@@ -516,10 +529,20 @@ exports.deleteUserById = async (req, res) => {
 
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { userId } },
             `Request received for deleting user with ID: ${userId}`);
-
+        let isOfflineReq = isRequestFromLocalhost(req);
         const result = await deleteUserById(userId);
 
         if (result.success) {
+            if (isOfflineReq) {
+                await createOfflineRequest({
+                    operation: "delete_user",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify({ userId }),
+                    attachments: [],
+                    token: req.headers['authorization'],
+                });
+            }
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
                 `Successfully deleted user with ID: ${userId}`);
             return res.status(200).json(result);

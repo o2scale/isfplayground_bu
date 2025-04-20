@@ -212,6 +212,7 @@ exports.getPendingOfflineRequests = async () => {
                 }
                 switch (requestName) {
                     case "create_user":
+                    case "edit_user":
                         {
                             exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
                         }

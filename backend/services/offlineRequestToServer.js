@@ -2,7 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 
 // Function for send offline request to server
-exports.sendOfflineRequestToServer = ({ reqData, files }) => {
+exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
     try {
         // parse the payload
         let filesData = JSON.parse(reqData.attachmentString);
@@ -36,22 +36,29 @@ exports.sendOfflineRequestToServer = ({ reqData, files }) => {
             });
         }
 
-        // Make the axios POST request with FormData
-        return axios.post(`https://playground.initiativesewafoundation.com/server${reqData.apiPath}`, form, {
+        // Make the axios request with dynamic method
+        const requestMethod = reqData.method || method.toUpperCase();
+        const url = `https://playground.initiativesewafoundation.com/server${reqData.apiPath}`;
+        const config = {
             headers: {
                 'Authorization': `${reqData.token}`,
                 // No need to set Content-Type - axios will set it automatically with boundary
             },
             timeout: 60000 // 10 seconds timeout
-        })
-            .then(response => {
-                console.log('Offline data sent successfully:', response.data);
-                return response.data;
-            })
-            .catch(error => {
-                console.error('Failed to send offline data:', error);
-                throw error;
-            });
+        };
+
+        return axios({
+            method: requestMethod,
+            url: url,
+            data: form,
+            ...config
+        }).then(response => {
+            console.log(`Offline data sent successfully with ${requestMethod} method:`, response.data);
+            return response.data;
+        }).catch(error => {
+            console.error(`Failed to send offline data with ${requestMethod} method:`, error);
+            throw error;
+        });
     } catch (error) {
         console.error('Error sending offline request to server:', error);
         throw error;

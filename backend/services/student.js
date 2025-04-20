@@ -513,7 +513,10 @@ class Student {
                 .withFaceLandmarks()
                 .withFaceDescriptor();
 
-            if (!detection) return res.status(400).json({ error: 'No face detected' });
+            if (!detection) return {
+                success: false,
+                message: "Failed to detect Face"
+            }
 
             const queryDescriptor = detection.descriptor;
             let users = await findUsersByRole({ role: UserTypes.STUDENT })
@@ -575,18 +578,18 @@ class Student {
                                 if (machineMacAddressList.includes(macAddress)) {
                                     // do nothing, continue the flow,
                                 } else {
-                                    return {
-                                        success: false,
-                                        data: {},
-                                        message: "This machine is not assigned for this student. Contact Admin"
-                                    }
+                                    // return {
+                                    //     success: false,
+                                    //     data: {},
+                                    //     message: "This machine is not assigned for this student. Contact Admin"
+                                    // }
                                 }
                             } else {
-                                return {
-                                    success: false,
-                                    data: {},
-                                    message: "No machines are assigned for this student. Contact Admin"
-                                }
+                                // return {
+                                //     success: false,
+                                //     data: {},
+                                //     message: "No machines are assigned for this student. Contact Admin"
+                                // }
                             }
                         } else {
                             return res.status(400).json({

@@ -21,4 +21,4 @@ const OfflineRequestQueueSchema = new mongoose.Schema({
         timestamps: true,
     });
 
-module.exports = mongoose.model('OfflineRequestQueue', OfflineRequestQueueSchema);
+module.exports = mongoose.model('offline_request_queue', OfflineRequestQueueSchema);
