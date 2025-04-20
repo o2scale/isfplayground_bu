@@ -3,282 +3,9 @@ const Machine = require('../models/machine');
 const { getBalagruhaById } = require("../data-access/balagruha");
 const { default: mongoose } = require('mongoose');
 const { getMachineById, deleteMachine } = require('../data-access/machines')
-// Register a new machine
-// exports.registerMachine = async (req, res) => {
-//     try {
-//         const { machineId, macAddress, serialNumber, assignedBalagruha } = req.body;
+const { isRequestFromLocalhost } = require("../utils/helper");
+const { createOfflineRequest } = require('../services/offlineRequestQueue');
 
-//         // Check if machine already exists
-//         const existingMachine = await Machine.findOne({ machineId });
-//         if (existingMachine) {
-//             return res.status(400).json({ message: 'Machine already exists' });
-//         }
-
-//         // Create new machine
-//         const machine = new Machine({
-//             machineId,
-//             macAddress,
-//             serialNumber,
-//             assignedBalagruha
-//         });
-
-//         await machine.save();
-//         res.status(201).json({ message: 'Machine registered successfully', machine });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error in registration', error: error.message });
-//     }
-// };
-
-// // Get all machines
-// exports.getAllMachines = async (req, res) => {
-//     try {
-//         const {
-//             search,
-//             assignedBalagruha,
-//             sortBy = 'machineId',
-//             sortOrder = 'asc',
-//             page = 1,
-//             limit = 10
-//         } = req.query;
-
-//         // Build query
-//         let query = {};
-
-//         if (search) {
-//             query.$or = [
-//                 { machineId: { $regex: search, $options: 'i' } },
-//                 { macAddress: { $regex: search, $options: 'i' } },
-//                 { assignedBalagruha: { $regex: search, $options: 'i' } }
-//             ];
-//         }
-
-//         if (assignedBalagruha) {
-//             query.assignedBalagruha = assignedBalagruha;
-//         }
-
-//         // Build sort options
-//         const sortOptions = {};
-//         sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
-
-//         const machines = await Machine.find(query)
-//             .sort(sortOptions)
-//             .skip((page - 1) * limit)
-//             .limit(limit);
-
-//         const total = await Machine.countDocuments(query);
-
-//         res.status(200).json({
-//             success: true,
-//             data: {
-//                 machines,
-//                 total,
-//                 page: parseInt(page),
-//                 totalPages: Math.ceil(total / limit)
-//             }
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error fetching machines',
-//             error: error.message
-//         });
-//     }
-// };
-
-
-// // Get machine by ID
-// exports.getMachineById = async (req, res) => {
-//     try {
-//         const machine = await Machine.findOne({ machineId: req.params.id });
-//         if (!machine) {
-//             return res.status(404).json({ message: 'Machine not found' });
-//         }
-//         res.status(200).json(machine);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error fetching machine', error: error.message });
-//     }
-// };
-
-// // Update machine
-// exports.updateMachine = async (req, res) => {
-//     try {
-//         const { machineId, macAddress, serialNumber, assignedBalagruha } = req.body;
-
-//         const machine = await Machine.findOne({ machineId: req.params.id });
-//         if (!machine) {
-//             return res.status(404).json({ message: 'Machine not found' });
-//         }
-
-//         machine.machineId = machineId || machine.machineId;
-//         machine.macAddress = macAddress || machine.macAddress;
-//         machine.serialNumber = serialNumber || machine.serialNumber;
-//         machine.assignedBalagruha = assignedBalagruha || machine.assignedBalagruha;
-
-//         await machine.save();
-//         res.status(200).json({ message: 'Machine updated successfully', machine });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error updating machine', error: error.message });
-//     }
-// };
-
-// exports.getBalagruhaList = async (req, res) => {
-//     try {
-//         const balagruhas = await Balagruha.find()
-//             .populate('assignedMachines');
-
-//         res.status(200).json({
-//             success: true,
-//             data: balagruhas
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error fetching balagruhas',
-//             error: error.message
-//         });
-//     }
-// };
-
-
-// exports.assignMachine = async (req, res) => {
-//     try {
-//         const { machineId, balagruhaId } = req.body;
-
-//         // Find the machine and balagruha
-//         const machine = await Machine.findOne({ machineId });
-//         const balagruha = await Balagruha.findById(balagruhaId);
-
-//         if (!machine) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Machine not found'
-//             });
-//         }
-
-//         if (!balagruha) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Balagruha not found'
-//             });
-//         }
-
-//         // Update machine's assigned balagruha
-//         machine.assignedBalagruha = balagruha.name;
-//         await machine.save();
-
-//         // Add machine to balagruha's assignedMachines array
-//         if (!balagruha.assignedMachines.includes(machine._id)) {
-//             balagruha.assignedMachines.push(machine._id);
-//             await balagruha.save();
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: 'Machine assigned successfully',
-//             data: {
-//                 machine,
-//                 balagruha
-//             }
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error assigning machine',
-//             error: error.message
-//         });
-//     }
-// };
-
-// exports.reassignMachine = async (req, res) => {
-//     try {
-//         const { machineId, newBalagruhaId } = req.body;
-
-//         // Find the machine and new balagruha
-//         const machine = await Machine.findOne({ machineId });
-//         const newBalagruha = await Balagruha.findById(newBalagruhaId);
-
-//         if (!machine) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Machine not found'
-//             });
-//         }
-
-//         if (!newBalagruha) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'New Balagruha not found'
-//             });
-//         }
-
-//         // Find old balagruha
-//         const oldBalagruha = await Balagruha.findOne({ name: machine.assignedBalagruha });
-
-//         if (oldBalagruha) {
-//             // Remove machine from old balagruha's assignedMachines
-//             oldBalagruha.assignedMachines = oldBalagruha.assignedMachines.filter(
-//                 id => id.toString() !== machine._id.toString()
-//             );
-//             await oldBalagruha.save();
-//         }
-
-//         // Update machine's assigned balagruha
-//         machine.assignedBalagruha = newBalagruha.name;
-//         await machine.save();
-
-//         // Add machine to new balagruha's assignedMachines
-//         if (!newBalagruha.assignedMachines.includes(machine._id)) {
-//             newBalagruha.assignedMachines.push(machine._id);
-//             await newBalagruha.save();
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: 'Machine reassigned successfully',
-//             data: {
-//                 machine,
-//                 newBalagruha
-//             }
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error reassigning machine',
-//             error: error.message
-//         });
-//     }
-// };
-
-
-// exports.getMachineDetails = async (req, res) => {
-//     try {
-//         const { machineId } = req.params;
-
-//         const machine = await Machine.findOne({ machineId });
-//         if (!machine) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Machine not found'
-//             });
-//         }
-
-//         const balagruha = await Balagruha.findOne({ name: machine.assignedBalagruha });
-
-//         res.status(200).json({
-//             success: true,
-//             data: {
-//                 machine,
-//                 balagruha
-//             }
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error fetching machine details',
-//             error: error.message
-//         });
-//     }
-// };
 
 exports.getAllMachines = async (req, res) => {
     try {
@@ -311,7 +38,9 @@ exports.getAllMachines = async (req, res) => {
 exports.registerMachine = async (req, res) => {
     try {
         const { machineId, macAddress, serialNumber, assignedBalagruha } = req.body;
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
 
+        const fileCpy = JSON.parse(JSON.stringify(req.files))
         // Validation: Ensure required fields are provided
         if (!machineId || !macAddress || !serialNumber || !assignedBalagruha) {
             return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -324,6 +53,8 @@ exports.registerMachine = async (req, res) => {
         if (existingMachine) {
             return res.status(400).json({ success: false, message: 'Machine ID, MAC Address, or Serial Number already exists.' });
         }
+        // check if the request is offline 
+        let isOfflineReq = isRequestFromLocalhost(req);
 
         // Create the machine
         const machine = new Machine({
@@ -349,6 +80,19 @@ exports.registerMachine = async (req, res) => {
             }
         }
 
+        if (isOfflineReq) {
+
+            let result = await createOfflineRequest({
+                operation: "create_machine",
+                apiPath: req.originalUrl,
+                method: req.method,
+                payload: JSON.stringify(reqCpy),
+                attachments: [],
+                attachmentString: JSON.stringify(fileCpy),
+                token: req.headers['authorization'],
+                generatedId: result._id,
+            })
+        }
         res.status(201).json({ success: true, message: 'Machine registered successfully', data: { machine: machine } });
     } catch (error) {
         console.error('Error registering machine:', error);

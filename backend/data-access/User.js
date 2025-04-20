@@ -1333,3 +1333,17 @@ exports.getUsersByRoleAndBalagruhaIdList = async ({ role, balagruhaId }) => {
             throw error;
         })
 }
+
+// Function for fetch the _id by the generatedId 
+exports.getIdByGeneratedId = async ({ generatedId }) => {
+    return await User.findOne({ generatedId }, { _id: 1 }).lean().then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "User details fetched successfully"
+        };
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}

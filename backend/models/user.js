@@ -70,8 +70,8 @@ const userSchema = new mongoose.Schema(
         facialData: {
             faceDescriptor: Array, // Store face descriptor array
             createdAt: { type: Date, default: Date.now }
-        }
-
+        },
+        generatedId: { type: String, default: "" }
     },
     { timestamps: true }
 );

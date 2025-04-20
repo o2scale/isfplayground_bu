@@ -1,10 +1,11 @@
 const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
 const { sendOfflineRequestToServer } = require('./offlineRequestToServer');
+const { getIdByGeneratedId } = require('../data-access/User');
 /**
  * Create a new offline request entry in the queue
  */
-exports.createOfflineRequest = async ({ operation, apiPath, method, payload, attachments = [], attachmentString, token = "" }) => {
+exports.createOfflineRequest = async ({ operation, apiPath, method, payload, attachments = [], attachmentString, token = "", generatedId }) => {
     try {
         // Validate required fields
         if (!operation || !apiPath || !payload) {
@@ -23,6 +24,7 @@ exports.createOfflineRequest = async ({ operation, apiPath, method, payload, att
             attachmentString,
             status: "pending",
             token,
+            generatedId,
         };
 
         const result = await OfflineRequestQueueDA.createOfflineRequest(offlineRequest);
@@ -212,9 +214,17 @@ exports.getPendingOfflineRequests = async () => {
                 }
                 switch (requestName) {
                     case "create_user":
-                    case "edit_user":
                         {
                             exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
+                        }
+                    case "edit_user":
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let userId = await getIdByGeneratedId({ generatedId: generatedId })
+                            let userEditAPI = result.data[i].apiPath
+                            let userEditAPIPath = userEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${userId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: userEditAPIPath } }) // include updated API path
+                            break;
                         }
                     default:
                         logger.warn(`Unhandled request type: ${requestName}`);

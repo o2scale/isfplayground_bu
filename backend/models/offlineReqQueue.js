@@ -14,6 +14,7 @@ const OfflineRequestQueueSchema = new mongoose.Schema({
     status: { type: String, default: 'pending' }, // pending, synced, failed
     error: { type: String, default: '' },         // in case sync fails
     token: { type: String, default: '' },         // token for authentication
+    generatedId: { type: String, default: '' }, // generated ID for the request
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 },

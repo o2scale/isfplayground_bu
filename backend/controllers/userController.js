@@ -5,7 +5,7 @@ const Student = require("../services/student");
 const Attendance = require('../services/attendenance');
 const { UserTypes } = require('../constants/users');
 const { updateNextActionDate } = require('../data-access/medicalRecords');
-const { isRequestFromLocalhost } = require('../utils/helper');
+const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
 const { createOfflineRequest } = require('../services/offlineRequestQueue');
 
 exports.getAllUsers = async (_, res) => {
@@ -115,6 +115,8 @@ exports.deleteUser = async (req, res) => {
 // API for create User 
 exports.createUserV1 = async (req, res) => {
     try {
+        // generate a unique random id for the user 
+        req.body.generatedId = generateRandomString();
         const reqCpy = JSON.parse(JSON.stringify(req.body))
         const logData = { ...req.body };
         delete logData.password;
@@ -144,6 +146,7 @@ exports.createUserV1 = async (req, res) => {
                     payload: JSON.stringify(reqCpy),
                     attachments: [],
                     attachmentString: JSON.stringify(fileCpy),
+                    generatedId: req.body.generatedId,
                     token: req.headers['authorization'],
                 })
             }
@@ -478,7 +481,7 @@ exports.updateUserDetails = async (req, res) => {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
                 `Successfully updated user details for ID: ${userId}`);
             if (isOfflineReq) {
-                let result = await createOfflineRequest({
+                await createOfflineRequest({
                     operation: "edit_user",
                     apiPath: req.originalUrl,
                     method: req.method,
@@ -486,8 +489,8 @@ exports.updateUserDetails = async (req, res) => {
                     attachments: [],
                     attachmentString: JSON.stringify(fileCpy),
                     token: req.headers['authorization'],
+                    generatedId: result.data.user.generatedId || null,
                 })
-                console.log('result', result)
             }
             return res.status(200).json(result);
         } else {

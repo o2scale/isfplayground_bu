@@ -8,12 +8,6 @@ const upload = require("../../middleware/upload")
 router.post('/',
     authenticate,
     authorize('User Management', 'Create'),
-    // upload.fields([
-    //     { name: 'facialData', maxCount: 5 }, // Up to 5 files for facialData
-    //     // { name: 'medicalHistory', maxCount:  } // 1 file for medicalHistory
-    // ]),
-    // faceDataUpload.single("facialData"),
-    // upload.single('image'),
     upload.any(),
     createUserV1);
 // API for create the medical record for the student 
