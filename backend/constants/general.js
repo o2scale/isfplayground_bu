@@ -62,6 +62,9 @@ module.exports.HTTP_STATUS_CODE = {
 // offline request names 
 exports.OfflineReqNames = {
     CREATE_MACHINE: "create_machine",
+    UPDATE_MACHINE_TOGGLE_STATUS: "toggle_machine_status",
+    ASSIGN_MACHINE: "assign_machine",
+    DELETE_MACHINE: "delete_machine",
     CREATE_TASK: "create_task",
     UPDATE_TASK: "update_task",
     DELETE_TASK: "delete_task",

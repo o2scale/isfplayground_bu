@@ -3,6 +3,7 @@ const { logger } = require('../config/pino-config');
 const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
 const { OfflineReqNames } = require('../constants/general');
+const { getMachineIdByGeneratedId } = require("../data-access/machines")
 /**
  * Create a new offline request entry in the queue
  */
@@ -248,6 +249,54 @@ exports.getPendingOfflineRequests = async () => {
                             let userDeleteAPI = result.data[i].apiPath
                             let userDeleteAPIPath = userDeleteAPI.replace(/\/[0-9a-fA-F]{24}/, `/${userId}`) // replace the userId in the payload
                             exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: userDeleteAPIPath } }) // include updated API path
+                        }
+                        break;
+                    case OfflineReqNames.CREATE_MACHINE:
+                        {
+                            // add generatedId to the payload
+                            let generatedId = result.data[i].generatedId
+                            let payload = JSON.parse(result.data[i].payload)
+                            payload.generatedId = generatedId;
+                            // convert to string 
+                            payload = JSON.stringify(payload)
+                            result.data[i].payload = payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
+                        }
+                        break;
+                    case OfflineReqNames.UPDATE_MACHINE_TOGGLE_STATUS:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let machineId = await getMachineIdByGeneratedId({ generatedId: generatedId })
+                            if (machineId.success && machineId.data) {
+                                machineId = machineId.data.id;
+                            }
+                            let machineEditAPI = result.data[i].apiPath
+                            let machineEditAPIPath = machineEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: machineEditAPIPath } }) // include updated API path
+                        }
+                        break;
+                    case OfflineReqNames.ASSIGN_MACHINE:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let machineId = await getMachineIdByGeneratedId({ generatedId: generatedId })
+                            if (machineId.success && machineId.data) {
+                                machineId = machineId.data.id;
+                            }
+                            let machineEditAPI = result.data[i].apiPath
+                            let machineEditAPIPath = machineEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: machineEditAPIPath } }) // include updated API path
+                        }
+                        break;
+                    case OfflineReqNames.DELETE_MACHINE:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let machineId = await getMachineIdByGeneratedId({ generatedId: generatedId })
+                            if (machineId.success && machineId.data) {
+                                machineId = machineId.data.id;
+                            }
+                            let machineDeleteAPI = result.data[i].apiPath
+                            let machineDeleteAPIPath = machineDeleteAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: machineDeleteAPIPath } }) // include updated API path
                         }
                         break;
                     default:

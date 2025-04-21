@@ -110,3 +110,25 @@ exports.updateMachinesByIds = async (machineIds, updateData) => {
         throw error;
     }
 }
+
+// Function for fetch the machine id by generated Id 
+exports.getMachineIdByGeneratedId = async (generatedId) => {
+    try {
+        return await machine.findOne({ generatedId: generatedId })
+            .then(result => {
+                return {
+                    success: true,
+                    data: result,
+                    message: "Successfully fetched machine id by generated id"
+                }
+            })
+            .catch(error => {
+                console.log('error', error)
+                throw error;
+            })
+    }
+    catch (error) {
+        console.error('Error fetching machine id by generated id:', error);
+        throw error;
+    }
+}

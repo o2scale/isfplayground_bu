@@ -3,8 +3,9 @@ const Machine = require('../models/machine');
 const { getBalagruhaById } = require("../data-access/balagruha");
 const { default: mongoose } = require('mongoose');
 const { getMachineById, deleteMachine } = require('../data-access/machines')
-const { isRequestFromLocalhost } = require("../utils/helper");
+const { isRequestFromLocalhost, generateRandomString } = require("../utils/helper");
 const { createOfflineRequest } = require('../services/offlineRequestQueue');
+const { OfflineReqNames } = require('../constants/general');
 
 
 exports.getAllMachines = async (req, res) => {
@@ -38,9 +39,10 @@ exports.getAllMachines = async (req, res) => {
 exports.registerMachine = async (req, res) => {
     try {
         const { machineId, macAddress, serialNumber, assignedBalagruha } = req.body;
+        req.body.generatedId = req.body?.generatedId || generateRandomString();
         const reqCpy = JSON.parse(JSON.stringify(req.body))
 
-        const fileCpy = JSON.parse(JSON.stringify(req.files))
+
         // Validation: Ensure required fields are provided
         if (!machineId || !macAddress || !serialNumber || !assignedBalagruha) {
             return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -63,6 +65,7 @@ exports.registerMachine = async (req, res) => {
             serialNumber,
             assignedBalagruha,
             status: 'active', // Default status is active
+            generatedId: req.body.generatedId,
         });
 
         let result = await machine.save();
@@ -83,14 +86,14 @@ exports.registerMachine = async (req, res) => {
         if (isOfflineReq) {
 
             let result = await createOfflineRequest({
-                operation: "create_machine",
+                operation: OfflineReqNames.CREATE_MACHINE,
                 apiPath: req.originalUrl,
                 method: req.method,
                 payload: JSON.stringify(reqCpy),
                 attachments: [],
-                attachmentString: JSON.stringify(fileCpy),
+                attachmentString: "{}",
                 token: req.headers['authorization'],
-                generatedId: result._id,
+                generatedId: req.body.generatedId,
             })
         }
         res.status(201).json({ success: true, message: 'Machine registered successfully', data: { machine: machine } });
@@ -103,7 +106,10 @@ exports.registerMachine = async (req, res) => {
 exports.toggleMachineStatus = async (req, res) => {
     try {
         const { id } = req.params;
-
+        // check the req is offline 
+        let isOfflineReq = isRequestFromLocalhost(req);
+        // let reqCpy = JSON.parse(JSON.stringify(req.body))
+        // let fileCpy = JSON.parse(JSON.stringify(req.files))
         // Find the machine
         const machine = await Machine.findOne({ _id: id });
         if (!machine) {
@@ -112,7 +118,21 @@ exports.toggleMachineStatus = async (req, res) => {
 
         // Toggle the status
         machine.status = machine.status === 'active' ? 'inactive' : 'active';
-        await machine.save();
+        let result = await machine.save();
+        if (result) {
+            if (isOfflineReq) {
+                let result = await createOfflineRequest({
+                    operation: "toggle_machine_status",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: "{}",
+                    attachments: [],
+                    attachmentString: "{}",
+                    token: req.headers['authorization'],
+                    generatedId: machine.generatedId,
+                })
+            }
+        }
 
         res.status(200).json({ success: true, message: `Machine status updated to ${machine.status}`, data: { machine: machine } });
     } catch (error) {
@@ -125,7 +145,9 @@ exports.assignMachine = async (req, res) => {
     try {
         const { id } = req.params;
         const { newBalagruha } = req.body;
-
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
+        // check the req is offline
+        let isOfflineReq = isRequestFromLocalhost(req);
         // Find the machine
         const machine = await Machine.findOne({ _id: id });
         if (!machine) {
@@ -148,7 +170,21 @@ exports.assignMachine = async (req, res) => {
 
             // Update the assigned Balagruha
             machine.assignedBalagruha = newBalagruha;
-            await machine.save();
+            let result = await machine.save();
+            if (result) {
+                if (isOfflineReq) {
+                    let result = await createOfflineRequest({
+                        operation: OfflineReqNames.ASSIGN_MACHINE,
+                        apiPath: req.originalUrl,
+                        method: req.method,
+                        payload: JSON.stringify(reqCpy),
+                        attachments: [],
+                        attachmentString: "{}",
+                        token: req.headers['authorization'],
+                        generatedId: machine.generatedId,
+                    });
+                }
+            }
 
             res.status(200).json({ success: true, message: 'Machine assigned successfully', data: { machine: machine } });
         } else {
@@ -182,6 +218,12 @@ exports.deleteMachine = async (req, res) => {
     try {
         const { id } = req.params;
         let macIdOnHeader = req.headers['mac-address'];
+
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
+        const fileCpy = JSON.parse(JSON.stringify(req.files))
+        // check the req is offline
+        let isOfflineReq = isRequestFromLocalhost(req);
+
         // Find the machine
         let result = await getMachineById(id)
         const stringId = id.toString();
@@ -196,6 +238,18 @@ exports.deleteMachine = async (req, res) => {
 
         // Delete the machine
         deleteMachine({ _id: stringId }).then(() => {
+            if (isOfflineReq) {
+                let result = createOfflineRequest({
+                    operation: OfflineReqNames.DELETE_MACHINE,
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    attachmentString: JSON.stringify(fileCpy),
+                    token: req.headers['authorization'],
+                    generatedId: result.data.generatedId,
+                });
+            }
             res.status(200).json({ success: true, message: 'Machine deleted successfully' });
         }).catch(error => {
             console.error('Error deleting machine:', error);
