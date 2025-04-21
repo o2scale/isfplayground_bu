@@ -19,6 +19,9 @@ const BalagruhaSchema = new mongoose.Schema(
                 ref: 'Machine',
             },
         ],
+        generatedId: {
+            type: String,
+        },
     },
     {
         timestamps: true,

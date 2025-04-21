@@ -11,4 +11,6 @@ router.put('/:id', authenticate, authorize('User Management', 'Update'), updateB
 router.delete('/:id', authenticate, authorize('User Management', 'Delete'), deleteBalagruha);
 // API for fetch balagruha list by user id 
 router.get('/user/:userId', authenticate, authorize('User Management', 'Read'), getBalagruhaListByUserId);
+// API for fetch balagruha details by generated id
+router.get('/generated/:generatedId', authenticate, authorize('User Management', 'Read'), getBalagruhaByGeneratedId);
 module.exports = router;

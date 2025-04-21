@@ -77,5 +77,7 @@ exports.OfflineReqNames = {
     CREATE_USER: "create_user",
     EDIT_USER: "edit_user",
     DELETE_USER: "delete_user",
-
+    CREATE_BALAGRUHA: "create_balagruha",
+    UPDATE_BALAGRUHA: "update_balagruha",
+    DELETE_BALAGRUHA: "delete_balagruha",
 }

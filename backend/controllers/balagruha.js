@@ -1,15 +1,32 @@
 const { errorLogger, logger } = require('../config/pino-config');
-const { HTTP_STATUS_CODE } = require('../constants/general')
-const Balagruha = require('../services/balagruha')
-
+const { HTTP_STATUS_CODE, OfflineReqNames } = require('../constants/general')
+const Balagruha = require('../services/balagruha');
+const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
+const { createOfflineRequest } = require('../services/offlineRequestQueue');
 // Create a new balagruha
 exports.createBalagruha = async (req, res) => {
     try {
+        req.body.generatedId = req.body?.generatedId || generateRandomString();
+
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
         const logData = { ...req.body };
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: logData }, `Request received for balagruha creation`);
+        let isOfflineReq = isRequestFromLocalhost(req);
+
         let result = await Balagruha.create(req.body)
         if (result.success) {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Balagruha created successfully`);
+            if (isOfflineReq) {
+                await createOfflineRequest({
+                    operation: OfflineReqNames.CREATE_BALAGRUHA,
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    generatedId: req.body.generatedId || null,
+                    token: req.headers['authorization'],
+                });
+            }
             res.status(HTTP_STATUS_CODE.OK).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to create balagruha`);
@@ -114,6 +131,25 @@ exports.getBalagruhaListByUserId = async (req, res) => {
         }
     } catch (error) {
         errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, error: error.message }, `Error occurred while fetching balagruha list by user ID`);
+        res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ success: false, message: error.message });
+    }
+}
+
+// Get balagruha by generated ID
+exports.getBalagruhaByGeneratedId = async (req, res) => {
+    try {
+        const { generatedId } = req.params;
+        logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, generatedId }, `Request received to fetch balagruha by generated ID`);
+        const result = await Balagruha.getByGeneratedId(generatedId);
+        if (result.success) {
+            logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully fetched balagruha by generated ID`);
+            res.status(HTTP_STATUS_CODE.OK).json(result);
+        } else {
+            errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to fetch balagruha by generated ID`);
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json(result);
+        }
+    } catch (error) {
+        errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, error: error.message }, `Error occurred while fetching balagruha by generated ID`);
         res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ success: false, message: error.message });
     }
 }
