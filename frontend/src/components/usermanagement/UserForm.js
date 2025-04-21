@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { addUsers, getBalagruha, getMachines, updateUsers } from '../../api';
 import './UserForm.css';
+import { Modal } from './modal';
+import FaceCapture from './FaceCapture';
 
 const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
     console.log('usdsds', user);
     const [machines, setMachines] = useState([])
     const role = localStorage.getItem('role')
     const [machineDropdownOpen, setMachineDropdownOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const faceCaptureRef = useRef();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -623,6 +627,7 @@ const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
             }
 
             // Use the API functions with FormData
+            console.log(files.facialData, "this is the form data to send to backend, ----------------->")
             const response = mode === 'add'
                 ? await addUsers(formDataToSend)
                 : await updateUsers(user._id, formDataToSend);
@@ -641,9 +646,31 @@ const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
         }
     };
 
+    const handleCloseModal = () => {
+        if (faceCaptureRef.current) {
+            faceCaptureRef.current.stopCamera(); // Ensures camera is stopped
+          }
+        setIsOpen(false);
+    }
+
 
     return (
         <div className="user-form-container">
+            <Modal
+                isOpen={isOpen}
+                title={"Capture Photo"}
+                onClose={handleCloseModal}
+                children={
+                    <FaceCapture
+                      ref={faceCaptureRef}
+                      onCapture={(file, previewUrl) => {
+                        setFiles(prev => ({ ...prev, facialData: file }));
+                        setPreviews(prev => ({ ...prev, facialData: previewUrl }));
+                        handleCloseModal();
+                      }}
+                    />
+                  }
+            />
             <div className="form-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span
@@ -1095,7 +1122,15 @@ const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
                                     className="file-upload-btn"
                                     onClick={() => fileInputRefs.facialData.current.click()}
                                 >
-                                    {files.facialData || previews.facialData ? 'Change Photo' : 'Upload Photo'}
+                                    {/* {files.facialData || previews.facialData ? 'Change Photo' : 'Upload Photo'} */}
+                                    Upload Photo
+                                </button>
+                                <button
+                                    type="button"
+                                    className="file-upload-btn"
+                                    onClick={() => setIsOpen(true)}
+                                >
+                                    Capture Photo
                                 </button>
                                 {(files.facialData || previews.facialData) && (
                                     <div className="file-preview">

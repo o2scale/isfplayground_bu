@@ -35,6 +35,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health Check API
+app.get('/server/health', (req, res) => {
+    res.status(200).json({ success: true, message: 'Server is healthy' });
+});
+
 app.use('/api/users', userRoutes);
 app.use("/api/v1/users", userV1Routes)
 app.use("/api/v1/balagruha", balagruhaV1)

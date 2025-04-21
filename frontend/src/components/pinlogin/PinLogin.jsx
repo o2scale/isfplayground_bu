@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import showToast from '../../utils/toast';
 import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
+import { pinLogin } from '../../api';
 
 const PinLogin = ({ onToggle }) => {
     const macAddress = localStorage.getItem('macAddress');
@@ -42,7 +43,9 @@ const PinLogin = ({ onToggle }) => {
         };
 
         try {
-            const response = await axios.post("https://playground.initiativesewafoundation.com/server/api/auth/login", data, { headers });
+            // const response = await axios.post("https://playground.initiativesewafoundation.com/server/api/auth/login", data, { headers });
+
+            const response = await pinLogin(data);
 
             if (response.data && response.data.data) {
                 const { token, user } = response.data.data;
