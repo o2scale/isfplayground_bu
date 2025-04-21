@@ -268,7 +268,7 @@ exports.getPendingOfflineRequests = async () => {
                             let generatedId = result.data[i].generatedId
                             let machineId = await getMachineIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (machineId.success && machineId.data) {
-                                machineId = machineId.data.id;
+                                machineId = machineId.data.machine._id;
                             }
                             let machineEditAPI = result.data[i].apiPath
                             let machineEditAPIPath = machineEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
@@ -280,7 +280,7 @@ exports.getPendingOfflineRequests = async () => {
                             let generatedId = result.data[i].generatedId
                             let machineId = await getMachineIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (machineId.success && machineId.data) {
-                                machineId = machineId.data.id;
+                                machineId = machineId.data.machine._id;
                             }
                             let machineEditAPI = result.data[i].apiPath
                             let machineEditAPIPath = machineEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
@@ -292,7 +292,7 @@ exports.getPendingOfflineRequests = async () => {
                             let generatedId = result.data[i].generatedId
                             let machineId = await getMachineIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (machineId.success && machineId.data) {
-                                machineId = machineId.data.id;
+                                machineId = machineId.data.machine._id;
                             }
                             let machineDeleteAPI = result.data[i].apiPath
                             let machineDeleteAPIPath = machineDeleteAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
