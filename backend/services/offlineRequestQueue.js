@@ -299,6 +299,18 @@ exports.getPendingOfflineRequests = async () => {
                             exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: machineDeleteAPIPath } }) // include updated API path
                         }
                         break;
+                    case OfflineReqNames.CREATE_TASK:
+                        {
+                            // add generatedId to the payload
+                            let generatedId = result.data[i].generatedId
+                            let payload = JSON.parse(result.data[i].payload)
+                            payload.generatedId = generatedId;
+                            // convert to string 
+                            payload = JSON.stringify(payload)
+                            result.data[i].payload = payload
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: result.data[i] })
+                        }
+                        break;
                     default:
                         logger.warn(`Unhandled request type: ${requestName}`);
                         break;

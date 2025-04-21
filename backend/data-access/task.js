@@ -348,3 +348,17 @@ exports.updateTaskItemById = async (taskId, payload) => {
             throw error;
         });
 };
+
+// Function for fetch the task details by generated id 
+exports.getTaskDetailsByGeneratedId = async ({ generatedId }) => {
+    return await Task.findOne({ generatedId: generatedId }).lean().then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "Fetched task details successfully"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}

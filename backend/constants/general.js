@@ -78,9 +78,4 @@ exports.OfflineReqNames = {
     EDIT_USER: "edit_user",
     DELETE_USER: "delete_user",
 
-
-
-
-
-
 }

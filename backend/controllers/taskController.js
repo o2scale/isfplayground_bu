@@ -1,10 +1,10 @@
 const Task = require('../models/task');
 const User = require('../models/user');
 const mongoose = require('mongoose');
-const { HTTP_STATUS_CODE } = require("../constants/general")
+const { HTTP_STATUS_CODE, OfflineReqNames } = require("../constants/general")
 const { logger } = require("../config/pino-config")
 const Tasks = require("../services/task");
-const { isRequestFromLocalhost } = require('../utils/helper');
+const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
 const { createOfflineRequest } = require('../services/offlineRequestQueue');
 // Create a new task with file upload
 exports.createTask = async (req, res) => {
@@ -224,6 +224,8 @@ exports.getTaskOverview = async (req, res) => {
 // API for create Task v1
 exports.createTaskV1 = async (req, res) => {
 	try {
+		// generate a unique random id for the user 
+		// req.body.generatedId = req.body?.generatedId || generateRandomString();
 		req.body.createdBy = req.user._id;
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to create a new task`);
 		const reqCpy = JSON.parse(JSON.stringify(req.body))
@@ -235,22 +237,22 @@ exports.createTaskV1 = async (req, res) => {
 
 		// let result = await Tasks.createTask(req.body);
 		let isOfflineReq = isRequestFromLocalhost(req)
-		let result = await Tasks.createTaskV2(req.body, isOfflineReq);
+		let result = await Tasks.createTaskV2(req.body, isOfflineReq, reqCpy, fileCpy, req);
 
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully created a new task`);
-			if (isOfflineReq) {
-				let result = await createOfflineRequest({
-					operation: "create_task",
-					apiPath: req.originalUrl,
-					method: req.method,
-					payload: JSON.stringify(reqCpy),
-					attachments: [],
-					attachmentString: JSON.stringify(fileCpy),
-					token: req.headers['authorization'],
-				})
-
-			}
+			// if (isOfflineReq) {
+			// 	let result = await createOfflineRequest({
+			// 		operation: OfflineReqNames.CREATE_TASK,
+			// 		apiPath: req.originalUrl,
+			// 		method: req.method,
+			// 		payload: JSON.stringify(reqCpy),
+			// 		attachments: [],
+			// 		attachmentString: JSON.stringify(fileCpy),
+			// 		token: req.headers['authorization'],
+			// 		generatedId: result.data._id
+			// 	})
+			// }
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task created successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to create a new task. Error: ${result.message}`);
@@ -512,6 +514,36 @@ exports.getTaskDetailsById = async (req, res) => {
 			});
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to fetch task details for ID: ${taskId}. Error: ${result.message}`);
+			res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+				success: false,
+				message: result.message
+			});
+		}
+	} catch (error) {
+		console.log('error', error);
+		res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+			success: false,
+			message: 'Internal server error.',
+			error: error.message
+		});
+	}
+}
+
+// API for fetch the task details by the generatedId 
+exports.getTaskDetailsByGeneratedId = async (req, res) => {
+	try {
+		const { generatedId } = req.params;
+		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to fetch task details by generated ID: ${generatedId}`);
+		let result = await Tasks.getTaskDetailsByGeneratedId({ generatedId });
+		if (result.success) {
+			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully fetched task details for generated ID: ${generatedId}`);
+			res.status(HTTP_STATUS_CODE.OK).json({
+				success: true,
+				data: result.data,
+				message: "Task details fetched successfully"
+			});
+		} else {
+			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to fetch task details for generated ID: ${generatedId}. Error: ${result.message}`);
 			res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
 				success: false,
 				message: result.message

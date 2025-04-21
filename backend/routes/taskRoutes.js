@@ -66,5 +66,6 @@ router.delete("/attachments/:taskId/:attachmentId", authenticate, authorize('Tas
 router.delete("/comment/:taskId/:commentId", authenticate, authorize('Task Management', 'Update'), taskController.deleteTaskComment)
 // API for fetch task details by task id
 router.get("/:taskId", authenticate, authorize('Task Management', 'Read'), taskController.getTaskDetailsById)
-
+// API for fetch the task _id from the generated Id 
+router.get("/details/:generatedId", authenticate, authorize('Task Management', 'Read'), taskController.getTaskDetailsByGeneratedId)
 module.exports = router;
