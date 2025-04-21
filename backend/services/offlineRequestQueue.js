@@ -1,6 +1,6 @@
 const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
-const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer, getMachineIdFromGeneratedIdFromServer, getTaskIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
+const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer, getMachineIdFromGeneratedIdFromServer, getTaskIdFromGeneratedIdFromServer, getBalagruhaDetailsFromGeneratedIdFromServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
 const { OfflineReqNames } = require('../constants/general');
 const { getMachineIdByGeneratedId } = require("../data-access/machines")
@@ -357,6 +357,18 @@ exports.getPendingOfflineRequests = async () => {
                             payload = JSON.stringify(payload)
                             result.data[i].payload = payload
                             exeResult = await sendOfflineJSONRequestToServer({ reqData: result.data[i] })
+                        }
+                        break;
+                    case OfflineReqNames.UPDATE_BALAGRUHA:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let balagruhaId = await getBalagruhaDetailsFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (balagruhaId.success && balagruhaId.data) {
+                                balagruhaId = balagruhaId.data.id;
+                            }
+                            let balagruhaEditAPI = result.data[i].apiPath
+                            let balagruhaEditAPIPath = balagruhaEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${balagruhaId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: balagruhaEditAPIPath } }) // include updated API path
                         }
                         break;
                     default:

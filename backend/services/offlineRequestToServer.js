@@ -211,3 +211,18 @@ exports.getTaskIdFromGeneratedIdFromServer = async ({ generatedId, token }) => {
     });
 }
 
+// Function for fetch the balagruha details by generated id from server through api call
+exports.getBalagruhaDetailsFromGeneratedIdFromServer = async ({ generatedId, token }) => {
+    let url = `https://playground.initiativesewafoundation.com/server/api/v1/balagruha/generated/:generatedId/${generatedId}`
+    return await axios.get(url, {
+        headers: {
+            'Authorization': token
+        }
+    }).then(response => {
+        console.log('Balagruha details fetched successfully:', response.data);
+        return response.data;
+    }).catch(error => {
+        console.error('Failed to fetch balagruha details:', error);
+        throw error;
+    });
+}

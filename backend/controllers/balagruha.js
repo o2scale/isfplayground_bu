@@ -78,18 +78,32 @@ exports.getBalagruhaById = async (req, res) => {
 // Update balagruha
 exports.updateBalagruha = async (req, res) => {
     try {
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
         const { id } = req.params;
         const updateData = req.body;
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, id, data: updateData }, `Request received to update balagruha`);
+        let isOfflineReq = isRequestFromLocalhost(req);
         const result = await Balagruha.update(id, updateData);
         if (result.success) {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully updated balagruha`);
+            if (isOfflineReq) {
+                await createOfflineRequest({
+                    operation: OfflineReqNames.UPDATE_BALAGRUHA,
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    generatedId: req.body.generatedId || null,
+                    token: req.headers['authorization'],
+                });
+            }
             res.status(HTTP_STATUS_CODE.OK).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to update balagruha`);
             res.status(HTTP_STATUS_CODE.BAD_REQUEST).json(result);
         }
     } catch (error) {
+        console.log('error', error)
         errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, error: error.message }, `Error occurred while updating balagruha`);
         res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ success: false, message: error.message });
     }
