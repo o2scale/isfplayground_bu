@@ -1,3 +1,6 @@
+const path = require('path');
+const crypto = require('crypto');
+
 exports.isValidEmail = (email) => {
     // Regular expression for email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -63,4 +66,11 @@ exports.getUploadedFilesFullPath = (fileName) => {
         fileFullPath = `file://${fileName}`;
     }
     return fileFullPath;
+}
+
+// generate the random unique string 
+exports.generateRandomString = () => {
+    const uniqueId = crypto.randomBytes(16).toString('hex'); // 32 characters
+    console.log(uniqueId); // e.g., '9b1deaf2c8f6487b9e0b12ed68e776fa'
+    return uniqueId; // return the generated unique id
 }

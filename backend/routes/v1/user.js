@@ -1,6 +1,6 @@
 const express = require("express");
 const { authorize, authenticate } = require("../../middleware/auth");
-const { createUserV1, createStudentMedicalRecords, getUserManagementOverviewDetails, createStudentAttendance, getStudentListByBalagruhaIdWithAttendance, getUsersByRoleAndBalagruhaId, getUserById, getUserInfo, updateUserPassword, assignBalagruhaToUser, updateUserDetails, deleteUserById, getUserListByAssignedBalagruhaByRole } = require("../../controllers/userController");
+const { createUserV1, createStudentMedicalRecords, getUserManagementOverviewDetails, createStudentAttendance, getStudentListByBalagruhaIdWithAttendance, getUsersByRoleAndBalagruhaId, getUserById, getUserInfo, updateUserPassword, assignBalagruhaToUser, updateUserDetails, deleteUserById, getUserListByAssignedBalagruhaByRole, getUserIdFromGeneratedId } = require("../../controllers/userController");
 // const upload = require('../../middleware/upload'); // Multer middleware for file uploads
 const router = express.Router();
 const upload = require("../../middleware/upload")
@@ -8,12 +8,6 @@ const upload = require("../../middleware/upload")
 router.post('/',
     authenticate,
     authorize('User Management', 'Create'),
-    // upload.fields([
-    //     { name: 'facialData', maxCount: 5 }, // Up to 5 files for facialData
-    //     // { name: 'medicalHistory', maxCount:  } // 1 file for medicalHistory
-    // ]),
-    // faceDataUpload.single("facialData"),
-    // upload.single('image'),
     upload.any(),
     createUserV1);
 // API for create the medical record for the student 
@@ -48,4 +42,6 @@ router.delete("/:userId",
     deleteUserById);
 // API for fetch the user list by role with assigned balagruhaIds 
 router.get("/assigned/users", authenticate, authorize('User Management', 'Read'), getUserListByAssignedBalagruhaByRole);
+// API for fetch the userId by generatedId
+router.get("/generated/:generatedId", authenticate, authorize('User Management', 'Read'), getUserIdFromGeneratedId);
 module.exports = router;

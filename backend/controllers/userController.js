@@ -5,7 +5,9 @@ const Student = require("../services/student");
 const Attendance = require('../services/attendenance');
 const { UserTypes } = require('../constants/users');
 const { updateNextActionDate } = require('../data-access/medicalRecords');
-const { isRequestFromLocalhost } = require('../utils/helper');
+const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
+const { createOfflineRequest } = require('../services/offlineRequestQueue');
+const { getUserIdFromGeneratedId } = require('../services/user');
 
 exports.getAllUsers = async (_, res) => {
     try {
@@ -101,9 +103,23 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
+        let isOfflineReq = isRequestFromLocalhost(req);
+
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+        if (isOfflineReq) {
+
+            await createOfflineRequest({
+                operation: "delete_user",
+                apiPath: req.originalUrl,
+                method: req.method,
+                payload: "",
+                attachments: [],
+                generatedId: user.generatedId || null,
+                token: req.headers['authorization'],
+            });
         }
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
@@ -114,7 +130,9 @@ exports.deleteUser = async (req, res) => {
 // API for create User 
 exports.createUserV1 = async (req, res) => {
     try {
-
+        // generate a unique random id for the user 
+        req.body.generatedId = req.body?.generatedId || generateRandomString();
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
         const logData = { ...req.body };
         delete logData.password;
         req.body.createdBy = req.user._id;
@@ -122,7 +140,7 @@ exports.createUserV1 = async (req, res) => {
         // req.body.facialData = req.files['facialData']
         req.body.facialData = req.files.filter(file => file.fieldname === 'facialData')[0];
         // req.body.medicalHistory = req.files['medicalHistory']
-
+        let fileCpy = JSON.parse(JSON.stringify(req.files))
 
         const medicalHistory = extractMedicalHistory(req);
         req.body.medicalHistory = medicalHistory
@@ -135,6 +153,18 @@ exports.createUserV1 = async (req, res) => {
         let result = await createUser(req.body)
         if (result.success) {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: logData }, `User registered successfully`);
+            if (isOfflineReq) {
+                let result = await createOfflineRequest({
+                    operation: "create_user",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    attachmentString: JSON.stringify(fileCpy),
+                    generatedId: req.body.generatedId,
+                    token: req.headers['authorization'],
+                })
+            }
             res.status(201).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: logData }, `Error occurred while user registration: ${result.message}`);
@@ -431,6 +461,8 @@ exports.updateUserDetails = async (req, res) => {
                 message: "User ID is required"
             });
         }
+        const reqCpy = JSON.parse(JSON.stringify(req.body))
+        let fileCpy = JSON.parse(JSON.stringify(req.files))
 
         req.body.updatedBy = req.user._id;
         // check the request if from localhost/ offline case
@@ -463,6 +495,18 @@ exports.updateUserDetails = async (req, res) => {
             }
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
                 `Successfully updated user details for ID: ${userId}`);
+            if (isOfflineReq) {
+                await createOfflineRequest({
+                    operation: "edit_user",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify(reqCpy),
+                    attachments: [],
+                    attachmentString: JSON.stringify(fileCpy),
+                    token: req.headers['authorization'],
+                    generatedId: result.data.user.generatedId || null,
+                })
+            }
             return res.status(200).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
@@ -503,10 +547,20 @@ exports.deleteUserById = async (req, res) => {
 
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { userId } },
             `Request received for deleting user with ID: ${userId}`);
-
+        let isOfflineReq = isRequestFromLocalhost(req);
         const result = await deleteUserById(userId);
 
         if (result.success) {
+            if (isOfflineReq) {
+                await createOfflineRequest({
+                    operation: "delete_user",
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: JSON.stringify({ userId }),
+                    attachments: [],
+                    token: req.headers['authorization'],
+                });
+            }
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
                 `Successfully deleted user with ID: ${userId}`);
             return res.status(200).json(result);
@@ -548,5 +602,39 @@ exports.getUserListByAssignedBalagruhaByRole = async (req, res) => {
     } catch (error) {
         errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: req.body }, `Error occurred while processing the request for assigning balagruha to the user: ${error.message}`);
         res.status(400).json({ message: error.message });
+    }
+}
+
+
+// API for fetch the userId by generatedId
+exports.getUserIdFromGeneratedId = async (req, res) => {
+    try {
+        const generatedId = req.params.generatedId;
+        if (!generatedId || generatedId == ':generatedId') {
+            return res.status(400).json({
+                success: false,
+                message: "Generated ID is required"
+            });
+        }
+        logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { generatedId } },
+            `Request received for fetching user ID by generated ID: ${generatedId}`);
+        let result = await getUserIdFromGeneratedId({ generatedId })
+        if (result.success) {
+            logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
+                `Successfully fetched user ID by generated ID`);
+            res.status(201).json({ success: true, data: { id: result.data }, message: "User ID fetched successfully" });
+        } else {
+            errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl },
+                `Error occurred while fetching user ID by generated ID`);
+            res.status(400).json(result);
+        }
+    } catch (error) {
+        errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { error: error.message } },
+            `Error occurred while processing the request for fetching user ID by generated ID: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
     }
 }

@@ -57,3 +57,25 @@ module.exports.HTTP_STATUS_CODE = {
     USE_PROXY: 305,
     MISDIRECTED_REQUEST: 421,
 };
+
+
+// offline request names 
+exports.OfflineReqNames = {
+    CREATE_MACHINE: "create_machine",
+    UPDATE_MACHINE_TOGGLE_STATUS: "toggle_machine_status",
+    ASSIGN_MACHINE: "assign_machine",
+    DELETE_MACHINE: "delete_machine",
+    CREATE_TASK: "create_task",
+    UPDATE_TASK: "update_task",
+    DELETE_TASK: "delete_task",
+    UPDATE_TASK_STATUS: "update_task_status",
+    UPDATE_COMMENT_TO_TASK: "update_comment_to_task",
+    ADD_UPDATE_TASK_ATTACHMENTS: "add_or_update_task_attachments",
+    DELETE_TASK_ATTACHMENTS: "delete_task_attachments",
+    DELETE_TASK_COMMENTS: "delete_task_comments",
+    DELETE_USER: "delete_user",
+    CREATE_USER: "create_user",
+    EDIT_USER: "edit_user",
+    DELETE_USER: "delete_user",
+
+}

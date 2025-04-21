@@ -70,8 +70,8 @@ const userSchema = new mongoose.Schema(
         facialData: {
             faceDescriptor: Array, // Store face descriptor array
             createdAt: { type: Date, default: Date.now }
-        }
-
+        },
+        generatedId: { type: String, default: "" }
     },
     { timestamps: true }
 );
@@ -124,6 +124,18 @@ userSchema.methods.resetLoginAttempts = async function () {
         $set: { loginAttempts: 0 },
         $unset: { lockUntil: 1 }
     });
+};
+// Function for fetch the userId by generatedId
+userSchema.statics.getUserIdFromGeneratedId = async function (generatedId) {
+    try {
+        const user = await this.findOne({ generatedId: generatedId });
+        if (!user) {
+            return { success: false, message: 'User not found' };
+        }
+        return { success: true, data: user };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
 };
 
 const User = mongoose.model('User', userSchema);

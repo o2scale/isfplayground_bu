@@ -1,19 +1,21 @@
 const Task = require('../models/task');
 const User = require('../models/user');
 const mongoose = require('mongoose');
-const { HTTP_STATUS_CODE } = require("../constants/general")
+const { HTTP_STATUS_CODE, OfflineReqNames } = require("../constants/general")
 const { logger } = require("../config/pino-config")
 const Tasks = require("../services/task");
-const { isRequestFromLocalhost } = require('../utils/helper');
+const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
+const { createOfflineRequest } = require('../services/offlineRequestQueue');
 // Create a new task with file upload
 exports.createTask = async (req, res) => {
 	try {
-		console.log('abccc', req.body);
 		const { title, description, assignedUser, createdBy, deadline, priority, status } = req.body;
 
 		if (!title || !description || !assignedUser || !createdBy || !deadline) {
 			return res.status(400).json({ message: 'All required fields must be provided.' });
 		}
+		let fileCpy = JSON.parse(JSON.stringify(req.files))
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
 
 		// if (!mongoose.Types.ObjectId.isValid(assignedUser) || !mongoose.Types.ObjectId.isValid(createdBy)) {
 		// 	return res.status(400).json({ message: 'Invalid assignedUser or createdBy ID.' });
@@ -29,7 +31,7 @@ exports.createTask = async (req, res) => {
 		if (isNaN(Date.parse(deadline)) || new Date(deadline) < new Date()) {
 			return res.status(400).json({ message: 'Invalid or past deadline.' });
 		}
-
+		let isOfflineReq = isRequestFromLocalhost(req);
 		const attachments = req.files ? req.files.map((file) => file.path) : [];
 
 		const task = new Task({
@@ -43,7 +45,20 @@ exports.createTask = async (req, res) => {
 			attachments, // Save file paths in the database
 		});
 
-		await task.save();
+		let result = await task.save();
+		if (result) {
+			if (isOfflineReq) {
+				let result = await createOfflineRequest({
+					operation: "create_task",
+					apiPath: req.originalUrl,
+					method: req.method,
+					payload: JSON.stringify(reqCpy),
+					attachments: [],
+					attachmentString: JSON.stringify(fileCpy),
+					token: req.headers['authorization'],
+				})
+			}
+		}
 		res.status(201).json({ message: 'Task created successfully.', task });
 	} catch (error) {
 		console.error('Error creating task:', error);
@@ -85,6 +100,8 @@ exports.updateTask = async (req, res) => {
 			task.assignedUser = assignedUser;
 		}
 
+		let isOfflineReq = isRequestFromLocalhost(req);
+
 		// Validate deadline if provided
 		if (deadline) {
 			if (isNaN(Date.parse(deadline)) || new Date(deadline) < new Date()) {
@@ -104,7 +121,21 @@ exports.updateTask = async (req, res) => {
 			task.attachments = [...task.attachments, ...newAttachments];
 		}
 
-		await task.save();
+		let result = await task.save();
+		if (result) {
+			if (isOfflineReq) {
+				let result = await createOfflineRequest({
+					operation: OfflineReqNames.UPDATE_TASK,
+					apiPath: req.originalUrl,
+					method: req.method,
+					payload: JSON.stringify(req.body),
+					attachments: [],
+					attachmentString: JSON.stringify(req.files),
+					generatedId: task.generatedId,
+					token: req.headers['authorization'],
+				})
+			}
+		}
 		res.status(200).json({ message: 'Task updated successfully.', task });
 	} catch (error) {
 		console.error('Error updating task:', error);
@@ -194,16 +225,35 @@ exports.getTaskOverview = async (req, res) => {
 // API for create Task v1
 exports.createTaskV1 = async (req, res) => {
 	try {
+		// generate a unique random id for the user 
+		// req.body.generatedId = req.body?.generatedId || generateRandomString();
 		req.body.createdBy = req.user._id;
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to create a new task`);
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
+		let fileCpy = JSON.parse(JSON.stringify(req.files))
+
 		const attachments = req.files ? req.files.map((file) => file.path) : [];
+
 		req.body.attachments = attachments;
+
 		// let result = await Tasks.createTask(req.body);
 		let isOfflineReq = isRequestFromLocalhost(req)
-		let result = await Tasks.createTaskV2(req.body, isOfflineReq);
+		let result = await Tasks.createTaskV2(req.body, isOfflineReq, reqCpy, fileCpy, req);
 
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully created a new task`);
+			// if (isOfflineReq) {
+			// 	let result = await createOfflineRequest({
+			// 		operation: OfflineReqNames.CREATE_TASK,
+			// 		apiPath: req.originalUrl,
+			// 		method: req.method,
+			// 		payload: JSON.stringify(reqCpy),
+			// 		attachments: [],
+			// 		attachmentString: JSON.stringify(fileCpy),
+			// 		token: req.headers['authorization'],
+			// 		generatedId: result.data._id
+			// 	})
+			// }
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task created successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to create a new task. Error: ${result.message}`);
@@ -279,10 +329,25 @@ exports.updateTaskStatus = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const { status } = req.body;
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
+
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to update task status`);
-		let result = await Tasks.updateTaskStatus({ taskId: id, status });
+		let isOfflineReq = isRequestFromLocalhost(req);
+		let result = await Tasks.updateTaskStatus({ taskId: id, payload: req.body });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully updated task status`);
+			if (isOfflineReq) {
+				await createOfflineRequest({
+					operation: OfflineReqNames.UPDATE_TASK_STATUS,
+					apiPath: req.originalUrl,
+					method: req.method,
+					payload: JSON.stringify(reqCpy),
+					attachments: [],
+					attachmentString: "{}",
+					generatedId: result.data.task.generatedId,
+					token: req.headers['authorization'],
+				})
+			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task status updated successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to update task status. Error: ${result.message}`);
@@ -301,11 +366,26 @@ exports.addCommentToTask = async (req, res) => {
 		const { taskId } = req.params;
 		const { comments } = req.body;
 		const attachments = req.files['attachments']
+		let fileCpy = JSON.parse(JSON.stringify(req.files))
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
+
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to add comment to task`);
 		let isOfflineReq = isRequestFromLocalhost(req)
 		let result = await Tasks.addCommentToTask({ taskId, comments: comments, createdById: req.user._id, attachments, isOfflineReq });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully added comment to task`);
+			if (isOfflineReq) {
+				await createOfflineRequest({
+					operation: OfflineReqNames.UPDATE_COMMENT_TO_TASK,
+					apiPath: req.originalUrl,
+					method: req.method,
+					payload: JSON.stringify(reqCpy),
+					attachments: [],
+					attachmentString: JSON.stringify(fileCpy),
+					generatedId: result.data.task.generatedId,
+					token: req.headers['authorization'],
+				})
+			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Comment added successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to add comment to task. Error: ${result.message}`);
@@ -321,12 +401,26 @@ exports.addCommentToTask = async (req, res) => {
 exports.addOrUpdateTaskAttachment = async (req, res) => {
 	try {
 		const { taskId } = req.params;
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
+		let fileCpy = JSON.parse(JSON.stringify(req.files))
 		let attachments = req.files['attachments']
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to update task attachment`);
 		let isOfflineReq = isRequestFromLocalhost(req)
 		let result = await Tasks.addOrUpdateTaskAttachment({ taskId, attachments, createdById: req.user._id, isOfflineReq });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully updated task attachment`);
+			if (isOfflineReq) {
+				await createOfflineRequest({
+					operation: OfflineReqNames.ADD_UPDATE_TASK_ATTACHMENTS,
+					apiPath: req.originalUrl,
+					method: req.method,
+					payload: JSON.stringify(reqCpy),
+					attachments: [],
+					attachmentString: JSON.stringify(fileCpy),
+					generatedId: result.data.task.generatedId,
+					token: req.headers['authorization'],
+				})
+			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task attachment updated successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to update task attachment. Error: ${result.message}`);
@@ -343,10 +437,25 @@ exports.addOrUpdateTaskAttachment = async (req, res) => {
 exports.deleteTaskAttachment = async (req, res) => {
 	try {
 		const { taskId, attachmentId } = req.params;
+		let fileCpy = JSON.parse(JSON.stringify(req.files))
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
+
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to delete task attachment`);
+		let isOfflineReq = isRequestFromLocalhost(req);
 		let result = await Tasks.deleteTaskAttachment({ taskId, attachmentId });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully deleted task attachment`);
+			if (isOfflineReq) {
+				// let result = await createOfflineRequest({
+				// 	operation: "delete_task_attachment",
+				// 	apiPath: req.originalUrl,
+				// 	method: req.method,
+				// 	payload: JSON.stringify(reqCpy),
+				// 	attachments: [],
+				// 	attachmentString: JSON.stringify(fileCpy),
+				// 	token: req.headers['authorization'],
+				// })
+			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task attachment deleted successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to delete task attachment. Error: ${result.message}`);
@@ -363,10 +472,24 @@ exports.deleteTaskAttachment = async (req, res) => {
 exports.deleteTaskComment = async (req, res) => {
 	try {
 		const { taskId, commentId } = req.params;
+		// const reqCpy = JSON.parse(JSON.stringify(req.body))
+		let isOfflineReq = isRequestFromLocalhost(req);
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to delete task comment`);
 		let result = await Tasks.deleteTaskComment({ taskId, commentId });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully deleted task comment`);
+			if (isOfflineReq) {
+				// await createOfflineRequest({
+				// 	operation: OfflineReqNames.DELETE_TASK_COMMENTS,
+				// 	apiPath: req.originalUrl,
+				// 	method: req.method,
+				// 	payload: "{}",
+				// 	attachments: [],
+				// 	attachmentString: "{}",
+				// 	generatedId: result.data.task.generatedId,
+				// 	token: req.headers['authorization'],
+				// })
+			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task comment deleted successfully" });
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to delete task comment. Error: ${result.message}`);
@@ -396,6 +519,36 @@ exports.getTaskDetailsById = async (req, res) => {
 			});
 		} else {
 			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to fetch task details for ID: ${taskId}. Error: ${result.message}`);
+			res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+				success: false,
+				message: result.message
+			});
+		}
+	} catch (error) {
+		console.log('error', error);
+		res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+			success: false,
+			message: 'Internal server error.',
+			error: error.message
+		});
+	}
+}
+
+// API for fetch the task details by the generatedId 
+exports.getTaskDetailsByGeneratedId = async (req, res) => {
+	try {
+		const { generatedId } = req.params;
+		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to fetch task details by generated ID: ${generatedId}`);
+		let result = await Tasks.getTaskDetailsByGeneratedId({ generatedId });
+		if (result.success) {
+			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully fetched task details for generated ID: ${generatedId}`);
+			res.status(HTTP_STATUS_CODE.OK).json({
+				success: true,
+				data: result.data,
+				message: "Task details fetched successfully"
+			});
+		} else {
+			logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to fetch task details for generated ID: ${generatedId}. Error: ${result.message}`);
 			res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
 				success: false,
 				message: result.message

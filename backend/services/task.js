@@ -1,12 +1,14 @@
 const { default: mongoose } = require("mongoose");
 const { errorLogger } = require("../config/pino-config");
-const { fetchTasksByUserIdAndFilter, createTask, updateTaskStatus, getTaskById, getTaskListByUserId, findTaskById, updateTaskById, createMultipleTask, findTaskByIdWithDetails } = require("../data-access/task");
+const { fetchTasksByUserIdAndFilter, createTask, updateTaskStatus, getTaskById, getTaskListByUserId, findTaskById, updateTaskById, createMultipleTask, findTaskByIdWithDetails, getTaskDetailsByGeneratedId } = require("../data-access/task");
 const { uploadFileToS3 } = require("./aws/s3");
 const User = require("../models/user");
 const TaskModel = require("../models/task");
 const { getTasksByBalagruhaIdAndFilter, getUserIdsByRoles, getTasksOverviewCountByBalagruhaId, checkUsersExistByIds } = require("../data-access/User");
 const { userTypeHierarchy, UserTypes } = require("../constants/users");
-const { getFileContentType, getUploadedFilesFullPath } = require("../utils/helper");
+const { getFileContentType, getUploadedFilesFullPath, generateRandomString } = require("../utils/helper");
+const { createOfflineRequest } = require("./offlineRequestQueue");
+const { OfflineReqNames } = require("../constants/general");
 
 class Task {
     constructor(obj) {
@@ -32,6 +34,7 @@ class Task {
         this.vendorDetails = obj.vendorDetails || "";
         this.costEstimate = obj.costEstimate || "";
         this.requiredParts = obj.requiredParts || "";
+        this.generatedId = obj.generatedId || "";
     }
 
     toJSON() {
@@ -54,6 +57,7 @@ class Task {
             vendorDetails: this.vendorDetails,
             costEstimate: this.costEstimate,
             requiredParts: this.requiredParts,
+            generatedId: this.generatedId
 
         }
     }
@@ -182,9 +186,9 @@ class Task {
         }
     }
 
-    static async createTaskV2(payload, isOfflineReq) {
+    static async createTaskV2(payload, isOfflineReq, reqCpy, fileCpy, req) {
         try {
-            console.log('abccc', payload);
+
             const { title, description, assignedUser, createdBy, deadline, priority, status, attachments, duration, drillOrExerciseType, type = 'general',
                 label, machineDetails, vendorDetails, costEstimate, requiredParts
             } = payload;
@@ -275,11 +279,28 @@ class Task {
                 // Create a deep copy of the task object to avoid reference issues
                 let taskCopy = JSON.parse(JSON.stringify(task.toJSON()));
                 taskCopy.assignedUser = item;
+                taskCopy.generatedId = payload.generatedId || generateRandomString();
                 taskList.push(taskCopy);
             })
-            console.log('taskList', taskList)
+
             let result = await createMultipleTask(taskList)
             if (result && result.success) {
+                if (isOfflineReq) {
+                    taskList.forEach(async item => {
+                        reqCpy.generatedId = item.generatedId;
+                        reqCpy.assignedUser = item.assignedUser.toString()
+                        await createOfflineRequest({
+                            operation: OfflineReqNames.CREATE_TASK,
+                            apiPath: req.originalUrl,
+                            method: req.method,
+                            payload: JSON.stringify(reqCpy),
+                            attachments: [],
+                            attachmentString: JSON.stringify(fileCpy),
+                            generatedId: item.generatedId,
+                            token: req.headers['authorization'],
+                        })
+                    })
+                }
                 return {
                     success: true,
                     data: {
@@ -464,7 +485,7 @@ class Task {
     }
 
 
-    static async updateTaskStatus({ taskId, status }) {
+    static async updateTaskStatus({ taskId, payload }) {
         try {
 
             if (!taskId) {
@@ -474,7 +495,7 @@ class Task {
                     message: "Task Id not found"
                 }
             }
-            let result = await updateTaskStatus(taskId, status);
+            let result = await updateTaskStatus(taskId, payload);
             if (result.success) {
                 return {
                     success: true,
@@ -815,6 +836,17 @@ class Task {
             console.log('error', error);
             errorLogger.error({ data: { error: error } }, `Error occurred during fetching task details: ${error.message}`);
             throw error;
+        }
+    }
+    static async getTaskDetailsByGeneratedId({ generatedId }) {
+        try {
+            let result = await getTaskDetailsByGeneratedId({ generatedId });
+            return result;
+        } catch (error) {
+            console.log('error', error);
+            errorLogger.error({ data: { error: error } }, `Error occurred during fetching task details: ${error.message}`);
+            throw error;
+
         }
     }
 }

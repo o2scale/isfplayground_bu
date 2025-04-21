@@ -30,11 +30,20 @@ const MachineSchema = new mongoose.Schema(
         lastLogin: {
             type: Date,
             default: null,
-        }
+        },
+        generatedId: {
+            type: String,
+            unique: true,
+            sparse: true,
+            default: null,
+        },
     },
     {
         timestamps: true,
     }
 );
+
+// Add sparse index to allow duplicate null values
+MachineSchema.index({ generatedId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Machine', MachineSchema);
