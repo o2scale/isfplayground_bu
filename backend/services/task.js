@@ -485,7 +485,7 @@ class Task {
     }
 
 
-    static async updateTaskStatus({ taskId, status }) {
+    static async updateTaskStatus({ taskId, payload }) {
         try {
 
             if (!taskId) {
@@ -495,7 +495,7 @@ class Task {
                     message: "Task Id not found"
                 }
             }
-            let result = await updateTaskStatus(taskId, status);
+            let result = await updateTaskStatus(taskId, payload);
             if (result.success) {
                 return {
                     success: true,

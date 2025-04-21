@@ -180,7 +180,7 @@ exports.getMachineIdFromGeneratedIdFromServer = async ({ generatedId, token }) =
 
 // Function for fetch the task id by generated id from server through api call
 exports.getTaskIdFromGeneratedIdFromServer = async ({ generatedId, token }) => {
-    let url = `https://playground.initiativesewafoundation.com/server//api/tasks/details/${generatedId}`
+    let url = `https://playground.initiativesewafoundation.com/server/api/tasks/details/${generatedId}`
     return await axios.get(url, {
         headers: {
             'Authorization': token

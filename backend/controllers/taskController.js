@@ -329,20 +329,22 @@ exports.updateTaskStatus = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const { status } = req.body;
+		const reqCpy = JSON.parse(JSON.stringify(req.body))
 
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to update task status`);
 		let isOfflineReq = isRequestFromLocalhost(req);
-		let result = await Tasks.updateTaskStatus({ taskId: id, status });
+		let result = await Tasks.updateTaskStatus({ taskId: id, payload: req.body });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully updated task status`);
 			if (isOfflineReq) {
-				let result = await createOfflineRequest({
-					operation: "update_task_status",
+				await createOfflineRequest({
+					operation: OfflineReqNames.UPDATE_TASK_STATUS,
 					apiPath: req.originalUrl,
 					method: req.method,
-					payload: JSON.stringify(req.body),
+					payload: JSON.stringify(reqCpy),
 					attachments: [],
-					attachmentString: JSON.stringify(req.files),
+					attachmentString: "{}",
+					generatedId: result.data.task.generatedId,
 					token: req.headers['authorization'],
 				})
 			}

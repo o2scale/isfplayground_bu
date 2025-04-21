@@ -311,7 +311,7 @@ exports.getPendingOfflineRequests = async () => {
                             exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
                         }
                         break;
-                    case OfflineReqNames.UPDATE_TASK:
+                    case OfflineReqNames.UPDATE_TASK_STATUS:
                         {
                             let generatedId = result.data[i].generatedId
                             let taskId = await getTaskIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
@@ -320,7 +320,7 @@ exports.getPendingOfflineRequests = async () => {
                             }
                             let taskEditAPI = result.data[i].apiPath
                             let taskEditAPIPath = taskEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${taskId}`) // replace the userId in the payload
-                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: taskEditAPIPath } }) // include updated API path
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: taskEditAPIPath } }) // include updated API path
                         }
                         break;
                     default:

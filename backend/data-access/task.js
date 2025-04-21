@@ -184,8 +184,8 @@ exports.getTaskOverviewDetailsByBalagruhaIds = async (balagruhaIds) => {
 }
 
 // Function for update task status 
-exports.updateTaskStatus = async (taskId, status) => {
-    return await Task.findByIdAndUpdate(taskId, { status: status }, { new: true })
+exports.updateTaskStatus = async (taskId, payload) => {
+    return await Task.findByIdAndUpdate(taskId, payload, { new: true })
         .then(result => {
             return {
                 success: true, data: result, message: "Updated task status successfully"
