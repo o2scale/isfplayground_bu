@@ -1,6 +1,6 @@
 const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
-const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer } = require('./offlineRequestToServer');
+const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer, getMachineIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
 const { OfflineReqNames } = require('../constants/general');
 const { getMachineIdByGeneratedId } = require("../data-access/machines")
@@ -266,7 +266,7 @@ exports.getPendingOfflineRequests = async () => {
                     case OfflineReqNames.UPDATE_MACHINE_TOGGLE_STATUS:
                         {
                             let generatedId = result.data[i].generatedId
-                            let machineId = await getMachineIdByGeneratedId({ generatedId: generatedId })
+                            let machineId = await getMachineIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (machineId.success && machineId.data) {
                                 machineId = machineId.data.id;
                             }
@@ -278,7 +278,7 @@ exports.getPendingOfflineRequests = async () => {
                     case OfflineReqNames.ASSIGN_MACHINE:
                         {
                             let generatedId = result.data[i].generatedId
-                            let machineId = await getMachineIdByGeneratedId({ generatedId: generatedId })
+                            let machineId = await getMachineIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (machineId.success && machineId.data) {
                                 machineId = machineId.data.id;
                             }
@@ -290,7 +290,7 @@ exports.getPendingOfflineRequests = async () => {
                     case OfflineReqNames.DELETE_MACHINE:
                         {
                             let generatedId = result.data[i].generatedId
-                            let machineId = await getMachineIdByGeneratedId({ generatedId: generatedId })
+                            let machineId = await getMachineIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
                             if (machineId.success && machineId.data) {
                                 machineId = machineId.data.id;
                             }

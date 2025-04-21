@@ -23,5 +23,6 @@ router.delete('/:id', authenticate, authorize('Machine Management', 'Delete'), m
 
 // API for fetch the unassigned machines list
 router.get('/unassigned', authenticate, authorize('Machine Management', 'Read'), machineController.getUnassignedMachines);
-
+// API for fetch the machine details by machine generated id 
+router.get('/details/:generatedId', authenticate, authorize('Machine Management', 'Read'), machineController.getMachineDetailsByGeneratedId);
 module.exports = router;

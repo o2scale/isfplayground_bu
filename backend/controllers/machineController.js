@@ -283,3 +283,19 @@ exports.getUnassignedMachines = async (req, res) => {
         });
     }
 };
+
+// API for fetch the machine details by generatedId 
+exports.getMachineDetailsByGeneratedId = async (req, res) => {
+    try {
+        const { generatedId } = req.params;
+        // Find the machine by generatedId
+        const machine = await Machine.findOne({ generatedId: generatedId });
+        if (!machine) {
+            return res.status(404).json({ success: false, message: 'Machine not found.' });
+        }
+        res.status(200).json({ success: true, data: { machine: machine }, message: "successfully fetched machine details" });
+    } catch (error) {
+        console.error('Error fetching machine details:', error);
+        res.status(500).json({ success: false, data: {}, message: 'Internal server error' });
+    }
+}
