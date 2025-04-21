@@ -1,6 +1,6 @@
 const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
-const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer, getMachineIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
+const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer, getMachineIdFromGeneratedIdFromServer, getTaskIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
 const { OfflineReqNames } = require('../constants/general');
 const { getMachineIdByGeneratedId } = require("../data-access/machines")
@@ -308,7 +308,19 @@ exports.getPendingOfflineRequests = async () => {
                             // convert to string 
                             payload = JSON.stringify(payload)
                             result.data[i].payload = payload
-                            exeResult = await sendOfflineJSONRequestToServer({ reqData: result.data[i] })
+                            exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
+                        }
+                        break;
+                    case OfflineReqNames.UPDATE_TASK:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let taskId = await getTaskIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (taskId.success && taskId.data) {
+                                taskId = taskId.data._id;
+                            }
+                            let taskEditAPI = result.data[i].apiPath
+                            let taskEditAPIPath = taskEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${taskId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: taskEditAPIPath } }) // include updated API path
                         }
                         break;
                     default:

@@ -177,3 +177,19 @@ exports.getMachineIdFromGeneratedIdFromServer = async ({ generatedId, token }) =
         throw error;
     });
 }
+
+// Function for fetch the task id by generated id from server through api call
+exports.getTaskIdFromGeneratedIdFromServer = async ({ generatedId, token }) => {
+    let url = `https://playground.initiativesewafoundation.com/server//api/tasks/details/${generatedId}`
+    return await axios.get(url, {
+        headers: {
+            'Authorization': token
+        }
+    }).then(response => {
+        console.log('Task ID fetched successfully:', response.data);
+        return response.data;
+    }).catch(error => {
+        console.error('Failed to fetch task ID:', error);
+        throw error;
+    });
+}

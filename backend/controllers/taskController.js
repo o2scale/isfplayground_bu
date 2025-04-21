@@ -125,12 +125,13 @@ exports.updateTask = async (req, res) => {
 		if (result) {
 			if (isOfflineReq) {
 				let result = await createOfflineRequest({
-					operation: "update_task",
+					operation: OfflineReqNames.UPDATE_TASK,
 					apiPath: req.originalUrl,
 					method: req.method,
 					payload: JSON.stringify(req.body),
 					attachments: [],
 					attachmentString: JSON.stringify(req.files),
+					generatedId: task.generatedId,
 					token: req.headers['authorization'],
 				})
 			}

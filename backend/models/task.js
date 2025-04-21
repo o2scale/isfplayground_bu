@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema(
     {
-        generatedId: { type: String, unique: true }, // Unique identifier for the task
+        generatedId: { type: String }, // Unique identifier for the task
         title: { type: String, required: true },
         description: { type: String, required: true },
         drillOrExerciseType: { type: String, default: "" }, // for sports based tasks
