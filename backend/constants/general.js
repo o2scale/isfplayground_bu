@@ -69,7 +69,7 @@ exports.OfflineReqNames = {
     UPDATE_TASK: "update_task",
     DELETE_TASK: "delete_task",
     UPDATE_TASK_STATUS: "update_task_status",
-    ADD_COMMENT_TO_TASK: "add_comment_to_task",
+    UPDATE_COMMENT_TO_TASK: "update_comment_to_task",
     ADD_UPDATE_TASK_ATTACHMENTS: "add_or_update_task_attachments",
     DELETE_TASK_ATTACHMENTS: "delete_task_attachments",
     DELETE_TASK_COMMENTS: "delete_task_comments",

@@ -375,13 +375,14 @@ exports.addCommentToTask = async (req, res) => {
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully added comment to task`);
 			if (isOfflineReq) {
-				let result = await createOfflineRequest({
-					operation: "add_comment_to_task",
+				await createOfflineRequest({
+					operation: OfflineReqNames.UPDATE_COMMENT_TO_TASK,
 					apiPath: req.originalUrl,
 					method: req.method,
 					payload: JSON.stringify(reqCpy),
 					attachments: [],
 					attachmentString: JSON.stringify(fileCpy),
+					generatedId: result.data.task.generatedId,
 					token: req.headers['authorization'],
 				})
 			}
@@ -409,13 +410,14 @@ exports.addOrUpdateTaskAttachment = async (req, res) => {
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully updated task attachment`);
 			if (isOfflineReq) {
-				let result = await createOfflineRequest({
-					operation: "add_or_update_task_attachments",
+				await createOfflineRequest({
+					operation: OfflineReqNames.ADD_UPDATE_TASK_ATTACHMENTS,
 					apiPath: req.originalUrl,
 					method: req.method,
 					payload: JSON.stringify(reqCpy),
 					attachments: [],
 					attachmentString: JSON.stringify(fileCpy),
+					generatedId: result.data.task.generatedId,
 					token: req.headers['authorization'],
 				})
 			}
@@ -444,15 +446,15 @@ exports.deleteTaskAttachment = async (req, res) => {
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully deleted task attachment`);
 			if (isOfflineReq) {
-				let result = await createOfflineRequest({
-					operation: "delete_task_attachment",
-					apiPath: req.originalUrl,
-					method: req.method,
-					payload: JSON.stringify(reqCpy),
-					attachments: [],
-					attachmentString: JSON.stringify(fileCpy),
-					token: req.headers['authorization'],
-				})
+				// let result = await createOfflineRequest({
+				// 	operation: "delete_task_attachment",
+				// 	apiPath: req.originalUrl,
+				// 	method: req.method,
+				// 	payload: JSON.stringify(reqCpy),
+				// 	attachments: [],
+				// 	attachmentString: JSON.stringify(fileCpy),
+				// 	token: req.headers['authorization'],
+				// })
 			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task attachment deleted successfully" });
 		} else {
@@ -470,23 +472,23 @@ exports.deleteTaskAttachment = async (req, res) => {
 exports.deleteTaskComment = async (req, res) => {
 	try {
 		const { taskId, commentId } = req.params;
-		let fileCpy = JSON.parse(JSON.stringify(req.files))
-		const reqCpy = JSON.parse(JSON.stringify(req.body))
+		// const reqCpy = JSON.parse(JSON.stringify(req.body))
 		let isOfflineReq = isRequestFromLocalhost(req);
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to delete task comment`);
 		let result = await Tasks.deleteTaskComment({ taskId, commentId });
 		if (result.success) {
 			logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully deleted task comment`);
 			if (isOfflineReq) {
-				let result = await createOfflineRequest({
-					operation: "delete_task_comments",
-					apiPath: req.originalUrl,
-					method: req.method,
-					payload: JSON.stringify(reqCpy),
-					attachments: [],
-					attachmentString: JSON.stringify(fileCpy),
-					token: req.headers['authorization'],
-				})
+				// await createOfflineRequest({
+				// 	operation: OfflineReqNames.DELETE_TASK_COMMENTS,
+				// 	apiPath: req.originalUrl,
+				// 	method: req.method,
+				// 	payload: "{}",
+				// 	attachments: [],
+				// 	attachmentString: "{}",
+				// 	generatedId: result.data.task.generatedId,
+				// 	token: req.headers['authorization'],
+				// })
 			}
 			res.status(HTTP_STATUS_CODE.OK).json({ success: true, data: result.data, message: "Task comment deleted successfully" });
 		} else {

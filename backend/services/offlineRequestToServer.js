@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const { getIdByGeneratedId } = require('../data-access/User');
+const { OfflineReqNames } = require('../constants/general');
 
 // Function for send offline request to server
 exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
@@ -41,6 +42,22 @@ exports.sendOfflineRequestToServer = ({ reqData, files, method = 'POST' }) => {
                 form.append(`file${index}`, blob, file.originalname);
                 form.append(`${file.fieldname}`, blob, file.originalname);
 
+                // form.append(`${file.fieldname}`, file);
+            });
+        }
+
+        // for task upload 
+        if (reqData.operation == OfflineReqNames.UPDATE_COMMENT_TO_TASK ||
+            reqData.operation == OfflineReqNames.ADD_UPDATE_TASK_ATTACHMENTS
+            && filesData?.attachments && Array.isArray(filesData?.attachments)) {
+            filesData.attachments.forEach((file, index) => {
+                // get the file from the path as blob
+                // Assuming file.path contains the file path
+                // Use fs to read the file
+                const fileBuffer = fs.readFileSync(file.path);
+                // Create a Blob from the file buffer
+                const blob = new Blob([fileBuffer], { type: file.mimetype || 'application/octet-stream' });
+                form.append(`attachments`, blob, file.originalname);
                 // form.append(`${file.fieldname}`, file);
             });
         }

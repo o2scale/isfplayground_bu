@@ -323,6 +323,30 @@ exports.getPendingOfflineRequests = async () => {
                             exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: taskEditAPIPath } }) // include updated API path
                         }
                         break;
+                    case OfflineReqNames.UPDATE_COMMENT_TO_TASK:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let taskId = await getTaskIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (taskId.success && taskId.data) {
+                                taskId = taskId.data._id;
+                            }
+                            let taskEditAPI = result.data[i].apiPath
+                            let taskEditAPIPath = taskEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${taskId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: taskEditAPIPath } }) // include updated API path
+                        }
+                        break;
+                    case OfflineReqNames.ADD_UPDATE_TASK_ATTACHMENTS:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let taskId = await getTaskIdFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (taskId.success && taskId.data) {
+                                taskId = taskId.data._id;
+                            }
+                            let taskEditAPI = result.data[i].apiPath
+                            let taskEditAPIPath = taskEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${taskId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: taskEditAPIPath } }) // include updated API path
+                        }
+                        break;
                     default:
                         logger.warn(`Unhandled request type: ${requestName}`);
                         break;
