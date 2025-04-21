@@ -1,6 +1,6 @@
 const OfflineRequestQueueDA = require('../data-access/offlineRequestQueue');
 const { logger } = require('../config/pino-config');
-const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer } = require('./offlineRequestToServer');
+const { sendOfflineRequestToServer, getUserIdFromGeneratedIdFromServer, sendOfflineJSONRequestToServer } = require('./offlineRequestToServer');
 const { getIdByGeneratedId } = require('../data-access/User');
 const { OfflineReqNames } = require('../constants/general');
 const { getMachineIdByGeneratedId } = require("../data-access/machines")
@@ -260,7 +260,7 @@ exports.getPendingOfflineRequests = async () => {
                             // convert to string 
                             payload = JSON.stringify(payload)
                             result.data[i].payload = payload
-                            exeResult = await sendOfflineRequestToServer({ reqData: result.data[i] })
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: result.data[i] })
                         }
                         break;
                     case OfflineReqNames.UPDATE_MACHINE_TOGGLE_STATUS:
@@ -272,7 +272,7 @@ exports.getPendingOfflineRequests = async () => {
                             }
                             let machineEditAPI = result.data[i].apiPath
                             let machineEditAPIPath = machineEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
-                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: machineEditAPIPath } }) // include updated API path
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: machineEditAPIPath } }) // include updated API path
                         }
                         break;
                     case OfflineReqNames.ASSIGN_MACHINE:
@@ -284,7 +284,7 @@ exports.getPendingOfflineRequests = async () => {
                             }
                             let machineEditAPI = result.data[i].apiPath
                             let machineEditAPIPath = machineEditAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
-                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: machineEditAPIPath } }) // include updated API path
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: machineEditAPIPath } }) // include updated API path
                         }
                         break;
                     case OfflineReqNames.DELETE_MACHINE:
@@ -296,7 +296,7 @@ exports.getPendingOfflineRequests = async () => {
                             }
                             let machineDeleteAPI = result.data[i].apiPath
                             let machineDeleteAPIPath = machineDeleteAPI.replace(/\/[0-9a-fA-F]{24}/, `/${machineId}`) // replace the userId in the payload
-                            exeResult = await sendOfflineRequestToServer({ reqData: { ...result.data[i], apiPath: machineDeleteAPIPath } }) // include updated API path
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: machineDeleteAPIPath } }) // include updated API path
                         }
                         break;
                     default:

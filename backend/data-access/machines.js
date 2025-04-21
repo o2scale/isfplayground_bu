@@ -112,7 +112,7 @@ exports.updateMachinesByIds = async (machineIds, updateData) => {
 }
 
 // Function for fetch the machine id by generated Id 
-exports.getMachineIdByGeneratedId = async (generatedId) => {
+exports.getMachineIdByGeneratedId = async ({ generatedId }) => {
     try {
         return await machine.findOne({ generatedId: generatedId })
             .then(result => {

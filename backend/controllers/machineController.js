@@ -219,8 +219,8 @@ exports.deleteMachine = async (req, res) => {
         const { id } = req.params;
         let macIdOnHeader = req.headers['mac-address'];
 
-        const reqCpy = JSON.parse(JSON.stringify(req.body))
-        const fileCpy = JSON.parse(JSON.stringify(req.files))
+        // const reqCpy = JSON.parse(JSON.stringify(req.body))
+        // const fileCpy = JSON.parse(JSON.stringify(req.files))
         // check the req is offline
         let isOfflineReq = isRequestFromLocalhost(req);
 
@@ -239,13 +239,13 @@ exports.deleteMachine = async (req, res) => {
         // Delete the machine
         deleteMachine({ _id: stringId }).then(() => {
             if (isOfflineReq) {
-                let result = createOfflineRequest({
+                createOfflineRequest({
                     operation: OfflineReqNames.DELETE_MACHINE,
                     apiPath: req.originalUrl,
                     method: req.method,
-                    payload: JSON.stringify(reqCpy),
+                    payload: "{}",
                     attachments: [],
-                    attachmentString: JSON.stringify(fileCpy),
+                    attachmentString: "{}",
                     token: req.headers['authorization'],
                     generatedId: result.data.generatedId,
                 });
