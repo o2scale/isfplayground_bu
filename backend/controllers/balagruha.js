@@ -114,9 +114,21 @@ exports.deleteBalagruha = async (req, res) => {
     try {
         const { id } = req.params;
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, id }, `Request received to delete balagruha`);
+        let isOfflineReq = isRequestFromLocalhost(req);
         const result = await Balagruha.delete(id);
         if (result.success) {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully deleted balagruha`);
+            if (isOfflineReq) {
+                await createOfflineRequest({
+                    operation: OfflineReqNames.DELETE_BALAGRUHA,
+                    apiPath: req.originalUrl,
+                    method: req.method,
+                    payload: "{}",
+                    attachments: [],
+                    generatedId: result?.data?.generatedId || null,
+                    token: req.headers['authorization'],
+                });
+            }
             res.status(HTTP_STATUS_CODE.OK).json(result);
         } else {
             errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to delete balagruha`);

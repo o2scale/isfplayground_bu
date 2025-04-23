@@ -371,6 +371,18 @@ exports.getPendingOfflineRequests = async () => {
                             exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: balagruhaEditAPIPath } }) // include updated API path
                         }
                         break;
+                    case OfflineReqNames.DELETE_BALAGRUHA:
+                        {
+                            let generatedId = result.data[i].generatedId
+                            let balagruhaId = await getBalagruhaDetailsFromGeneratedIdFromServer({ generatedId: generatedId, token: result.data[i].token })
+                            if (balagruhaId.success && balagruhaId.data) {
+                                balagruhaId = balagruhaId.data.id;
+                            }
+                            let balagruhaDeleteAPI = result.data[i].apiPath
+                            let balagruhaDeleteAPIPath = balagruhaDeleteAPI.replace(/\/[0-9a-fA-F]{24}/, `/${balagruhaId}`) // replace the userId in the payload
+                            exeResult = await sendOfflineJSONRequestToServer({ reqData: { ...result.data[i], apiPath: balagruhaDeleteAPIPath } }) // include updated API path
+                        }
+                        break;
                     default:
                         logger.warn(`Unhandled request type: ${requestName}`);
                         break;
