@@ -123,13 +123,19 @@ const mongoPaths = {
   originalBin: getResourcePath("resources", "mongodb", "bin"),
 };
 
+// const nodePaths = {
+//   bin:
+//     process.platform === "darwin"
+//       ? path.join(userDataPath, "nodejs")
+//       : "C:\\nodejs",
+//   originalBin: getResourcePath("resources", "nodejs"),
+// };
+
 const nodePaths = {
-  bin:
-    process.platform === "darwin"
-      ? path.join(userDataPath, "nodejs")
-      : "C:\\nodejs",
+  bin: path.join(userDataPath, "nodejs"),
   originalBin: getResourcePath("resources", "nodejs"),
 };
+
 
 function copyMongoBinariesIfNeeded() {
   return new Promise((resolve, reject) => {
@@ -159,6 +165,7 @@ function startMongoDB() {
 
     mongoProcess = spawn(mongodPath, ["--dbpath", mongoPaths.dbpath], {
       stdio: "inherit",
+      windowsHide: true
     });
 
     mongoProcess.on("error", (err) => {
@@ -292,6 +299,7 @@ function startBackendServer() {
     backendProcess = spawn(nodePath, [serverPath], {
       cwd: path.dirname(serverPath),
       stdio: "inherit",
+      windowsHide: true
     });
 
     backendProcess.on("error", (err) => {

@@ -18,14 +18,15 @@
     "extraResources": [
       {
         "from": "resources/nodejs",
-        "to": "nodejs",
+        "to": "resources/nodejs",
         "filter": ["**/*"]
       },
       {
         "from": "backend",
         "to": "backend",
         "filter": [
-          "**/*"
+          "**/*",
+          "node_modules/**/*"
         ]
       },
       {
