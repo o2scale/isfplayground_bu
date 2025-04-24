@@ -51,6 +51,10 @@
         "dmg"
       ],
       "category": "public.app-category.utilities"
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://isf-deployments.s3.ap-south-1.amazonaws.com/updater/"
     }
   },
   "scripts": {
@@ -69,6 +73,7 @@
   "dependencies": {
     "canvas": "^3.1.0",
     "dotenv": "^16.4.7",
+    "electron-log": "^5.3.4",
     "electron-updater": "^6.6.2",
     "macaddress": "^0.5.3",
     "mongoose": "^8.12.1"

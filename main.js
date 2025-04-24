@@ -1,11 +1,14 @@
-const { app, BrowserWindow, ipcMain, net } = require("electron");
+const { app, BrowserWindow, ipcMain, net, dialog } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
 const macaddress = require("macaddress");
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
+const log = require("electron-log");
 
-
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'debug';
+log.info('App starting...');
 
 let mainWindow;
 let mongoProcess;
@@ -328,8 +331,8 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
-  // mainWindow.loadURL("http://localhost:3000");
+  // mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
+  mainWindow.loadURL("https://google.com");
 }
 
 // MAC address API
@@ -360,7 +363,10 @@ app.whenReady().then(async () => {
     await restoreMongoIfEmpty();
     await startBackendServer();
     setInterval(checkOnlineStatus, 5000);
-    createWindow();
+    await createWindow();
+
+    console.log('--------invoking ready function ------- update check',)
+    autoUpdater.checkForUpdatesAndNotify(); // Will check for updates when online
   } catch (err) {
     console.error("App initialization failed:", err);
     app.quit();
@@ -382,7 +388,30 @@ app.on("before-quit", () => {
 
 
 
-app.on("ready", () => {
-  // your usual app launching logic
-  autoUpdater.checkForUpdatesAndNotify(); // Will check for updates when online
+// app.on("ready", () => {
+//   // your usual app launching logic
+
+// });
+let updateDownloaded = false;
+
+autoUpdater.on('update-downloaded', () => {
+  updateDownloaded = true;
+
+  const result = dialog.showMessageBoxSync({
+    type: 'question',
+    buttons: ['Restart', 'Later'],
+    defaultId: 0,
+    message: 'A new update has been downloaded. Restart now to apply the update?',
+  });
+
+  if (result === 0) {
+    autoUpdater.quitAndInstall();
+  }
+});
+
+// If user chooses "Later" and just closes the app manually
+app.on('before-quit', () => {
+  if (updateDownloaded) {
+    autoUpdater.quitAndInstall(); // Apply update silently on quit
+  }
 });
