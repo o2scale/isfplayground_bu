@@ -3,6 +3,9 @@ const path = require("path");
 const { spawn } = require("child_process");
 const macaddress = require("macaddress");
 const fs = require("fs");
+const { autoUpdater } = require("electron-updater");
+
+
 
 let mainWindow;
 let mongoProcess;
@@ -11,19 +14,19 @@ let wasOffline = false;
 let onlineStatus = true;
 
 function checkOnlineStatus() {
-    // console.log('this is working..., ------------------------>')
-    const request = net.request(
-        "https://playground.initiativesewafoundation.com/server/health"
-    );
-    
+  // console.log('this is working..., ------------------------>')
+  const request = net.request(
+    "https://playground.initiativesewafoundation.com/server/health"
+  );
+
   request.on("response", (response) => {
     const isOnline = response.statusCode === 200;
     // console.log(isOnline, ">>>>>>>>>>>>>>>>", response);
     onlineStatus = isOnline;
-    
+
     if (isOnline && wasOffline) {
       console.log("📶 Back online — syncing offline requests...");
-      syncOfflineRequests(); 
+      syncOfflineRequests();
     }
 
     wasOffline = !isOnline ? true : false;
@@ -374,4 +377,12 @@ app.on("window-all-closed", () => {
 app.on("before-quit", () => {
   if (mongoProcess) mongoProcess.kill();
   if (backendProcess) backendProcess.kill();
+});
+
+
+
+
+app.on("ready", () => {
+  // your usual app launching logic
+  autoUpdater.checkForUpdatesAndNotify(); // Will check for updates when online
 });
