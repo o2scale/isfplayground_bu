@@ -1,6 +1,6 @@
 const { errorLogger } = require("../config/pino-config");
 const { UserTypes } = require("../constants/users");
-const { createBalagruha, getAllBalagruha, getBalagruhaById, updateBalagruha, deleteBalagruha, getAllBalagruhaDetails } = require("../data-access/balagruha");
+const { createBalagruha, getAllBalagruha, getBalagruhaById, updateBalagruha, deleteBalagruha, getAllBalagruhaDetails, getBalagruhaByGeneratedId } = require("../data-access/balagruha");
 const { updateMachinesByIds } = require("../data-access/machines");
 const { getBalagruhaDetailsByUserId } = require("../data-access/User");
 
@@ -10,6 +10,7 @@ class Balagruha {
         this.name = obj.name || "";
         this.location = obj.location || "";
         this.assignedMachines = obj.assignedMachines || [];
+        this.generatedId = obj.generatedId || null;
     }
 
     toJSON() {
@@ -18,6 +19,7 @@ class Balagruha {
             name: this.name,
             location: this.location,
             assignedMachines: this.assignedMachines,
+            generatedId: this.generatedId
         }
     }
 
@@ -200,6 +202,29 @@ class Balagruha {
             }
         } catch (error) {
             errorLogger.error({ error: error.message }, 'Error in getBalagruhaListByUserId service');
+            throw error;
+        }
+    }
+    static async getBalagruhaByGeneratedId(generatedId) {
+        try {
+            const result = await getBalagruhaByGeneratedId(generatedId);
+            if (result.success) {
+                return {
+                    success: true,
+                    data: {
+                        balagruha: result.data
+                    },
+                    message: "Balagruha fetched successfully"
+                }
+            } else {
+                return {
+                    success: false,
+                    data: {},
+                    message: "Balagruha not found"
+                }
+            }
+        } catch (error) {
+            errorLogger.error({ error: error.message }, 'Error in getByGeneratedId balagruha service');
             throw error;
         }
     }
