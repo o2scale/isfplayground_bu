@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, net, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, net, dialog, Menu } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
 const macaddress = require("macaddress");
@@ -369,8 +369,8 @@ function createWindow() {
     },
   });
 
-  // mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
-  mainWindow.loadURL("https://www.google.com");
+  mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
+  // mainWindow.loadURL("https://www.bing.com");
 }
 
 // MAC address API
@@ -392,6 +392,32 @@ ipcMain.handle("get-mac-address", async () => {
   return result || "MAC not found";
 });
 
+// Create the application menu
+const createAppMenu = () => {
+  const template = [
+    {
+      label: "Help",
+      submenu: [
+        {
+          label: "About",
+          click: () => {
+            dialog.showMessageBox({
+              type: "info",
+              title: "About",
+              message: "About This Application",
+              detail: `Version: ${app.getVersion()}\nElectron: ${process.versions.electron}\nNode.js: ${process.versions.node}`,
+              buttons: ["OK"],
+            });
+          },
+        },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+};
+
 // App lifecycle
 app.whenReady().then(async () => {
   try {
@@ -402,7 +428,7 @@ app.whenReady().then(async () => {
     log.info("✅ Mongo binaries copied.");
 
     log.info("⏳ Step 2: Copying Node binary...");
-    // await copyNodeBinaryIfNeeded();
+    await copyNodeBinaryIfNeeded();
     log.info("✅ Node binary copied.");
 
     log.info("⏳ Step 3: Starting MongoDB...");
@@ -414,7 +440,7 @@ app.whenReady().then(async () => {
     log.info("✅ MongoDB restore step done.");
 
     log.info("⏳ Step 5: Starting backend server...");
-    // await startBackendServer();
+    await startBackendServer();
     log.info("✅ Backend server started.");
 
     log.info("⏳ Step 6: Setting online status check...");
@@ -424,7 +450,11 @@ app.whenReady().then(async () => {
     await createWindow();
     log.info("✅ Main window created.");
 
-    log.info("⏳ Step 8: Checking for updates...");
+    log.info("⏳ Step 8: Creating application menu...");
+    createAppMenu();
+    log.info("✅ Application menu created.");
+
+    log.info("⏳ Step 9: Checking for updates...");
     autoUpdater.checkForUpdatesAndNotify();
 
   } catch (err) {

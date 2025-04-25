@@ -1,6 +1,6 @@
 {
   "name": "playground-isf",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "main.js",
   "build": {
@@ -46,6 +46,12 @@
     "win": {
       "target": "nsis"
     },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true
+    },
     "mac": {
       "target": [
         {
@@ -66,7 +72,7 @@
   "scripts": {
     "start": "electron .",
     "build-react": "cd frontend && npm run build && cp -r build ../build",
-    "package": "electron-builder --mac dmg"
+    "package": "electron-builder"
   },
   "keywords": [],
   "author": "Vishnu",
