@@ -1,6 +1,6 @@
 {
   "name": "playground-isf",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "main.js",
   "build": {
@@ -48,7 +48,13 @@
     },
     "mac": {
       "target": [
-        "dmg"
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.utilities"
     },
@@ -60,7 +66,7 @@
   "scripts": {
     "start": "electron .",
     "build-react": "cd frontend && npm run build && cp -r build ../build",
-    "package": "electron-builder"
+    "package": "electron-builder --mac dmg"
   },
   "keywords": [],
   "author": "Vishnu",
