@@ -412,6 +412,20 @@ const createAppMenu = () => {
         },
       ],
     },
+    {
+      label: "Developer",
+      submenu: [
+        {
+          label: "Inspect Element",
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              focusedWindow.webContents.openDevTools();
+            }
+          },
+        },
+      ],
+    },
   ];
 
   const menu = Menu.buildFromTemplate(template);
