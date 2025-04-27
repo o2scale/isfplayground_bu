@@ -31,3 +31,19 @@ exports.updateNextActionDate = async (studentId, nextActionDate) => {
         throw error;
     })
 }
+
+// delete medical records by student id
+exports.deleteMedicalRecords = async (studentId) => {
+    return await Medical.findOneAndDelete(
+        { studentId: studentId }
+    ).then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "Successfully deleted the medical records"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}

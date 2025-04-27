@@ -230,7 +230,10 @@ exports.createTaskV1 = async (req, res) => {
 		req.body.createdBy = req.user._id;
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to create a new task`);
 		const reqCpy = JSON.parse(JSON.stringify(req.body))
-		let fileCpy = JSON.parse(JSON.stringify(req.files))
+		let fileCpy = ""
+		if (req.files) {
+			fileCpy = JSON.parse(JSON.stringify(req.files))
+		}
 
 		const attachments = req.files ? req.files.map((file) => file.path) : [];
 
