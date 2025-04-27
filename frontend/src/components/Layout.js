@@ -19,26 +19,17 @@ const Layout = () => {
     const [showNotifications, setShowNotifications] = useState(false);
 
     const topMenus = [
-        {
-            id: 1, name: "Dashboard", link: "/dashboard", roles: ['admin', 'coach', 'balagruha-incharge', 'student', 'purchase-manager',
-                'medical-incharge', 'sports-coach', 'music-coach', 'amma']
-        },
-        { id: 2, name: "Users", link: "/users", roles: ["admin"] },
-        { id: 3, name: "Machines", link: "/machines", roles: ["admin"] },
-        { id: 4, name: "Tasks", link: "/task", roles: ["admin", "coach"] },
-        { id: 5, name: "Attendance", link: "/attendance", roles: ["admin", "coach"] },
-        { id: 6, name: "Balagruhas", link: "/balagruha", roles: ["admin"] },
-        { id: 7, name: "Access", link: "/rbac", roles: ["admin"] },
+        // { id: 1, name: "Dashboard", link: "  ", module: "Dashboard", action: "Read" },
+        { id: 2, name: "Users", link: "/users", module: "User Management", action: "Read" },
+        { id: 3, name: "Machines", link: "/machines", module: "Machine Management", action: "Read" },
+        { id: 4, name: "Tasks", link: "/task", module: "Task Management", action: "Read" },
+        { id: 5, name: "Attendance", link: "/attendance", module: "Attendance Management", action: "Read" },
+        { id: 6, name: "Balagruhas", link: "/balagruha", module: "Balagruha Management", action: "Read" },
+        { id: 7, name: "Access", link: "/rbac", module: "Role Management", action: "Read" },
     ];
 
-    const sportCoachMenu = [
-        { id: 1, name: "Dashboard", activeTab: "dashboard" },
-        { id: 2, name: "Students", activeTab: "students" },
-        { id: 3, name: "Training", activeTab: "training" },
-        { id: 4, name: "Sports Tasks", activeTab: "tasks" },
-        { id: 5, name: "Performance", activeTab: "performance" },
-        { id: 6, name: "Reports", activeTab: "reports" },
-    ];
+    const { hasPermission } = useRBAC();
+
 
     const notificationsList = [
         { id: 1, title: "New Lesson Available", message: "Check out the new English lesson!", time: "1 hour ago" },
@@ -48,7 +39,6 @@ const Layout = () => {
         { id: 5, title: "ISF Shop Update", message: "New items available in the ISF shop", time: "2 days ago" },
     ];
 
-    console.log(sportCoachMenu);
 
     const handleNotificationClick = () => {
         setShowNotifications(!showNotifications);
@@ -75,21 +65,29 @@ const Layout = () => {
     };
 
 
+    useEffect(() => {
+        // Filter menus based on RBAC permissions
+        const filteredMenus = topMenus.filter(menu =>
+            hasPermission(menu.module, menu.action)
+        );
+        setVisibleMenus(filteredMenus);
+    }, [hasPermission]);
+
     // Check if we're on the dashboard
     const isDashboard = location.pathname === '/dashboard' || location.pathname === '/';
 
-    useEffect(() => {
-        // Example: Get role from localStorage or API
-        const userRole = localStorage.getItem('role') || 'guest';
-        setRole(userRole);
+    // useEffect(() => {
+    //     // Example: Get role from localStorage or API
+    //     const userRole = localStorage.getItem('role') || 'guest';
+    //     setRole(userRole);
 
-        // Filter menus based on user role
-        const filteredMenus = topMenus.filter(menu =>
-            menu.roles.includes(userRole)
-        );
+    //     // Filter menus based on user role
+    //     const filteredMenus = topMenus.filter(menu =>
+    //         menu.roles.includes(userRole)
+    //     );
 
-        setVisibleMenus(filteredMenus);
-    }, []);
+    //     setVisibleMenus(filteredMenus);
+    // }, []);
 
     // Removed duplicate declaration of sportCoachMenu
 
@@ -136,6 +134,10 @@ const Layout = () => {
 
                     {/* Top Menu */}
                     <div className="top-menu scrollable-menu">
+                        <div key="1" className="menu-item" onClick={() => navigate("/dashboard")}>
+                            Dashboard
+
+                        </div>
                         {visibleMenus.map(menu => (
                             <div key={menu.id} className="menu-item" onClick={() => navigate(menu?.link)}>
                                 {menu.name}

@@ -649,7 +649,7 @@ const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
     const handleCloseModal = () => {
         if (faceCaptureRef.current) {
             faceCaptureRef.current.stopCamera(); // Ensures camera is stopped
-          }
+        }
         setIsOpen(false);
     }
 
@@ -662,14 +662,14 @@ const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
                 onClose={handleCloseModal}
                 children={
                     <FaceCapture
-                      ref={faceCaptureRef}
-                      onCapture={(file, previewUrl) => {
-                        setFiles(prev => ({ ...prev, facialData: file }));
-                        setPreviews(prev => ({ ...prev, facialData: previewUrl }));
-                        handleCloseModal();
-                      }}
+                        ref={faceCaptureRef}
+                        onCapture={(file, previewUrl) => {
+                            setFiles(prev => ({ ...prev, facialData: file }));
+                            setPreviews(prev => ({ ...prev, facialData: previewUrl }));
+                            handleCloseModal();
+                        }}
                     />
-                  }
+                }
             />
             <div className="form-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -760,6 +760,8 @@ const UserForm = ({ mode = 'add', user = null, onSuccess, onCancel }) => {
                             value={formData.role}
                             onChange={handleInputChange}
                             className={errors.role ? 'error' : ''}
+                            selected={localStorage?.getItem('role') === "coach" ? "student" : ""}
+                            disabled={localStorage?.getItem('role') === "coach" ? true : false}
                         >
                             <option value="student">Student</option>
                             <option value="admin">Admin</option>

@@ -253,7 +253,7 @@ export const pinLogin = async (data) => {
 
 export const getAllRolePemissions = async () => {
   const apiWithoutContentType = await getApiWithoutContentTypeInstance();
-  const response = await apiWithoutContentType.get('/api//roles/getAllRolePermissions');
+  const response = await apiWithoutContentType.get('/api/roles/getAllRolePermissions');
   return response;
 }
 

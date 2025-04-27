@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import './taskmanagement.css';
 import { addComment, addOrUpdateMusicTaskAttachments, addOrUpdateMusicTaskComments, addOrUpdateSportsTaskAttachments, addOrUpdateSportsTaskComments, coachBasedUsers, createMusicTask, createSportsTask, createTask, deleteAttachemnets, deleteCommentinTask, fetchUsers, getBalagruha, getBalagruhaById, getSportsTaskListByBalagruha, getTaskBytaskId, getTasks, updateMusicTask, updateSportsTask, updateTask, updateTaskAttachments } from '../../api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { usePermission } from '../hooks/usePermission';
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
@@ -2923,6 +2924,11 @@ const TaskManagement = () => {
     const [coachUsers, setCoachUsers] = useState([]);
     const role = localStorage.getItem('role')
 
+    const { canCreate, canUpdate, canRead, canDelete } = usePermission();
+
+    const canCreateTask = canCreate('Task Management');
+    const canUpdateTask = canUpdate('Task Management');
+
     // Fetch balagruha list
     const getBalagruhaList = async () => {
         try {
@@ -2991,6 +2997,7 @@ const TaskManagement = () => {
             formData.append('deadline', taskData.deadline);
             formData.append('priority', taskData.priority);
             formData.append('status', taskData.status);
+            formData.append('type', taskData.type)
             if (localStorage.getItem('role') === "sports-coach" || localStorage.getItem('role') === "music-coach") {
                 formData.append('drillOrExerciseType', taskData.drillOrExerciseType)
             }
@@ -2999,7 +3006,6 @@ const TaskManagement = () => {
                 formData.append('machineDetails', taskData.machineDetails)
                 formData.append('vendorDetails', taskData.vendorDetails)
                 formData.append('costEstimate', taskData.costEstimate)
-                formData.append('type', taskData.type)
             }
 
             if (taskData.type === "order") {
@@ -3279,12 +3285,16 @@ const TaskManagement = () => {
                                     {pendingTasks.length === 0 && (
                                         <div className="empty-column-message">
                                             <p>No tasks waiting to start</p>
-                                            <button
-                                                className="add-here-button"
-                                                onClick={() => setShowCreateTask(true)}
-                                            >
-                                                Add Task Here
-                                            </button>
+                                            {
+                                                canCreateTask && (
+                                                    <button
+                                                        className="add-here-button"
+                                                        onClick={() => setShowCreateTask(true)}
+                                                    >
+                                                        Add Task Here
+                                                    </button>
+                                                )
+                                            }
                                         </div>
                                     )}
                                 </div>
