@@ -822,6 +822,8 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
               value={formData.role}
               onChange={handleInputChange}
               className={errors.role ? "error" : ""}
+              selected={localStorage?.getItem('role') === "coach" ? "student" : ""}
+              disabled={localStorage?.getItem('role') === "coach" ? true : false}
             >
               <option value="student">Student</option>
               <option value="admin">Admin</option>
@@ -960,7 +962,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
                 name="userId"
                 value={formData.userId}
                 onChange={handleInputChange}
-                placeholder="Enter email address"
+                placeholder="Enter User ID"
               />
             </div>
 

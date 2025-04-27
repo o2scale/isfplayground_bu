@@ -275,23 +275,23 @@ const BalagruhaManagement = () => {
                         <span className="search-icon">🔍</span>
                     </div>
 
-                    {/* {canCreateBalagruha && ( */}
-                    <button
-                        className="add-button"
-                        onClick={() => {
-                            setModalMode('create');
-                            setFormData({
-                                name: '',
-                                location: '',
-                                assignedMachines: []
-                            });
-                            setFormErrors({});
-                            setShowModal(true);
-                        }}
-                    >
-                        ➕ Add Balagruha
-                    </button>
-                    {/* )} */}
+                    {canCreateBalagruha && (
+                        <button
+                            className="add-button"
+                            onClick={() => {
+                                setModalMode('create');
+                                setFormData({
+                                    name: '',
+                                    location: '',
+                                    assignedMachines: []
+                                });
+                                setFormErrors({});
+                                setShowModal(true);
+                            }}
+                        >
+                            ➕ Add Balagruha
+                        </button>
+                    )}
                 </div>
             </div>
 

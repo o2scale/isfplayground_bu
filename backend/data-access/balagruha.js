@@ -130,3 +130,25 @@ exports.getAllBalagruhaIds = async () => {
         throw error;
     })
 }
+
+// get balagruha by generated id
+exports.getBalagruhaByGeneratedId = async (generatedId) => {
+    try {
+        const result = await Balagruha.findOne({ generatedId }).populate('assignedMachines');
+        if (!result) {
+            return {
+                success: false,
+                data: null,
+                message: "Balagruha not found"
+            };
+        }
+        return {
+            success: true,
+            data: result,
+            message: "Balagruha fetched successfully"
+        };
+    } catch (error) {
+        errorLogger.error({ error: error.message }, 'Error in getBalagruhaByGeneratedId');
+        throw error;
+    }
+}
