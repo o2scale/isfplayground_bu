@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { studentPinLogin } from '../../api';
 import showToast from '../../utils/toast';
+import './UserIdLogin.css'
+import { Link } from 'react-router-dom';
 
 export default function UserIdLogin({ onToggle }) {
     const macAddress = localStorage.getItem('macAddress');
@@ -119,11 +121,11 @@ export default function UserIdLogin({ onToggle }) {
                 Login with Face ID
             </a>
 
-            <br />
-
-            {/* <a href="#" onClick={handleToggle} className="toggle-link admin-btn">
+            <Link to={'/admin/login'}>
+            <p className="toggle-link admin-btn">
                 Admin Login
-            </a> */}
+            </p>
+            </Link>
         </div>
     )
 }

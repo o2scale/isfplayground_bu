@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import showToast from '../../utils/toast';
 import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
 import { pinLogin } from '../../api';
+import { Link } from 'react-router-dom';
 
 const PinLogin = ({ onToggle }) => {
     const macAddress = localStorage.getItem('macAddress');
@@ -144,6 +145,12 @@ const PinLogin = ({ onToggle }) => {
             <a href="#" onClick={handleToggle} className="toggle-link">
                 Login with Face ID
             </a>
+
+            <Link to={'/login'}>
+            <p className="toggle-link admin-btn">
+                Student Login
+            </p>
+            </Link>
         </div>
     );
 };
