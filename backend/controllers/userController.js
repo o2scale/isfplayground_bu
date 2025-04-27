@@ -8,6 +8,7 @@ const { updateNextActionDate } = require('../data-access/medicalRecords');
 const { isRequestFromLocalhost, generateRandomString } = require('../utils/helper');
 const { createOfflineRequest } = require('../services/offlineRequestQueue');
 const { getUserIdFromGeneratedId } = require('../services/user');
+const { updateStudentMedicalRecords } = require('../services/medicalRecords');
 
 exports.getAllUsers = async (_, res) => {
     try {
@@ -454,6 +455,7 @@ exports.assignBalagruhaToUser = async (req, res) => {
 // API for update user details by userId
 exports.updateUserDetails = async (req, res) => {
     try {
+        const createdBy = req.user._id;
         const userId = req.params.userId;
         if (!userId || userId === ':userId') {
             return res.status(400).json({
@@ -481,7 +483,7 @@ exports.updateUserDetails = async (req, res) => {
         }
 
         if (req.body.nextActionDate && req.body.nextActionDate !== "") {
-            updateNextActionDate(userId, req.body.nextActionDate)
+            await updateNextActionDate(userId, req.body.nextActionDate)
         }
 
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: req.body },
@@ -490,6 +492,16 @@ exports.updateUserDetails = async (req, res) => {
         const result = await updateUserDetailsById(userId, req.body);
 
         if (result.success) {
+
+            // update the medical records if exists
+            // delete all medical
+            // check the user type is student or not
+            if (result.data.user.role === UserTypes.STUDENT) {
+                const medicalHistory = extractMedicalHistory(req);
+                req.body.medicalHistory = medicalHistory
+
+                updateStudentMedicalRecords({ studentId: result.data.user._id, medicalData: req.body.medicalHistory, nextActionDate: req.body.nextActionDate, createdBy: createdBy, isOfflineReq: isOfflineReq })
+            }
             if (req.body.nextActionDate) {
                 result.data.user.nextActionDate = req.body.nextActionDate
             }

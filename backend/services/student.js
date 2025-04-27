@@ -297,7 +297,7 @@ class Student {
                                 studentInfo.data.medicalRecords = [medicalRecordsId]
                             }
 
-                            // update the student info{ userId, payload }
+                            // update the student info { userId, payload }
                             let result = await updateUserById({ userId: studentInfo.data._id, payload: studentInfo.data })
                             studentInfo = await getUserDetailsById({ userId: studentId })
                             if (result.success) {
@@ -598,11 +598,11 @@ class Student {
                                 // }
                             }
                         } else {
-                            return res.status(400).json({
-                                success: false,
-                                data: {},
-                                message: "This machine is not assigned for this student. Contact Admin"
-                            })
+                            // return {
+                            //     success: false,
+                            //     data: {},
+                            //     message: "This machine is not assigned for this student. Contact Admin"
+                            // }
                         }
 
                         // generate token
