@@ -767,7 +767,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email *</label>
+            <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
@@ -780,7 +780,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
 
           {localStorage.getItem("role") === "admin" && (
             <div className="form-group">
-              <label htmlFor="password">Password *</label>
+              <label htmlFor="password">Password</label>
               <div className="password-input-group">
                 <input
                   type="text"
