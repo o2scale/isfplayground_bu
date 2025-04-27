@@ -199,7 +199,7 @@ const router = express.Router();
  *         description: Unauthorized - Authentication required
  */
 
-router.get('/', authenticate, authorize('User Management', 'Read'), getAllUsers);
+router.get('/', authenticate, getAllUsers);
 router.get('/:_id', authenticate, authorize('User Management', 'Read'), getUserById);
 router.post('/', authenticate, authorize('User Management', 'Create'), createUser);
 router.put('/:id', authenticate, authorize('User Management', 'Update'), updateUser);
