@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './RBACManagement.css';
 import { fetchRolesandPermissions, updateRolePermissions } from '../../api';
+import { usePermission } from '../hooks/usePermission';
 
 // Main RBAC Management Component
 const RBACManagement = () => {
@@ -14,6 +15,8 @@ const RBACManagement = () => {
     const [formattedPermissions, setFormattedPermissions] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const { canUpdate } = usePermission();
+    const canEdit = canUpdate('Role Management');
     useEffect(() => {
         fetchRolesAndPermissions();
     }, []);
@@ -536,22 +539,26 @@ const RBACManagement = () => {
                                         </div>
                                     </div>
 
-                                    <div className="action-buttons">
-                                        {isEditing ? (
-                                            <>
-                                                <button className="cancel-button" onClick={cancelEditing}>
-                                                    Cancel
-                                                </button>
-                                                <button className="save-button" onClick={() => savePermissions(selectedRole.id)}>
-                                                    Save Changes
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button className="edit-button" onClick={() => setIsEditing(true)}>
-                                                Edit Permissions
-                                            </button>
-                                        )}
-                                    </div>
+                                    {
+                                        canEdit && (
+                                            <div className="action-buttons">
+                                                {isEditing ? (
+                                                    <>
+                                                        <button className="cancel-button" onClick={cancelEditing}>
+                                                            Cancel
+                                                        </button>
+                                                        <button className="save-button" onClick={() => savePermissions(selectedRole.id)}>
+                                                            Save Changes
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button className="edit-button" onClick={() => setIsEditing(true)}>
+                                                        Edit Permissions
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )
+                                    }
                                 </div>
 
                                 {showSaveConfirmation && (

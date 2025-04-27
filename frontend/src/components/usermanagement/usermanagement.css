@@ -483,6 +483,7 @@ select {
 .user-table td {
   padding: 16px;
   border-bottom: 1px solid var(--gray-light);
+  word-wrap: break-word;
 }
 
 .user-table tr:last-child td {

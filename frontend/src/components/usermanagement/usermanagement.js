@@ -582,9 +582,7 @@ const UserManagement = () => {
                 errors.balagruhaId = 'Please select a Balagruha';
             }
 
-            // File validations
             if (view === 'add') {
-                // Only validate files for new users, not when editing
                 if (!medicalHistoryFile && !medicalHistoryPreview) {
                     errors.medicalHistory = 'Medical history document is required';
                 }
