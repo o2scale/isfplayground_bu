@@ -17,11 +17,19 @@ exports.createUser = async (payload) => {
 
         // Check if this is a duplicate key error (usually for email)
         if (error.code === 11000) {
-            return {
-                success: false,
-                data: null,
-                message: "Email already exists. Please use a different email address."
-            };
+            if (error.keyPattern.userId) {
+                return {
+                    success: false,
+                    data: null,
+                    message: "UserId already exists. Please use a different UserId address."
+                };
+            } else if (error.keyPattern.email) {
+                return {
+                    success: false,
+                    data: null,
+                    message: "Email already exists. Please use a different email address."
+                };
+            }
         }
 
         throw error;

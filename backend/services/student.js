@@ -20,7 +20,7 @@ class Student {
     constructor(obj) {
 
         this.name = obj.name || "";
-        this.email = obj.email || "";
+        this.email = obj.email || null;
         this.password = obj.password || "";
         this.role = obj.role || "";
         this.status = obj.status || "";
@@ -44,6 +44,7 @@ class Student {
         this.assignedMachines = obj.assignedMachines || null
         this.facialData = obj.facialData || null
         this.generatedId = obj.generatedId || null
+        this.userId = parseInt(obj.userId) || null
     }
 
     toJSON() {
@@ -72,7 +73,9 @@ class Student {
             medicalRecords: this.medicalRecords,
             assignedMachines: this.assignedMachines,
             facialData: this.facialData || null,
-            generatedId: this.generatedId || null
+            generatedId: this.generatedId || null,
+            userId: this.userId || null
+
         }
     }
 
@@ -97,6 +100,7 @@ class Student {
             medicalRecords: this.medicalRecords,
             assignedMachines: this.assignedMachines,
             generatedId: this.generatedId || null,
+            userId: this.userId ? parseInt(this.userId) : null || null,
         }
     }
 
