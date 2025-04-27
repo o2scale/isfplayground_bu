@@ -17,6 +17,13 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
         },
+        userId: {
+            type: Number,
+            unique: true,
+            sparse: true, // This allows multiple null values by indexing only non-null values
+            required: false, // Makes the field optional
+            trim: true,
+        },
         password: {
             type: String,
             required: false, // Changed from true to false to make it optional
@@ -135,6 +142,32 @@ userSchema.statics.getUserIdFromGeneratedId = async function (generatedId) {
         return { success: true, data: user };
     } catch (error) {
         return { success: false, message: error.message };
+    }
+};
+
+// Function to re-index the user collection
+userSchema.statics.reindexCollection = async function () {
+    try {
+        // Drop all indexes first to ensure clean rebuild
+        await this.collection.dropIndexes();
+
+        // Rebuild the indexes based on schema definition
+        await this.collection.createIndex({ email: 1 }, { unique: true, sparse: true });
+        await this.collection.createIndex({ userId: 1 }, { unique: true, sparse: true });
+        await this.collection.createIndex({ role: 1 });
+        await this.collection.createIndex({ status: 1 });
+        await this.collection.createIndex({ generatedId: 1 });
+
+        return {
+            success: true,
+            message: 'User collection has been successfully re-indexed'
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: 'Failed to re-index user collection',
+            error: error.message
+        };
     }
 };
 

@@ -251,9 +251,15 @@ export const pinLogin = async (data) => {
   return response;
 }
 
+export const studentPinLogin = async(data) => {
+  const api = await getApiInstance();
+  const response = await api.post('/api/auth/student/login', data);
+  return response;
+}
+
 export const getAllRolePemissions = async () => {
   const apiWithoutContentType = await getApiWithoutContentTypeInstance();
-  const response = await apiWithoutContentType.get('/api//roles/getAllRolePermissions');
+  const response = await apiWithoutContentType.get('/api/roles/getAllRolePermissions');
   return response;
 }
 

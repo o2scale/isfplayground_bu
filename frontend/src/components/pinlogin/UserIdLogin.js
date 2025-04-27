@@ -1,52 +1,41 @@
-import React, { useState } from 'react';
-import './PinLogin.css';
-import axios from 'axios';
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { studentPinLogin } from '../../api';
 import showToast from '../../utils/toast';
-import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
-import { pinLogin } from '../../api';
+import './UserIdLogin.css'
 import { Link } from 'react-router-dom';
 
-const PinLogin = ({ onToggle }) => {
+export default function UserIdLogin({ onToggle }) {
     const macAddress = localStorage.getItem('macAddress');
-    const [username, setUsername] = useState('');
-    const [pin, setPin] = useState('');
+    const [userId, setUserId] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { login: authLogin } = useAuth(); // Use the login function from auth context
-    const headers = {
-        'Content-Type': 'application/json',
-        'MAC-Address': `${macAddress}`,
-        'mode': 'no-cors'
-    }
+    const { login: authLogin } = useAuth();
 
-    // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
         login();
-    };
+    }
 
-    // Handle toggle for switching login methods
     const handleToggle = (e) => {
         e.preventDefault();
         onToggle();
     };
 
-    // Login function
     const login = async () => {
         setIsLoading(true);
         setError('');
 
         const data = {
-            email: username,
-            password: pin,
+            userId: userId
         };
 
         try {
             // const response = await axios.post("https://playground.initiativesewafoundation.com/server/api/auth/login", data, { headers });
 
-            const response = await pinLogin(data);
+            const response = await studentPinLogin(data);
 
             if (response.data && response.data.data) {
                 const { token, user } = response.data.data;
@@ -100,37 +89,23 @@ const PinLogin = ({ onToggle }) => {
     };
 
     return (
-        <div className="pin-login-container">
+        <div className='userId-login-container'>
             <form onSubmit={handleSubmit}>
-                {/* Display error message */}
                 {error && <div className="error-message">{error}</div>}
 
-                {/* Username input */}
                 <div className="input-group">
                     <input
                         type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Email"
+                        value={userId}
+                        onChange={(e) => setUserId(e.target.value)}
+                        placeholder="userId"
                         disabled={isLoading}
 
                     />
                 </div>
 
-                {/* Password input */}
-                <div className="input-group">
-                    <input
-                        type="password"
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value)}
-                        placeholder="Password"
-                        disabled={isLoading}
-
-                    />
-                </div>
-
-                {/* Submit button */}
-                <div className="input-group">
+                 {/* Submit button */}
+                 <div className="input-group">
                     <button
                         type="submit"
                         className={`login-button ${isLoading ? 'loading' : ''}`}
@@ -146,13 +121,11 @@ const PinLogin = ({ onToggle }) => {
                 Login with Face ID
             </a>
 
-            <Link to={'/login'}>
+            <Link to={'/admin/login'}>
             <p className="toggle-link admin-btn">
-                Student Login
+                Admin Login
             </p>
             </Link>
         </div>
-    );
-};
-
-export default PinLogin;
+    )
+}

@@ -28,7 +28,11 @@ const checkOnlineStatus = async () => {
   
       const macAddress = localStorage.getItem('macAddress');
       if (macAddress) config.headers['MAC-Address'] = macAddress;
-      config.headers['Content-Type'] = 'application/json';
+      // config.headers['Content-Type'] = 'application/json';
+
+      if (!config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+      }
   
       const token = localStorage.getItem('token');
       if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -70,7 +74,7 @@ const checkOnlineStatus = async () => {
   
       const macAddress = localStorage.getItem('macAddress');
       if (macAddress) config.headers['MAC-Address'] = macAddress;
-      // config.headers['Content-Type'] = 'application/json';
+      config.headers['Content-Type'] = 'multipart/form-data';
   
       const token = localStorage.getItem('token');
       if (token) config.headers.Authorization = `Bearer ${token}`;

@@ -5,7 +5,7 @@ const router = express.Router();
 
 // API for balagruha CRUD operations
 router.post('/', authenticate, authorize('User Management', 'Create'), createBalagruha);
-router.get('/', authenticate, authorize('User Management', 'Read'), getAllBalagruha);
+router.get('/', authenticate, getAllBalagruha);
 router.get('/:id', authenticate, authorize('User Management', 'Read'), getBalagruhaById);
 router.put('/:id', authenticate, authorize('User Management', 'Update'), updateBalagruha);
 router.delete('/:id', authenticate, authorize('User Management', 'Delete'), deleteBalagruha);
