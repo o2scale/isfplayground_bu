@@ -2,7 +2,7 @@ import { toast } from 'react-hot-toast';
 
 const showToast = (message, type = 'success') => {
     toast(message, {
-        duration: 4000,
+        duration: 2000,
         position: 'top-center',
         icon: type === 'success' ? '✅' : '❌',
         style: {

@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import TaskManagement from './components/TaskManagement/taskmanagement';
 import AccessDenied from './components/AccessDenied';
@@ -18,6 +18,8 @@ import PermissionDebugger from './PermissionDebugger';
 import BalagruhaDashboard from './components/dashboard/balagruha';
 import AttendanceComponent from './components/Attendance/attendance';
 import BalagruhaManagement from './components/balagruhaManagement/balagruhamanagement';
+import CourseManagement from './components/courseManagement/CourseManagement';
+import StudentLogin from './components/login/StudentLogin';
 
 const App = () => {
   return (
@@ -29,7 +31,8 @@ const App = () => {
             <Toaster position="top-right" />
             <Routes>
               {/* Public route for login */}
-              <Route path="/login" element={<LoginCard />} />
+              <Route path="/login" element={<StudentLogin />} />
+              <Route path="/admin/login" element={<LoginCard />} />
 
               {/* Routes inside the layout */}
               <Route element={<Layout />}>
@@ -91,11 +94,20 @@ const App = () => {
                     // </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/attendance"
+                 <Route
+                  path="/balagruha"
                   element={
                     // <ProtectedRoute module="Machine Management" action="Read">
-                    <AttendanceComponent />
+                    // <BalagruhaDashboard />
+                    <BalagruhaManagement />
+                    // </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/course"
+                  element={
+                    // <ProtectedRoute module="Machine Management" action="Read">
+                    <CourseManagement />
                     // </ProtectedRoute>
                   }
                 />

@@ -1,9 +1,7 @@
-import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { pinLogin } from '../../api';
 import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
-import showToast from '../../utils/toast';
-import './PinLogin.css';
 
 const PinLogin = ({ onToggle }) => {
     const macAddress = localStorage.getItem('macAddress');
@@ -42,7 +40,9 @@ const PinLogin = ({ onToggle }) => {
         };
 
         try {
-            const response = await axios.post("http://localhost:5001/api/auth/login", data, { headers });
+            // const response = await axios.post("https://playground.initiativesewafoundation.com/server/api/auth/login", data, { headers });
+
+            const response = await pinLogin(data);
 
             if (response.data && response.data.data) {
                 const { token, user } = response.data.data;
@@ -141,6 +141,12 @@ const PinLogin = ({ onToggle }) => {
             <a href="#" onClick={handleToggle} className="toggle-link">
                 Login with Face ID
             </a>
+
+            <Link to={'/login'}>
+                <p className="toggle-link admin-btn">
+                    Student Login
+                </p>
+            </Link>
         </div>
     );
 };
