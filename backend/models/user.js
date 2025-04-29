@@ -21,7 +21,8 @@ const userSchema = new mongoose.Schema(
                 validator: async function (value) {
                     // Skip validation if email is null or empty
                     if (!value) return true;
-
+                    // Skip validation if this is an update operation
+                    if (this.isNew === false) return true;
                     // Check if email already exists
                     const count = await mongoose.models.User.countDocuments({
                         email: value,
@@ -30,7 +31,7 @@ const userSchema = new mongoose.Schema(
 
                     return count === 0;
                 },
-                message: 'Email must be unique when provided'
+                message: 'Email must be unique'
             },
             match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
         },
@@ -44,6 +45,8 @@ const userSchema = new mongoose.Schema(
                 validator: async function (value) {
                     // Skip validation if userId is null or undefined
                     if (value === null || value === undefined) return true;
+                    // Skip validation if this is an update operation
+                    if (this.isNew === false) return true;
 
                     // Check if userId already exists
                     const count = await mongoose.models.User.countDocuments({
@@ -53,7 +56,7 @@ const userSchema = new mongoose.Schema(
 
                     return count === 0;
                 },
-                message: 'User ID must be unique when provided'
+                message: 'User ID must be unique'
             }
         },
         password: {

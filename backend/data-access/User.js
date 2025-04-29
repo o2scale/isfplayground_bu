@@ -21,7 +21,7 @@ exports.createUser = async (payload) => {
                 return {
                     success: false,
                     data: null,
-                    message: "UserId already exists. Please use a different UserId address."
+                    message: "UserId already exists. Please use a different UserId"
                 };
             } else if (error.keyPattern.email) {
                 return {
@@ -29,6 +29,20 @@ exports.createUser = async (payload) => {
                     data: null,
                     message: "Email already exists. Please use a different email address."
                 };
+            }
+        }
+
+        if (error?.errors?.userId?.path == 'userId') {
+            return {
+                success: false,
+                data: null,
+                message: "UserId already exists. Please use a different UserId"
+            }
+        } else if (error?.errors?.email?.path == 'email') {
+            return {
+                success: false,
+                data: null,
+                message: "Email already exists. Please use a different email address."
             }
         }
 
@@ -318,7 +332,7 @@ exports.updateUserById = async ({ userId, payload }) => {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: updateData },
-            { new: true, runValidators: true }
+            { new: true, runValidators: false }
         ).lean();
 
         if (!updatedUser) {

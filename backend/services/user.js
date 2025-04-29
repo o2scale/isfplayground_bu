@@ -73,6 +73,15 @@ exports.registerUser = async (payload) => {
     } catch (error) {
         console.log('error', error)
         errorLogger.error({ data: { error: error } }, `Error occurred during user registration: ${error.message}`);
+        if (error?.errors?.email?.path === 'email') {
+            return {
+                success: false,
+                data: {
+                    user: null
+                },
+                message: "Email already exists"
+            }
+        }
         throw error;
 
     }
