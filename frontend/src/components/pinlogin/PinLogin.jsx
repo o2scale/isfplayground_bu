@@ -60,6 +60,7 @@ const PinLogin = ({ onToggle }) => {
                         email: user.email,
                         role: user.role,
                         status: user.status,
+                        balagruhaIds: user?.balagruhaIds
                     },
                 };
 

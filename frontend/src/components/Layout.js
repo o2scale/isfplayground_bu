@@ -26,6 +26,7 @@ const Layout = () => {
         { id: 5, name: "Attendance", link: "/attendance", module: "Attendance Management", action: "Read" },
         { id: 6, name: "Balagruhas", link: "/balagruha", module: "Balagruha Management", action: "Read" },
         { id: 7, name: "Access", link: "/rbac", module: "Role Management", action: "Read" },
+        // { id: 8, name: "Course", link: "/course", module: "Course Management", action: "Read" },
     ];
 
     const { hasPermission } = useRBAC();

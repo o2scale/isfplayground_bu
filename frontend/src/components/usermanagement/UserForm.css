@@ -395,3 +395,11 @@ select:focus {
 .form-checkbox-option input[type="checkbox"] {
     margin-right: 8px;
 }
+
+.redbtndiv {
+    border: 1px solid red;
+}
+
+.redbtn {
+    color: red;
+}

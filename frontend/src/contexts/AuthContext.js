@@ -50,6 +50,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('name', user.name);
         localStorage.setItem('role', user.role);
+        localStorage.setItem('balagruhaIds', user?.balagruhaIds);
         if (user.id) localStorage.setItem('userId', user.id);
 
         // Set up axios default headers
@@ -68,6 +69,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('name');
         localStorage.removeItem('role');
         localStorage.removeItem('userId');
+        localStorage.removeItem('balagruhaIds')
 
         // Clear axios headers
         delete axios.defaults.headers.common['Authorization'];
