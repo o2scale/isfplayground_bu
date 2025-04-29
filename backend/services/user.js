@@ -409,12 +409,31 @@ exports.getUserListByAssignedBalagruhaByRole = async ({ role, userId }) => {
                 if (balagruhaIds.length === 0) {
                     return []
                 } else {
-                    // get the users by balagruhaIds 
-                    let result = await UserDataAccess.getUsersByRoleAndBalagruhaIdList({ role: UserTypes.STUDENT, balagruhaId: balagruhaIds });
-                    if (result.success && result.data) {
-                        return result.data || []
+                    if (role === UserTypes.COACH) {
+                        // get the users by balagruhaIds 
+                        let allRoles = ['admin',
+                            'coach',
+                            'balagruha in-charge',
+                            'student',
+                            'purchase-manager',
+                            'medical-incharge',
+                            'sport-coach',
+                            'music-coach',
+                            'amma']
+                        let result = await UserDataAccess.getUsersByRolesAndBalagruhaIdList({ roles: allRoles, balagruhaId: balagruhaIds });
+                        if (result.success && result.data) {
+                            return result.data || []
+                        } else {
+                            return []
+                        }
                     } else {
-                        return []
+                        // get the users by balagruhaIds 
+                        let result = await UserDataAccess.getUsersByRoleAndBalagruhaIdList({ role: UserTypes.STUDENT, balagruhaId: balagruhaIds });
+                        if (result.success && result.data) {
+                            return result.data || []
+                        } else {
+                            return []
+                        }
                     }
                 }
             } else {

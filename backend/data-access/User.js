@@ -1356,6 +1356,46 @@ exports.getUsersByRoleAndBalagruhaIdList = async ({ role, balagruhaId }) => {
         })
 }
 
+// Function for fetch the details of all users by role and balagruha id
+exports.getUsersByRolesAndBalagruhaIdList = async ({ roles, balagruhaId }) => {
+    let query = {};
+    if (roles && Array.isArray(roles) && roles.length > 0) {
+        query.role = { $in: roles };
+    } else if (roles && roles !== ":role") {
+        query.role = roles;
+    }
+
+    if (balagruhaId && balagruhaId != ":balagruhaId") {
+        query.balagruhaIds = {
+            $in: balagruhaId
+        };
+    }
+
+    // Ensure that query matches both conditions if both are provided
+    if (Object.keys(query).length === 0) {
+        // Return empty if no valid filters are provided
+        return {
+            success: true,
+            data: [],
+            message: "No filters provided"
+        };
+    }
+
+    return await User.find(query)
+        .select('-password -passwordResetToken -loginAttempts -lockUntil -facialData -updatedAt -__v')
+        .lean()
+        .then(result => {
+            return {
+                success: true,
+                data: result,
+                message: "Users fetched successfully"
+            }
+        }).catch(error => {
+            console.log('error', error)
+            throw error;
+        })
+}
+
 // Function for fetch the _id by the generatedId 
 exports.getIdByGeneratedId = async ({ generatedId }) => {
     return await User.findOne({ generatedId }, { _id: 1 }).lean().then(result => {
