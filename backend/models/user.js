@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid'); // You'll need to install this package
 
 const userSchema = new mongoose.Schema(
     {
@@ -10,24 +11,54 @@ const userSchema = new mongoose.Schema(
         },
         email: {
             type: String,
-            unique: true,
-            sparse: true, // This allows multiple null values by indexing only non-null values
-            required: false, // Makes the field optional
+            // Remove unique constraint from schema definition
+            sparse: true,
+            required: false,
+            default: null,
             trim: true,
             lowercase: true,
+            validate: {
+                validator: async function (value) {
+                    // Skip validation if email is null or empty
+                    if (!value) return true;
+
+                    // Check if email already exists
+                    const count = await mongoose.models.User.countDocuments({
+                        email: value,
+                        _id: { $ne: this._id } // Exclude current document for updates
+                    });
+
+                    return count === 0;
+                },
+                message: 'Email must be unique when provided'
+            },
             match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
         },
         userId: {
             type: Number,
-            unique: true,
-            sparse: true, // This allows multiple null values by indexing only non-null values
-            required: false, // Makes the field optional
-            trim: true,
+            // Remove unique constraint from schema definition
+            sparse: true,
+            required: false,
+            default: null,
+            validate: {
+                validator: async function (value) {
+                    // Skip validation if userId is null or undefined
+                    if (value === null || value === undefined) return true;
+
+                    // Check if userId already exists
+                    const count = await mongoose.models.User.countDocuments({
+                        userId: value,
+                        _id: { $ne: this._id } // Exclude current document for updates
+                    });
+
+                    return count === 0;
+                },
+                message: 'User ID must be unique when provided'
+            }
         },
         password: {
             type: String,
-            required: false, // Changed from true to false to make it optional
-            // minlength: [6, 'Password must be at least 6 characters']
+            required: false,
         },
         role: {
             type: String,
@@ -69,13 +100,12 @@ const userSchema = new mongoose.Schema(
         guardianName2: { type: String },
         guardianContact1: { type: String },
         guardianContact2: { type: String },
-        // guardianContact: { type: String },
         performanceReports: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Report' }],
         attendanceRecords: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attendance' }],
         medicalRecords: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MedicalRecord' }],
         assignedMachines: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Machine' }],
         facialData: {
-            faceDescriptor: Array, // Store face descriptor array
+            faceDescriptor: Array,
             createdAt: { type: Date, default: Date.now }
         },
         generatedId: { type: String, default: "" }
@@ -83,13 +113,19 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// Define indexes without unique constraints
+userSchema.index({ email: 1 }, { sparse: true });
+userSchema.index({ userId: 1 }, { sparse: true });
+userSchema.index({ role: 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ generatedId: 1 });
+
 // hashing passwords 
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
 
     try {
         if (this.password && this.password !== "") {
-
             const salt = await bcrypt.genSalt(10);
             this.password = await bcrypt.hash(this.password, salt);
         }
@@ -99,6 +135,7 @@ userSchema.pre('save', async function (next) {
     }
 });
 
+// Rest of your methods remain the same
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
@@ -107,9 +144,7 @@ userSchema.methods.isLocked = function () {
     return !!(this.lockUntil && this.lockUntil > Date.now());
 };
 
-// Method to increment login attempts
 userSchema.methods.incrementLoginAttempts = async function () {
-    // If lock has expired, reset attempts and remove lock
     if (this.lockUntil && this.lockUntil < Date.now()) {
         await this.updateOne({
             loginAttempts: 1,
@@ -132,7 +167,7 @@ userSchema.methods.resetLoginAttempts = async function () {
         $unset: { lockUntil: 1 }
     });
 };
-// Function for fetch the userId by generatedId
+
 userSchema.statics.getUserIdFromGeneratedId = async function (generatedId) {
     try {
         const user = await this.findOne({ generatedId: generatedId });
@@ -145,15 +180,15 @@ userSchema.statics.getUserIdFromGeneratedId = async function (generatedId) {
     }
 };
 
-// Function to re-index the user collection
+// Updated reindexCollection function
 userSchema.statics.reindexCollection = async function () {
     try {
-        // Drop all indexes first to ensure clean rebuild
+        // Drop all indexes except the _id index
         await this.collection.dropIndexes();
 
-        // Rebuild the indexes based on schema definition
-        await this.collection.createIndex({ email: 1 }, { unique: true, sparse: true });
-        await this.collection.createIndex({ userId: 1 }, { unique: true, sparse: true });
+        // Rebuild indexes WITHOUT making email or userId unique
+        await this.collection.createIndex({ email: 1 }, { sparse: true });
+        await this.collection.createIndex({ userId: 1 }, { sparse: true });
         await this.collection.createIndex({ role: 1 });
         await this.collection.createIndex({ status: 1 });
         await this.collection.createIndex({ generatedId: 1 });
