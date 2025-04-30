@@ -81,3 +81,8 @@ exports.OfflineReqNames = {
     UPDATE_BALAGRUHA: "update_balagruha",
     DELETE_BALAGRUHA: "delete_balagruha",
 }
+
+exports.ReqSource = {
+    ELECTRON: "electron",
+    WEB: "web",
+}

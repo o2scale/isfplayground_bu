@@ -7,6 +7,7 @@ const { UserTypes } = require('../constants/users');
 const { fetchMachinesByIds } = require("../data-access/machines")
 const upload = require('../middleware/upload');
 const { facialLogin } = require('../controllers/userController');
+const { ReqSource } = require('../constants/general');
 // Register User
 
 /**
@@ -522,6 +523,7 @@ router.post('/student/login', async (req, res) => {
         if (user.role === UserTypes.STUDENT) {
             // check the mac id from the header, 
             let macAddress = req.headers['mac-address'];
+            let reqSource = req.headers['req-source'];
             // match the mac id from the assigned devices 
             // get the machines details from the users assigned machines 
             if (user.assignedMachines && user.assignedMachines.length > 0) {
@@ -533,27 +535,32 @@ router.post('/student/login', async (req, res) => {
                     if (machineMacAddressList.includes(macAddress)) {
                         // do nothing, continue the flow,
                     } else {
-                        // return res.status(400).json({
-                        //     success: false,
-                        //     data: {},
-                        //     message: "This machine is not assigned for this student. Contact Admin"
-                        // })
+                        // if (reqSource == ReqSource.ELECTRON) {
+                        //     return res.status(400).json({
+                        //         success: false,
+                        //         data: {},
+                        //         message: "This machine is not assigned for this student. Contact Admin"
+                        //     })
+                        // }
                     }
                 } else {
-                    // return res.status(400).json({
-                    //     success: false,
-                    //     data: {},
-                    //     message: "No machines are assigned for this student. Contact Admin"
-                    // })
+                    // if (reqSource == ReqSource.ELECTRON) {
+                    //     return res.status(400).json({
+                    //         success: false,
+                    //         data: {},
+                    //         message: "No machines are assigned for this student. Contact Admin"
+                    //     })
+                    // }
                 }
             } else {
-                // return res.status(400).json({
-                //     success: false,
-                //     data: {},
-                //     message: "This machine is not assigned for this student. Contact Admin"
-                // })
+                // if (reqSource == ReqSource.ELECTRON) {
+                //     return res.status(400).json({
+                //         success: false,
+                //         data: {},
+                //         message: "This machine is not assigned for this student. Contact Admin"
+                //     })
+                // }
             }
-
         }
 
 
