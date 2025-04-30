@@ -141,7 +141,7 @@ exports.createUserV1 = async (req, res) => {
         // req.body.facialData = req.files['facialData']
         req.body.facialData = req.files.filter(file => file.fieldname === 'facialData')[0];
         // req.body.medicalHistory = req.files['medicalHistory']
-        let fileCpy = JSON.parse(JSON.stringify(req.files))
+        let fileCpy = JSON.parse(JSON.stringify(req.files || {}))
 
         const medicalHistory = extractMedicalHistory(req);
         req.body.medicalHistory = medicalHistory
@@ -463,8 +463,8 @@ exports.updateUserDetails = async (req, res) => {
                 message: "User ID is required"
             });
         }
-        const reqCpy = JSON.parse(JSON.stringify(req.body))
-        let fileCpy = JSON.parse(JSON.stringify(req.files))
+        const reqCpy = JSON.parse(JSON.stringify(req.body || {}));
+        let fileCpy = JSON.parse(JSON.stringify(req.files || []));
 
         req.body.updatedBy = req.user._id;
         // check the request if from localhost/ offline case

@@ -14,8 +14,8 @@ exports.createTask = async (req, res) => {
 		if (!title || !description || !assignedUser || !createdBy || !deadline) {
 			return res.status(400).json({ message: 'All required fields must be provided.' });
 		}
-		let fileCpy = JSON.parse(JSON.stringify(req.files))
-		const reqCpy = JSON.parse(JSON.stringify(req.body))
+		let fileCpy = req.files ? JSON.parse(JSON.stringify(req.files)) : "{}";
+		const reqCpy = req.body ? JSON.parse(JSON.stringify(req.body)) : "{}";
 
 		// if (!mongoose.Types.ObjectId.isValid(assignedUser) || !mongoose.Types.ObjectId.isValid(createdBy)) {
 		// 	return res.status(400).json({ message: 'Invalid assignedUser or createdBy ID.' });
@@ -229,11 +229,9 @@ exports.createTaskV1 = async (req, res) => {
 		// req.body.generatedId = req.body?.generatedId || generateRandomString();
 		req.body.createdBy = req.user._id;
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to create a new task`);
-		const reqCpy = JSON.parse(JSON.stringify(req.body))
-		let fileCpy = ""
-		if (req.files) {
-			fileCpy = JSON.parse(JSON.stringify(req.files))
-		}
+		const reqCpy = req.body ? JSON.parse(JSON.stringify(req.body)) : "{}";
+		let fileCpy = req.files ? JSON.parse(JSON.stringify(req.files)) : "{}";
+
 
 		const attachments = req.files ? req.files.map((file) => file.path) : [];
 
@@ -369,8 +367,8 @@ exports.addCommentToTask = async (req, res) => {
 		const { taskId } = req.params;
 		const { comments } = req.body;
 		const attachments = req.files['attachments']
-		let fileCpy = JSON.parse(JSON.stringify(req.files))
-		const reqCpy = JSON.parse(JSON.stringify(req.body))
+		let fileCpy = req.files ? JSON.parse(JSON.stringify(req.files)) : "{}";
+		const reqCpy = req.body ? JSON.parse(JSON.stringify(req.body)) : "{}";
 
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to add comment to task`);
 		let isOfflineReq = isRequestFromLocalhost(req)
@@ -404,8 +402,8 @@ exports.addCommentToTask = async (req, res) => {
 exports.addOrUpdateTaskAttachment = async (req, res) => {
 	try {
 		const { taskId } = req.params;
-		const reqCpy = JSON.parse(JSON.stringify(req.body))
-		let fileCpy = JSON.parse(JSON.stringify(req.files))
+		const reqCpy = req.body ? JSON.parse(JSON.stringify(req.body)) : "{}";
+		let fileCpy = req.files ? JSON.parse(JSON.stringify(req.files)) : "{}";
 		let attachments = req.files['attachments']
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to update task attachment`);
 		let isOfflineReq = isRequestFromLocalhost(req)
@@ -440,8 +438,8 @@ exports.addOrUpdateTaskAttachment = async (req, res) => {
 exports.deleteTaskAttachment = async (req, res) => {
 	try {
 		const { taskId, attachmentId } = req.params;
-		let fileCpy = JSON.parse(JSON.stringify(req.files))
-		const reqCpy = JSON.parse(JSON.stringify(req.body))
+		let fileCpy = req.files ? JSON.parse(JSON.stringify(req.files)) : "{}";
+		const reqCpy = req.body ? JSON.parse(JSON.stringify(req.body)) : "{}";
 
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to delete task attachment`);
 		let isOfflineReq = isRequestFromLocalhost(req);

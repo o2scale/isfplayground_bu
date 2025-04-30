@@ -108,8 +108,6 @@ exports.toggleMachineStatus = async (req, res) => {
         const { id } = req.params;
         // check the req is offline 
         let isOfflineReq = isRequestFromLocalhost(req);
-        // let reqCpy = JSON.parse(JSON.stringify(req.body))
-        // let fileCpy = JSON.parse(JSON.stringify(req.files))
         // Find the machine
         const machine = await Machine.findOne({ _id: id });
         if (!machine) {
@@ -218,9 +216,6 @@ exports.deleteMachine = async (req, res) => {
     try {
         const { id } = req.params;
         let macIdOnHeader = req.headers['mac-address'];
-
-        // const reqCpy = JSON.parse(JSON.stringify(req.body))
-        // const fileCpy = JSON.parse(JSON.stringify(req.files))
         // check the req is offline
         let isOfflineReq = isRequestFromLocalhost(req);
 
