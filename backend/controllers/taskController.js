@@ -291,7 +291,7 @@ exports.getAllTasksV1 = async (req, res) => {
 exports.getTaskListByBalagruhaIdAndFilter = async (req, res) => {
 	try {
 		let userRole = req.user.role;
-		const { balagruhaId, status, createdBy, priority, page = 1, limit = 10, assignedFor = [], type } = req.body;
+		const { balagruhaId, status, createdBy, priority, page = 1, limit = 10000, assignedFor = [], type } = req.body;
 		let currentUserId = req.user._id;
 		logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Request received to fetch task list by balagruha id and filter`);
 		let result = await Tasks.getTaskListByBalagruhaIdAndFilter({ balagruhaId, status, createdBy, priority, page, limit, currentUserId, userRole, assignedFor, type });

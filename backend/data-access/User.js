@@ -123,11 +123,14 @@ exports.getTasksByBalagruhaIdAndFilter = async ({ balagruhaId, status = ['pendin
     return await User.aggregate([
         {
             '$match': {
-                // 'role': 'student',
-                'balagruhaIds': {
-                    // '$in': [mongoose.Types.ObjectId.createFromHexString(balagruhaId)]
-                    '$in': balagruhaId
-                }
+                $or: [
+                    {
+                        balagruhaIds: {
+                            $in: balagruhaId
+                        }
+                    },
+                    { balagruhaIds: { $eq: [] } }
+                ]
             }
         }, {
             '$lookup': {

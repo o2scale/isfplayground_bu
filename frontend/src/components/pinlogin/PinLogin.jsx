@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { pinLogin } from '../../api';
 import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
+import showToast from '../../utils/toast';
 
 const PinLogin = ({ onToggle }) => {
     const macAddress = localStorage.getItem('macAddress');
