@@ -190,8 +190,26 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
 
   const fetchBalagruhaOptions = async () => {
     try {
-      const response = await getBalagruha();
-      setBalagruhaOptions(response?.data?.balagruhas || []);
+
+      if(localStorage.getItem('role') === 'coach') {
+        const response = await getBalagruha();
+        const allBalagruhas = response?.data?.balagruhas || [];
+
+        const storedIds = localStorage.getItem("balagruhaIds");
+        const allowedIds = storedIds ? storedIds.split(",") : [];
+
+        // Filter based on allowed IDs
+        const filteredBalagruhas = allBalagruhas.filter(bg =>
+          allowedIds.includes(bg._id)
+        );
+
+        console.log(filteredBalagruhas, "Filtered balagruha options");
+        setBalagruhaOptions(filteredBalagruhas);
+      } else {
+        const response = await getBalagruha();
+        setBalagruhaOptions(response?.data?.balagruhas || []);
+      }
+      
     } catch (error) {
       console.error("Error fetching balagruha options:", error);
     }
@@ -381,6 +399,12 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
+    }
+
+    if (formData.role !== "admin") {
+      if (!formData.balagruhaIds || formData.balagruhaIds.length === 0) {
+        newErrors.balagruhaIds = "Please select at least one Balagruha";
+      }
     }
 
     if (formData.role === "student") {
@@ -874,7 +898,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
               <div className="form-balagruha-selector">
                 <div
                   className={`form-dropdown-header ${
-                    errors.balagruhaIds ? "form-error" : ""
+                    errors.balagruhaIds ? "form-error redbtndiv" : ""
                   }`}
                   onClick={() => setDropdownOpen((prev) => !prev)}
                 >
@@ -941,7 +965,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
                 )}
               </div>
               {errors.balagruhaIds && (
-                <span className="form-error-message">
+                <span className="form-error-message redbtn">
                   {errors.balagruhaIds}
                 </span>
               )}

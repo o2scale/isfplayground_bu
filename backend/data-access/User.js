@@ -21,7 +21,7 @@ exports.createUser = async (payload) => {
                 return {
                     success: false,
                     data: null,
-                    message: "UserId already exists. Please use a different UserId address."
+                    message: "UserId already exists. Please use a different UserId"
                 };
             } else if (error.keyPattern.email) {
                 return {
@@ -29,6 +29,20 @@ exports.createUser = async (payload) => {
                     data: null,
                     message: "Email already exists. Please use a different email address."
                 };
+            }
+        }
+
+        if (error?.errors?.userId?.path == 'userId') {
+            return {
+                success: false,
+                data: null,
+                message: "UserId already exists. Please use a different UserId"
+            }
+        } else if (error?.errors?.email?.path == 'email') {
+            return {
+                success: false,
+                data: null,
+                message: "Email already exists. Please use a different email address."
             }
         }
 
@@ -318,7 +332,7 @@ exports.updateUserById = async ({ userId, payload }) => {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: updateData },
-            { new: true, runValidators: true }
+            { new: true, runValidators: false }
         ).lean();
 
         if (!updatedUser) {
@@ -1311,6 +1325,46 @@ exports.getUsersByRoleAndBalagruhaIdList = async ({ role, balagruhaId }) => {
     if (role && role != ":role") {
         query.role = role;
     }
+    if (balagruhaId && balagruhaId != ":balagruhaId") {
+        query.balagruhaIds = {
+            $in: balagruhaId
+        };
+    }
+
+    // Ensure that query matches both conditions if both are provided
+    if (Object.keys(query).length === 0) {
+        // Return empty if no valid filters are provided
+        return {
+            success: true,
+            data: [],
+            message: "No filters provided"
+        };
+    }
+
+    return await User.find(query)
+        .select('-password -passwordResetToken -loginAttempts -lockUntil -facialData -updatedAt -__v')
+        .lean()
+        .then(result => {
+            return {
+                success: true,
+                data: result,
+                message: "Users fetched successfully"
+            }
+        }).catch(error => {
+            console.log('error', error)
+            throw error;
+        })
+}
+
+// Function for fetch the details of all users by role and balagruha id
+exports.getUsersByRolesAndBalagruhaIdList = async ({ roles, balagruhaId }) => {
+    let query = {};
+    if (roles && Array.isArray(roles) && roles.length > 0) {
+        query.role = { $in: roles };
+    } else if (roles && roles !== ":role") {
+        query.role = roles;
+    }
+
     if (balagruhaId && balagruhaId != ":balagruhaId") {
         query.balagruhaIds = {
             $in: balagruhaId

@@ -139,3 +139,4 @@ dist
 .pnp.*
 
 backend/uploads
+backend/uploads/*

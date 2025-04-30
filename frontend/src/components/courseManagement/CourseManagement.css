@@ -153,3 +153,79 @@
 .archive-btn {
     background-color: #27ae60;
 }
+
+.course-create-course-container {
+    width: 90vw;
+    margin: 0 auto;
+    background-color: #f5f5f5;
+    padding: 40px;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.course-create-input-container-flex {
+    display: flex;
+    /* width: 10; */
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.form-group input {
+    width: auto !important;
+    /* border: 2px solid black !important; */
+}
+
+.isfLabel {
+    color: black !important;
+}
+
+.course-create-course-container-modules {
+    width: 90vw;
+    margin: 40px auto;
+    background-color: #f5f5f5;
+    padding: 40px;
+}
+
+.course-module-h3 {
+    font-weight: 700;
+    padding: 30px 0;  
+}
+
+.course-module-flex {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.add-chapter {
+    padding: 15px 30px;
+    margin-bottom: 20px;
+    background-color: #f39c12;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    color: white;
+}
+
+.course-module-input-change-width {
+    width: 70% !important;
+}
+
+.option-btn {
+    padding: 15px 30px;
+    margin-bottom: 20px;
+    background-color: #27ae60;
+    border: none;
+    /* border-radius: 40px; */
+    font-weight: 600;
+    color: white;
+}

@@ -29,16 +29,48 @@ const MachineManagement = () => {
     ]);
 
     const getBalagruhaList = async () => {
-        const response = await getBalagruha();
-        console.log('balagruha details', response?.data?.balagruhas)
-        setBalagruhaOptions(response?.data?.balagruhas)
-    }
+        try {
+          const response = await getBalagruha();
+          const allBalagruhas = response?.data?.balagruhas || [];
+      
+          const role = localStorage.getItem("role");
+          const storedIds = localStorage.getItem("balagruhaIds");
+          const allowedBalagruhaIds = storedIds ? storedIds.split(",") : [];
+      
+          const filteredBalagruhas = role === "coach"
+            ? allBalagruhas.filter(bg => allowedBalagruhaIds.includes(bg._id))
+            : allBalagruhas;
+      
+          console.log("Filtered balagruha details", filteredBalagruhas);
+          setBalagruhaOptions(filteredBalagruhas);
+        } catch (error) {
+          console.error("Error fetching balagruha list:", error);
+        }
+      };
 
     const getMachinesData = async () => {
-        const response = await getMachines();
-        console.log('response', response.data?.machines)
-        setMachines(response.data.machines)
-    }
+        try {
+          const response = await getMachines();
+          const allMachines = response.data?.machines || [];
+
+          const role = localStorage.getItem('role');
+          const storedIds = localStorage.getItem('balagruhaIds');
+          const allowedBalagruhaIds = storedIds ? storedIds.split(',') : [];
+      
+          if (role === 'coach') {
+            const filteredMachines = allMachines.filter(machine =>
+              machine.assignedBalagruha &&
+              allowedBalagruhaIds.includes(machine.assignedBalagruha._id)
+            );
+      
+            setMachines(filteredMachines);
+          } else {
+            setMachines(allMachines);
+          }
+        } catch (error) {
+          console.error("Error fetching machines:", error);
+        }
+      };      
 
 
     useEffect(() => {
@@ -180,8 +212,6 @@ const MachineManagement = () => {
         const oneDayAgo = new Date();
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-
-
         return {
             totalMachines,
             activeMachines,
@@ -200,7 +230,7 @@ const MachineManagement = () => {
         if (filterBalagruha !== 'all' && machine.balagruha !== filterBalagruha) {
             return false;
         }
-
+        
         // Filter by status
         if (filterStatus !== 'all' && machine.status !== filterStatus) {
             return false;
