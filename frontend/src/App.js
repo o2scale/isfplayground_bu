@@ -95,11 +95,11 @@ const App = () => {
                   }
                 />
                  <Route
-                  path="/balagruha"
+                  path="/attendance"
                   element={
                     // <ProtectedRoute module="Machine Management" action="Read">
                     // <BalagruhaDashboard />
-                    <BalagruhaManagement />
+                    <AttendanceComponent />
                     // </ProtectedRoute>
                   }
                 />

@@ -135,15 +135,15 @@ const Layout = () => {
 
                     {/* Top Menu */}
                     <div className="top-menu scrollable-menu">
-                        <div key="1" className="menu-item" onClick={() => navigate("/dashboard")}>
+                        <button key="1" className="menu-item" onClick={() => navigate("/dashboard")}>
                             Dashboard
 
-                        </div>
+                        </button>
                         {visibleMenus.map(menu => (
-                            <div key={menu.id} className="menu-item" onClick={() => navigate(menu?.link)}>
+                            <button key={menu.id} className="menu-item" onClick={() => navigate(menu?.link)}>
                                 {menu.name}
 
-                            </div>
+                            </button>
                         ))}
                     </div>
 

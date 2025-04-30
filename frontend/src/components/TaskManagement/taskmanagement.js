@@ -710,7 +710,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
     const dropdownRef = useRef(null);
     const role = localStorage.getItem("role");
     console.log('coach', coachUsers)
-    const filteredUsers = coachUsers
+    const filteredUsers = coachUsers.filter(user => user.role !== "student");
     // role === "sports-coach" || role === "music-coach" || role === "coach"
     //     ? coachUsers
     //     : coachUsers;

@@ -123,7 +123,7 @@ export default function UserIdLogin({ onToggle }) {
 
             <Link to={'/admin/login'}>
             <p className="toggle-link admin-btn">
-                Admin Login
+                User Login
             </p>
             </Link>
         </div>
