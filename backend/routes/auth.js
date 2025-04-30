@@ -307,7 +307,144 @@ router.post('/login', async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    status: user.status
+                    status: user.status,
+                    balagruhaIds: user.balagruhaIds || [],
+                }
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Error in login',
+            error: err.message
+        });
+    }
+});
+
+router.post('/student/login', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId || userId === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'User ID is required'
+            });
+        }
+
+        // Find user
+        const user = await User.findOne({ userId });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid User ID'
+            });
+        }
+        // return false if the user type if not student
+        if (user.role !== UserTypes.STUDENT) {
+            return res.status(400).json({
+                success: false,
+                message: 'User Id login is only for students'
+            });
+        }
+
+        // Check if account is locked
+        if (user.isLocked()) {
+            return res.status(423).json({
+                success: false,
+                message: 'Account is locked. Please try again later'
+            });
+        }
+
+        // Check if user is active
+        if (user.status === 'inactive') {
+            return res.status(401).json({
+                success: false,
+                message: 'Account is inactive. Please contact administrator'
+            });
+        }
+
+        // Verify password
+        // const isMatch = await user.comparePassword(password);
+        // if (!isMatch) {
+        // if (user.role !== UserTypes.STUDENT) {
+
+        //     await user.incrementLoginAttempts();
+
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: 'Invalid credentials'
+        //     });
+        // }
+        // }
+
+        // Reset login attempts on successful login
+        await user.resetLoginAttempts();
+
+        // Check for the user role is a student 
+        if (user.role === UserTypes.STUDENT) {
+            // check the mac id from the header, 
+            let macAddress = req.headers['mac-address'];
+            // match the mac id from the assigned devices 
+            // get the machines details from the users assigned machines 
+            if (user.assignedMachines && user.assignedMachines.length > 0) {
+                let machineIds = user.assignedMachines.map(item => item)
+                console.log('machineIds', machineIds)
+                let machines = await fetchMachinesByIds(machineIds)
+                if (machines && machines.success) {
+                    let machineMacAddressList = machines.data.map(item => item.macAddress)
+                    if (machineMacAddressList.includes(macAddress)) {
+                        // do nothing, continue the flow,
+                    } else {
+                        // return res.status(400).json({
+                        //     success: false,
+                        //     data: {},
+                        //     message: "This machine is not assigned for this student. Contact Admin"
+                        // })
+                    }
+                } else {
+                    // return res.status(400).json({
+                    //     success: false,
+                    //     data: {},
+                    //     message: "No machines are assigned for this student. Contact Admin"
+                    // })
+                }
+            } else {
+                // return res.status(400).json({
+                //     success: false,
+                //     data: {},
+                //     message: "This machine is not assigned for this student. Contact Admin"
+                // })
+            }
+
+        }
+
+
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Create token
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        res.json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                token,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    status: user.status,
+                    balagruhaIds: user.balagruhaIds || [],
+
                 }
             }
         });

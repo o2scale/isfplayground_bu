@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
-import './PinLogin.css';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import showToast from '../../utils/toast';
-import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
+import { Link, useNavigate } from 'react-router-dom';
 import { pinLogin } from '../../api';
-import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext'; // Import the auth context
 
 const PinLogin = ({ onToggle }) => {
     const macAddress = localStorage.getItem('macAddress');
@@ -148,9 +144,9 @@ const PinLogin = ({ onToggle }) => {
             </a>
 
             <Link to={'/login'}>
-            <p className="toggle-link admin-btn">
-                Student Login
-            </p>
+                <p className="toggle-link admin-btn">
+                    Student Login
+                </p>
             </Link>
         </div>
     );
