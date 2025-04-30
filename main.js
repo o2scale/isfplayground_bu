@@ -1,8 +1,16 @@
-const { app, BrowserWindow, ipcMain, net } = require("electron");
+const { app, BrowserWindow, ipcMain, net, dialog, Menu } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
 const macaddress = require("macaddress");
 const fs = require("fs");
+const { autoUpdater } = require("electron-updater");
+const log = require("electron-log");
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'debug';
+log.info('App starting...');
+log.info(`🛠️  Current app version: ${app.getVersion()}`);
+console.log("Electron log file location:", log.transports.file.getFile().path);
 
 let mainWindow;
 let mongoProcess;
@@ -11,19 +19,19 @@ let wasOffline = false;
 let onlineStatus = true;
 
 function checkOnlineStatus() {
-    // console.log('this is working..., ------------------------>')
-    const request = net.request(
-        "https://playground.initiativesewafoundation.com/server/health"
-    );
-    
+  // console.log('this is working..., ------------------------>')
+  const request = net.request(
+    "https://playground.initiativesewafoundation.com/server/health"
+  );
+
   request.on("response", (response) => {
     const isOnline = response.statusCode === 200;
     // console.log(isOnline, ">>>>>>>>>>>>>>>>", response);
     onlineStatus = isOnline;
-    
+
     if (isOnline && wasOffline) {
       console.log("📶 Back online — syncing offline requests...");
-      syncOfflineRequests(); 
+      syncOfflineRequests();
     }
 
     wasOffline = !isOnline ? true : false;
@@ -227,92 +235,128 @@ function restoreMongoIfEmpty() {
 
 function startBackendServer() {
   return new Promise(async (resolve, reject) => {
-    console.log("starting the node app server ");
+    console.log("🚀 Starting the Node app server");
+    log.info("🚀 Starting the Node app server");
     const serverPath = getResourcePath("backend", "server.js");
-    let nodePath;
+    let nodePath = "";
 
-    if (process.platform === "win32") {
-      nodePath = path.join(nodePaths.bin, "node.exe");
-    } else if (process.platform === "darwin") {
-      // Check if Node.js is installed on macOS
-      console.log("Checking for Node.js on macOS...");
-      try {
-        // First try to use the bundled node
-        if (false) {
-          // if (fs.existsSync(path.join(nodePaths.originalBin, 'node'))) {
-          console.log("Using bundled Node.js");
-          if (!fs.existsSync(nodePaths.bin)) {
+    try {
+      if (process.platform === "win32") {
+        nodePath = path.join(nodePaths.bin, "node.exe");
+      } else if (process.platform === "darwin") {
+        const bundledNode = path.join(nodePaths.originalBin, "node");
+        const destNode = path.join(nodePaths.bin, "node");
+
+        if (fs.existsSync(bundledNode)) {
+          console.log("📦 Using bundled Node.js for macOS");
+          log.info("📦 Using bundled Node.js for macOS");
+
+          if (!fs.existsSync(destNode)) {
             fs.mkdirSync(nodePaths.bin, { recursive: true });
+            fs.copyFileSync(bundledNode, destNode);
+            fs.chmodSync(destNode, 0o755);
           }
-          if (!fs.existsSync(path.join(nodePaths.bin, "node"))) {
-            fs.copyFileSync(
-              path.join(nodePaths.originalBin, "node"),
-              path.join(nodePaths.bin, "node")
-            );
-            fs.chmodSync(path.join(nodePaths.bin, "node"), 0o755);
-          }
-        } else {
-          // If bundled node doesn't exist, try to find system node
-          const whichNode = spawn("which", ["node"]);
-          let systemNodePath = "";
 
-          whichNode.stdout.on("data", (data) => {
-            systemNodePath += data.toString().trim();
+          nodePath = destNode;
+        } else {
+          console.log("🔍 Checking for system Node.js using 'which'...");
+          log.info("🔍 Checking for system Node.js using 'which'...");
+
+          nodePath = await new Promise((res) => {
+            const whichNode = spawn("which", ["node"]);
+            let result = "";
+
+            whichNode.stdout.on("data", (data) => {
+              result += data.toString();
+            });
+
+            whichNode.on("close", () => {
+              const trimmed = result.trim();
+              if (fs.existsSync(trimmed)) {
+                res(trimmed);
+              } else {
+                res(""); // fallback if not found
+              }
+            });
           });
 
-          await new Promise((resolve) => whichNode.on("close", resolve));
-
-          if (systemNodePath) {
-            console.log(`Found system Node.js at: ${systemNodePath}`);
-            // Create symlink to system node
-            nodePaths.bin = path.dirname(systemNodePath);
-          } else {
-            console.error(
-              "Node.js not found on system. Falling back to 'node' command"
-            );
+          if (!nodePath) {
+            console.error("❌ Node.js not found in system PATH.");
+            log.error("❌ Node.js not found in system PATH.");
+            return reject(new Error("Node.js not found"));
           }
+
+          console.log("✅ Found system Node.js at:", nodePath);
+          log.info("✅ Found system Node.js at:", nodePath);
         }
-      } catch (err) {
-        console.error(`Error finding Node.js: ${err.message}`);
+      } else {
+        // Other platforms
+        nodePath = await new Promise((res) => {
+          const whichNode = spawn("which", ["node"]);
+          let result = "";
+
+          whichNode.stdout.on("data", (data) => {
+            result += data.toString();
+          });
+
+          whichNode.on("close", () => {
+            const trimmed = result.trim();
+            if (fs.existsSync(trimmed)) {
+              res(trimmed);
+            } else {
+              res(""); // fallback
+            }
+          });
+        });
+
+        if (!nodePath) {
+          console.error("❌ Node.js not found in PATH");
+          log.error("❌ Node.js not found in PATH");
+          return reject(new Error("Node.js not found"));
+        }
       }
-      nodePath = path.join(nodePaths.bin, "node");
-    } else {
-      // Fallback to system node for other platforms
-      nodePath = "node";
-    }
 
-    console.log("📦 nodePath:", nodePath);
+      if (!fs.existsSync(nodePath)) {
+        console.error("❌ Final nodePath does not exist:", nodePath);
+        log.error("❌ Final nodePath does not exist:", nodePath);
+        return reject(new Error("Node binary does not exist"));
+      }
 
-    // Only check if the file exists when using our bundled node
-    if (nodePath !== "node") {
-      console.log("📄 exists?", fs.existsSync(nodePath));
-      console.log("📄 is file?", fs.statSync(nodePath).isFile());
-    }
+      console.log("📦 nodePath:", nodePath);
+      log.info("📦 nodePath:", nodePath);
+      console.log("⏩ Checking if server.js exists at:", serverPath);
+      log.info("⏩ Checking if server.js exists at:", serverPath);
+      if (!fs.existsSync(serverPath)) {
+        log.error("❌ Backend server.js not found at:", serverPath);
+        return reject(new Error("Backend server.js not found"));
+      }
 
-    console.log("⏩ Checking if server.js exists at:", serverPath);
-    if (!fs.existsSync(serverPath)) {
-      console.error("❌ Cannot find backend server at:", serverPath);
-      return reject(new Error("Backend server.js not found"));
-    }
+      backendProcess = spawn(nodePath, [serverPath], {
+        cwd: path.dirname(serverPath),
+        stdio: "inherit",
+        windowsHide: true,
+      });
 
-    // Use platform-specific nodePath
-    backendProcess = spawn(nodePath, [serverPath], {
-      cwd: path.dirname(serverPath),
-      stdio: "inherit",
-      windowsHide: true
-    });
+      backendProcess.on("error", (err) => {
+        console.error("❌ Failed to start backend server:", err);
+        log.error("❌ Failed to start backend server:", err);
+        reject(err);
+      });
 
-    backendProcess.on("error", (err) => {
-      console.error("Failed to start backend server:", err);
+      setTimeout(() => {
+        console.log("✅ Backend server started");
+        log.info("✅ Backend server started");
+        resolve();
+      }, 2000);
+
+    } catch (err) {
+      console.error("❌ Error starting backend:", err);
+      log.error("❌ Error starting backend:", err);
       reject(err);
-    });
-
-    setTimeout(() => {
-      console.log("Backend server started");
-      resolve();
-    }, 2000);
+    }
   });
 }
+
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -326,7 +370,7 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
-  // mainWindow.loadURL("http://localhost:3000");
+  // mainWindow.loadURL("https://www.bing.com");
 }
 
 // MAC address API
@@ -348,21 +392,91 @@ ipcMain.handle("get-mac-address", async () => {
   return result || "MAC not found";
 });
 
+// Create the application menu
+const createAppMenu = () => {
+  const template = [
+    {
+      label: "Help",
+      submenu: [
+        {
+          label: "About",
+          click: () => {
+            dialog.showMessageBox({
+              type: "info",
+              title: "About",
+              message: "About This Application",
+              detail: `Version: ${app.getVersion()}\nElectron: ${process.versions.electron}\nNode.js: ${process.versions.node}`,
+              buttons: ["OK"],
+            });
+          },
+        },
+      ],
+    },
+    {
+      label: "Developer",
+      submenu: [
+        {
+          label: "Inspect Element",
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              focusedWindow.webContents.openDevTools();
+            }
+          },
+        },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+};
+
 // App lifecycle
 app.whenReady().then(async () => {
   try {
+    log.info("✅ App ready. Starting initialization...");
+
+    log.info("⏳ Step 1: Copying Mongo binaries...");
     await copyMongoBinariesIfNeeded();
+    log.info("✅ Mongo binaries copied.");
+
+    log.info("⏳ Step 2: Copying Node binary...");
     await copyNodeBinaryIfNeeded();
+    log.info("✅ Node binary copied.");
+
+    log.info("⏳ Step 3: Starting MongoDB...");
     await startMongoDB();
+    log.info("✅ MongoDB started.");
+
+    log.info("⏳ Step 4: Restoring MongoDB if empty...");
     await restoreMongoIfEmpty();
+    log.info("✅ MongoDB restore step done.");
+
+    log.info("⏳ Step 5: Starting backend server...");
     await startBackendServer();
+    log.info("✅ Backend server started.");
+
+    log.info("⏳ Step 6: Setting online status check...");
     setInterval(checkOnlineStatus, 5000);
-    createWindow();
+
+    log.info("⏳ Step 7: Creating main window...");
+    await createWindow();
+    log.info("✅ Main window created.");
+
+    log.info("⏳ Step 8: Creating application menu...");
+    createAppMenu();
+    log.info("✅ Application menu created.");
+
+    log.info("⏳ Step 9: Checking for updates...");
+    autoUpdater.checkForUpdatesAndNotify();
+
   } catch (err) {
-    console.error("App initialization failed:", err);
+    log.error("❌ App initialization failed:", err);
     app.quit();
   }
 });
+
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
@@ -374,4 +488,115 @@ app.on("window-all-closed", () => {
 app.on("before-quit", () => {
   if (mongoProcess) mongoProcess.kill();
   if (backendProcess) backendProcess.kill();
+});
+
+
+
+
+// app.on("ready", () => {
+//   // your usual app launching logic
+
+// });
+// --- Auto Updater Event Handlers ---
+autoUpdater.on('checking-for-update', () => {
+  log.info('Checking for update...');
+  // Optional: send status to renderer process
+  // mainWindow.webContents.send('update-status', 'Checking for update...');
+});
+
+
+autoUpdater.on('error', (err) => {
+  log.error('Error in auto-updater. ' + err);
+  // Optional: send status to renderer process
+  // mainWindow.webContents.send('update-status', `Update error: ${err.message}`);
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  log.info('Update not available.', info);
+  // Optional: send status to renderer process
+  // mainWindow.webContents.send('update-status', 'You are running the latest version.');
+});
+
+autoUpdater.on('update-available', (info) => {
+  log.info('Update available.', info);
+  // Optional: send status to renderer process
+  // mainWindow.webContents.send('update-status', `Update available: ${info.version}`);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  log.info(log_message);
+  // Send progress to renderer window
+  // mainWindow.webContents.send('update-progress', progressObj.percent);
+});
+
+
+let updateDownloadedHandled = false; // Flag to prevent multiple dialogs
+
+autoUpdater.on('update-downloaded', (info) => {
+  log.info('Update downloaded.', info);
+  if (updateDownloadedHandled) {
+    log.warn('Update downloaded event received again, ignoring.');
+    return;
+  }
+  updateDownloadedHandled = true;
+
+  // The update is ready. Prompt the user to restart.
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Ready',
+    message: `A new version (${info.version}) has been downloaded. Restart the application to apply the updates.`,
+    buttons: ['Restart Now', 'Later'],
+    defaultId: 0, // Default to Restart Now
+    cancelId: 1 // If user closes dialog, it acts like "Later"
+  }).then(({ response }) => {
+    if (response === 0) {
+      log.info('User chose to restart. Quitting and installing...');
+      // Ensure processes are killed cleanly *before* quitAndInstall
+      if (mongoProcess) mongoProcess.kill();
+      if (backendProcess) backendProcess.kill();
+      setImmediate(() => {
+        autoUpdater.quitAndInstall();
+      });
+    } else {
+      log.info('User chose "Later". Update will be installed on next quit.');
+      // No action needed here, the update will be installed automatically
+      // when the app quits normally because Squirrel (macOS/Windows) handles it.
+    }
+  }).catch(err => {
+    log.error('Error showing update downloaded dialog:', err);
+  }).finally(() => {
+    // Reset flag if needed, though usually app restarts or quits after this
+    // updateDownloadedHandled = false;
+  });
+});
+
+
+// If user chooses "Later" and just closes the app manually
+app.on("before-quit", () => {
+  log.info("Application before-quit event");
+  if (mongoProcess) {
+    log.info("Killing MongoDB process...");
+    mongoProcess.kill();
+  }
+  if (backendProcess) {
+    log.info("Killing backend process...");
+    backendProcess.kill();
+  }
+  // No need to call quitAndInstall here anymore, handle it in update-downloaded
+});
+
+autoUpdater.on('before-quit-for-update', () => {
+  log.info("⚡ App is quitting to install the update.");
+});
+
+
+process.on("uncaughtException", (err) => {
+  log.error("❌ Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  log.error("❌ Unhandled Rejection:", reason);
 });

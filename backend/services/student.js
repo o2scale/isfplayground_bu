@@ -628,7 +628,9 @@ class Student {
                                     name: userInfo.name,
                                     email: userInfo.email,
                                     role: userInfo.role,
-                                    status: userInfo.status
+                                    status: userInfo.status,
+                                    balagruhaIds: user.balagruhaIds || [],
+
                                 }
                             }
                         }

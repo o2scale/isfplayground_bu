@@ -251,7 +251,7 @@ export const pinLogin = async (data) => {
   return response;
 }
 
-export const studentPinLogin = async(data) => {
+export const studentPinLogin = async (data) => {
   const api = await getApiInstance();
   const response = await api.post('/api/auth/student/login', data);
   return response;
