@@ -1,6 +1,11 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
+const ReqSource = {
+  ELECTRON: "electron",
+  WEB: "web",
+};
+
 const checkOnlineStatus = async () => {
     if (window.macAPI?.getOnlineStatus) {
       return await window.macAPI.getOnlineStatus();
@@ -36,6 +41,8 @@ const checkOnlineStatus = async () => {
   
       const token = localStorage.getItem('token');
       if (token) config.headers.Authorization = `Bearer ${token}`;
+
+      config.headers['req-source'] = JSON.stringify(ReqSource)
   
       return config;
     });
@@ -78,6 +85,8 @@ const checkOnlineStatus = async () => {
   
       const token = localStorage.getItem('token');
       if (token) config.headers.Authorization = `Bearer ${token}`;
+
+      config.headers['req-source'] = JSON.stringify(ReqSource)
   
       return config;
     });

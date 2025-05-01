@@ -108,7 +108,7 @@ const App = () => {
                   element={
                     // <ProtectedRoute module="Machine Management" action="Read">
                     <CourseManagement />
-                    // </ProtectedRoute>
+                    // </ProtectedRoute>  
                   }
                 />
 
