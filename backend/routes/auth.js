@@ -225,7 +225,7 @@ router.post('/login', async (req, res) => {
 
         // Check if user is active
         if (user.status === 'inactive') {
-            return res.status(401).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Account is inactive. Please contact administrator'
             });
@@ -360,7 +360,7 @@ router.post('/student/login', async (req, res) => {
 
         // Check if user is active
         if (user.status === 'inactive') {
-            return res.status(401).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Account is inactive. Please contact administrator'
             });
@@ -496,7 +496,7 @@ router.post('/student/login', async (req, res) => {
 
         // Check if user is active
         if (user.status === 'inactive') {
-            return res.status(401).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Account is inactive. Please contact administrator'
             });
