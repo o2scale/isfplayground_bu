@@ -92,7 +92,7 @@ const Dashboard = () => {
             {/* ['admin', 'coach', 'balagruha in-charge', 'student', 'purchase-manager',
     'medical-incharge', 'sports-coach', 'music-coach', 'amma'] */}
             {
-                localStorage.getItem('role') === 'admin' ? <AdminDashboard /> : localStorage.getItem('role') === 'student' ? <StudentDashboard /> : localStorage.getItem('role') === 'coach' ? <CoachDashboard /> : localStorage?.getItem('role') === 'balagruha-incharge' ? < BalagruhaDashboard /> : localStorage?.getItem('role') === 'medical-incharge' ? <MedicInchargeDashboard /> : localStorage.getItem('role') === 'purchase-manager' ? <PurchaseDashboard /> : localStorage.getItem('role') === 'sports-coach' ? <MusicCoachDashboard /> : <MusicCoachDashboard />
+                localStorage.getItem('role') === 'admin' ? <AdminDashboard /> : localStorage.getItem('role') === 'student' ? <StudentDashboard /> : localStorage.getItem('role') === 'coach' ? <CoachDashboard /> : localStorage?.getItem('role') === 'balagruha-incharge' ? < PurchaseDashboard /> : localStorage?.getItem('role') === 'medical-incharge' ? <MedicInchargeDashboard /> : localStorage.getItem('role') === 'purchase-manager' ? <PurchaseDashboard /> : localStorage.getItem('role') === 'sports-coach' ? <MusicCoachDashboard /> : <MusicCoachDashboard />
             }
         </>
     )

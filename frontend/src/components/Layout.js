@@ -68,6 +68,7 @@ const Layout = () => {
 
     useEffect(() => {
         // Filter menus based on RBAC permissions
+        console.log(hasPermission, "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
         const filteredMenus = topMenus.filter(menu =>
             hasPermission(menu.module, menu.action)
         );
