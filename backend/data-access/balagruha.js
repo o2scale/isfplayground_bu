@@ -152,3 +152,17 @@ exports.getBalagruhaByGeneratedId = async (generatedId) => {
         throw error;
     }
 }
+
+// Function for get balagruha details by id row data
+exports.getBalagruhaByIdRowData = async (id) => {
+    return await Balagruha.findById(id).lean().then(result => {
+        return {
+            success: true,
+            data: result || null,
+            message: "Balagruha details fetched successfully"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}   

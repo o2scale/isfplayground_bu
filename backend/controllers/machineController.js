@@ -1,6 +1,6 @@
 // controllers/machineController.js
 const Machine = require('../models/machine');
-const { getBalagruhaById } = require("../data-access/balagruha");
+const { getBalagruhaById, getBalagruhaByIdRowData, updateBalagruha } = require("../data-access/balagruha");
 const { default: mongoose } = require('mongoose');
 const { getMachineById, deleteMachine } = require('../data-access/machines')
 const { isRequestFromLocalhost, generateRandomString } = require("../utils/helper");
@@ -166,10 +166,39 @@ exports.assignMachine = async (req, res) => {
             //     assignedBy: req.user._id, // Admin who performed the action
             // });
 
+            // get the existing balagruha details and remove the machine id from the assigned machines list
+            let existingBalagruhaItem = await getBalagruhaByIdRowData(machine.assignedBalagruha)
+            if (existingBalagruhaItem && existingBalagruhaItem.success && existingBalagruhaItem.data) {
+                let assignedMachines = existingBalagruhaItem.data.assignedMachines;
+                console.log('assignedMachines', assignedMachines)
+                let assignedMachinesIds = assignedMachines.map(id => id.toString());
+                // check the assigned machine id is exist in the assigned machines list
+                if (assignedMachinesIds.includes(machine._id.toString())) {
+                    assignedMachines = assignedMachines.filter(id => id.toString() !== machine._id.toString());
+                }
+                // update the existing balagruha details
+                existingBalagruhaItem.data.assignedMachines = assignedMachines;
+                // update balagruha by id 
+                let updateResult = await updateBalagruha(machine.assignedBalagruha, { assignedMachines: assignedMachines })
+                console.log('updateResult', updateResult)
+            }
+            // update the existing balagruha details
             // Update the assigned Balagruha
             machine.assignedBalagruha = newBalagruha;
             let result = await machine.save();
             if (result) {
+                // also update the machine id in the balagruha assigned machines list
+                let balagruhaItem = await getBalagruhaByIdRowData(newBalagruha)
+                if (balagruhaItem && balagruhaItem.success && balagruhaItem.data) {
+                    let assignedMachines = balagruhaItem.data.assignedMachines;
+                    let assignedMachinesIds = assignedMachines.map(id => id.toString());
+                    if (!assignedMachinesIds.includes(machine._id.toString())) {
+                        assignedMachines.push(machine._id);
+                    }
+                    // update balagruha by id 
+                    let updateResult = await updateBalagruha(newBalagruha, { assignedMachines: assignedMachines })
+                    console.log('updateResult', updateResult)
+                }
                 if (isOfflineReq) {
                     let result = await createOfflineRequest({
                         operation: OfflineReqNames.ASSIGN_MACHINE,
