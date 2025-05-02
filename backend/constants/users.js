@@ -16,12 +16,12 @@ exports.UserTypes = {
 // User type hierarchy 
 exports.userTypeHierarchy = {
     'admin': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.IN_CHARGE, this.UserTypes.STUDENT, this.UserTypes.PURCHASE_MANAGER, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA],
-    'balagruha in-charge': [this.UserTypes.COACH, this.UserTypes.IN_CHARGE, this.UserTypes.STUDENT, this.UserTypes.PURCHASE_MANAGER, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA],
-    'coach': [this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'balagruha in-charge': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.IN_CHARGE, this.UserTypes.STUDENT, this.UserTypes.PURCHASE_MANAGER, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA],
+    'coach': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
     'student': [this.UserTypes.STUDENT],
-    'purchase-manager': [this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
-    'medical-incharge': [this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
-    'sport-coach': [this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
-    'music-coach': [this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
-    'amma': [this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'purchase-manager': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'medical-incharge': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'sport-coach': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'music-coach': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'amma': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
 }
