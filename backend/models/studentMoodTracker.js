@@ -8,7 +8,7 @@ const StudentMoodTrackerSchema = new mongoose.Schema({
     },
     mood: {
         type: String,
-        enum: ["happy", "excited", "neutral", "sad", "very_sad"], // Adjust based on your UI
+        enum: ["happy", "sad", "afraid", "angry", "unwell"], // Adjust based on your UI
         required: true,
     },
     dateString: {
