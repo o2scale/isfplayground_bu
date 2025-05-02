@@ -2978,6 +2978,7 @@ const TaskManagement = () => {
         try {
             const id = localStorage.getItem('userId');
             const response = await getBalagruhaById(id);
+            console.log(response, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
             const balagruhaList = response?.data?.balagruhas || [];
             setBalagruhas(balagruhaList);
     
@@ -2996,7 +2997,6 @@ const TaskManagement = () => {
                 }));
             }
         } catch (error) {
-            console.error('Error fetching balagruhas:', error);
             addToast('Failed to load balagruhas', 'error');
         }
     };
@@ -3010,13 +3010,13 @@ const TaskManagement = () => {
         const finalFilters = { ...filterParams };
 
         // Ensure type is set based on role
-        if (role === 'sports-coach') {
-            finalFilters.type = ['sports'];
-        } else if (role === 'music-coach') {
-            finalFilters.type = ['music'];
-        } else if (!finalFilters.type) {
-            finalFilters.type = ['general'];
-        }
+        // if (role === 'sports-coach') {
+        //     finalFilters.type = ['sports'];
+        // } else if (role === 'music-coach') {
+        //     finalFilters.type = ['music'];
+        // } else if (!finalFilters.type) {
+        //     finalFilters.type = ['general'];
+        // }
         try {
             // const response =;
             // let response
@@ -3025,6 +3025,7 @@ const TaskManagement = () => {
             // } else {
             const response = await getTasks(JSON.stringify(finalFilters))
             // }
+            console.log(response, finalFilters, 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
             setTasks(response?.data?.tasks || []);
         } catch (error) {
             console.error('Error fetching tasks:', error);
@@ -3037,7 +3038,6 @@ const TaskManagement = () => {
     // Update filter handling to call API with new filters
     const handleFilterChange = async (newFilters) => {
         setFilters(newFilters);
-        console.log(newFilters, 'lllllllllllllllllllllllllllllllllllllllllllllllll');
         localStorage.setItem('taskManagementFilters', JSON.stringify(newFilters));
         // if (newFilters.balagruhaId?.length > 0 && newFilters.type?.length > 0) {
         await getAllTasks(newFilters);

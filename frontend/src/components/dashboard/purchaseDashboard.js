@@ -3,6 +3,7 @@ import './PurchaseDashboard.css';
 import { useAuth } from '../../contexts/AuthContext';
 import MachineManagement from '../machineManagement/machineManagement';
 import { createPurchase, createRepair, deletePurchase, deleteRepair, getAllPurchases, getAllRepairs, getPurchaseOverView, updatePurchaseOrder, updateRepairRequest } from '../../api';
+import TaskManagement from '../TaskManagement/taskmanagement';
 
 const PurchaseDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -128,6 +129,7 @@ const PurchaseDashboard = () => {
         // { id: 4, name: "Machines", activeTab: "machines" },
         { id: 2, name: "Repairs", activeTab: "repairs" },
         { id: 3, name: "Purchases", activeTab: "purchases" },
+        { id: 4, name: "Tasks", activeTab: "tasks", link: "/task" },
         { id: 6, name: "Reports", activeTab: "reports" },
 
     ];
@@ -608,6 +610,12 @@ const PurchaseDashboard = () => {
                     {
                         activeTab === 'machines' && (
                             <MachineManagement />
+                        )
+                    }
+
+                    {
+                        activeTab === 'tasks' && (
+                            <TaskManagement />
                         )
                     }
 
