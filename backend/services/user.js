@@ -409,7 +409,7 @@ exports.getUserListByAssignedBalagruhaByRole = async ({ role, userId }) => {
                 if (balagruhaIds.length === 0) {
                     return []
                 } else {
-                    if (role === UserTypes.COACH) {
+                    if (role != UserTypes.STUDENT) {
                         // get the users by balagruhaIds 
                         let allRoles = ['admin',
                             'coach',
