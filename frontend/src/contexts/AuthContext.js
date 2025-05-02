@@ -69,7 +69,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('name');
         localStorage.removeItem('role');
         localStorage.removeItem('userId');
-        localStorage.removeItem('balagruhaIds')
+        localStorage.removeItem('balagruhaIds');
+        localStorage.removeItem('taskManagementFilters');
 
         // Clear axios headers
         delete axios.defaults.headers.common['Authorization'];

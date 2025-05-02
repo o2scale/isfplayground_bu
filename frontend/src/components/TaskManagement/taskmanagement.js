@@ -74,11 +74,11 @@ const TaskFilter = ({ onFilterChange, filters, balagruhas, users }) => {
         // Initialize filters only once when component mounts
         if (balagruhas?.length > 0 && (!filters.type?.length || !filters.balagruhaId?.length)) {
             const defaultType = getDefaultTypeForRole(role);
-            const defaultBalagruhaId = [balagruhas[0]._id];
+            // const defaultBalagruhaId = [balagruhas[0]._id];
 
             onFilterChange({
                 ...filters,
-                balagruhaId: defaultBalagruhaId,
+                // balagruhaId: defaultBalagruhaId,
                 type: defaultType
             });
         }
@@ -101,27 +101,27 @@ const TaskFilter = ({ onFilterChange, filters, balagruhas, users }) => {
         }
 
         // Ensure balagruhaId is set when changing type
-        const currentBalagruhaId = filters.balagruhaId ||
-            (balagruhas?.length > 0 ? [balagruhas[0]._id] : []);
+        // const currentBalagruhaId = filters.balagruhaId ||
+        //     (balagruhas?.length > 0 ? [balagruhas[0]._id] : []);
 
         onFilterChange({
             ...filters,
             type: newTypes,
-            balagruhaId: currentBalagruhaId
+            // balagruhaId: currentBalagruhaId
         });
     };
 
     const getAvailableTaskTypes = () => {
-        switch (role) {
-            case 'sports-coach':
-                return taskTypes.filter(type => type.id === 'sports' || type.id === 'general');
-            case 'music-coach':
-                return taskTypes.filter(type => type.id === 'music' || type.id === 'general');
-            case 'purchase-manager':
-                return taskTypes.fillter(type => type.id === 'purchase' || type.id === 'general');
-            default:
+        // switch (role) {
+        //     case 'sports-coach':
+        //         return taskTypes.filter(type => type.id === 'sports' || type.id === 'general');
+        //     case 'music-coach':
+        //         return taskTypes.filter(type => type.id === 'music' || type.id === 'general');
+        //     case 'purchase-manager':
+        //         return taskTypes.fillter(type => type.id === 'purchase' || type.id === 'general');
+        //     default:
                 return taskTypes;
-        }
+        // }
     };
 
     useEffect(() => {
@@ -267,27 +267,53 @@ const TaskFilter = ({ onFilterChange, filters, balagruhas, users }) => {
         }
     };
 
-    useEffect(() => {
-        // Set initial type based on role if not already set
-        if (!filters.type || filters.type.length === 0) {
-            let initialType;
-            switch (role) {
-                case 'sports-coach':
-                    initialType = ['sports'];
-                    break;
-                case 'music-coach':
-                    initialType = ['music'];
-                    break;
-                default:
-                    initialType = ['general']; // or [] if you want no default for other roles
-            }
+    // useEffect(() => {
+    //     // Set initial type based on role if not already set
+    //     if (!filters.type || filters.type.length === 0) {
+    //         let initialType;
+    //         switch (role) {
+    //             case 'sports-coach':
+    //                 initialType = ['sports'];
+    //                 break;
+    //             case 'music-coach':
+    //                 initialType = ['music'];
+    //                 break;
+    //             default:
+    //                 initialType = ['general']; // or [] if you want no default for other roles
+    //         }
 
+    //         onFilterChange({
+    //             ...filters,
+    //             type: initialType
+    //         });
+    //     }
+    // }, []);
+
+    // useEffect(() => {
+    //     if (!filters.type || filters.type.length === 0) {
+    //         const allAvailableTypes = getAvailableTaskTypes().map(type => type.id);
+    
+    //         onFilterChange({
+    //             ...filters,
+    //             type: allAvailableTypes
+    //         });
+    //     }
+    // }, []);
+
+    useEffect(() => {
+        const savedFilters = localStorage.getItem('taskManagementFilters');
+    
+        // If no filters in localStorage and no type in current filters, then set default types
+        if (!savedFilters && (!filters.type || filters.type.length === 0)) {
+            const allAvailableTypes = getAvailableTaskTypes().map(type => type.id);
+    
             onFilterChange({
                 ...filters,
-                type: initialType
+                type: allAvailableTypes
             });
         }
     }, []);
+    
 
     const clearFilters = () => {
         let defaultType;
@@ -710,7 +736,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
     const dropdownRef = useRef(null);
     const role = localStorage.getItem("role");
     console.log('coach', coachUsers)
-    const filteredUsers = coachUsers
+    const filteredUsers = coachUsers.filter(user => user.role !== "student");
     // role === "sports-coach" || role === "music-coach" || role === "coach"
     //     ? coachUsers
     //     : coachUsers;
@@ -1971,9 +1997,9 @@ export const TaskDetailsModal = ({ task, getTask, onClose, users, onStatusChange
                                                 value={editedValues.priority || ''}
                                                 onChange={(e) => handleEditChange('priority', e.target.value)}
                                             >
-                                                <option value="High">High</option>
-                                                <option value="Medium">Medium</option>
-                                                <option value="Low">Low</option>
+                                                <option value="high">High</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="low">Low</option>
                                             </select>
                                             <div className="edit-field-actions">
                                                 <button
@@ -2082,7 +2108,7 @@ export const TaskDetailsModal = ({ task, getTask, onClose, users, onStatusChange
                                         </div>
                                     ) : (
                                         <span onClick={() => enableEditMode('assignedUser')}>
-                                            {selectedTask?.assignedUser ? selectedTask?.assignedUser.name : 'Unassigned'} ✏️
+                                            {selectedTask?.assignedUser ? selectedTask?.assignedUser.name + ' ' + '(' + selectedTask?.assignedUser.role + ')' : 'Unassigned'} ✏️
                                         </span>
                                     )}
                                 </div>
@@ -2903,7 +2929,7 @@ const TaskCard = ({ task }) => {
                     Due: {new Date(task.deadline).toLocaleDateString()}
                 </span>
                 <span className={`priority priority-${task.priority.toLowerCase()}`}>
-                    {task.priority === 'High' ? '🔴' : task.priority === 'Medium' ? '🟡' : '🟢'}
+                    {task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢'}
                 </span>
             </div>
         </div>
@@ -2929,23 +2955,52 @@ const TaskManagement = () => {
     const canCreateTask = canCreate('Task Management');
     const canUpdateTask = canUpdate('Task Management');
 
-    // Fetch balagruha list
+    // // Fetch balagruha list
+    // const getBalagruhaList = async () => {
+    //     try {
+    //         const id = localStorage.getItem('userId')
+    //         const response = await getBalagruhaById(id);
+    //         const balagruhaList = response?.data?.balagruhas || [];
+    //         setBalagruhas(balagruhaList);
+
+    //         // Set default balagruhaId if available
+    //         if (balagruhaList.length > 0 && !filters.balagruhaId) {
+    //             const allIds = balagruhaList.map(bg => bg._id);
+    //             setFilters(prev => ({ ...prev, balagruhaId: allIds }));
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching balagruhas:', error);
+    //         addToast('Failed to load balagruhas', 'error');
+    //     }
+    // };
+
     const getBalagruhaList = async () => {
         try {
-            const id = localStorage.getItem('userId')
+            const id = localStorage.getItem('userId');
             const response = await getBalagruhaById(id);
             const balagruhaList = response?.data?.balagruhas || [];
             setBalagruhas(balagruhaList);
-
-            // Set default balagruhaId if available
-            if (balagruhaList.length > 0 && !filters.balagruhaId) {
-                setFilters(prev => ({ ...prev, balagruhaId: [balagruhaList[0]._id] }));
+    
+            const savedFilters = JSON.parse(localStorage.getItem('taskManagementFilters') || '{}');
+            const savedBalagruhaIds = savedFilters.balagruhaId;
+    
+            if (balagruhaList.length > 0) {
+                const allIds = balagruhaList.map(bg => bg._id);
+                const balagruhaToSet = Array.isArray(savedBalagruhaIds) && savedBalagruhaIds.length > 0
+                    ? savedBalagruhaIds
+                    : allIds;
+    
+                setFilters(prev => ({
+                    ...prev,
+                    balagruhaId: balagruhaToSet
+                }));
             }
         } catch (error) {
             console.error('Error fetching balagruhas:', error);
             addToast('Failed to load balagruhas', 'error');
         }
     };
+    
 
     // Update this function to pass filters to the API
     const getAllTasks = async (filterParams = {}) => {
@@ -2982,6 +3037,8 @@ const TaskManagement = () => {
     // Update filter handling to call API with new filters
     const handleFilterChange = async (newFilters) => {
         setFilters(newFilters);
+        console.log(newFilters, 'lllllllllllllllllllllllllllllllllllllllllllllllll');
+        localStorage.setItem('taskManagementFilters', JSON.stringify(newFilters));
         // if (newFilters.balagruhaId?.length > 0 && newFilters.type?.length > 0) {
         await getAllTasks(newFilters);
         // }
@@ -3069,6 +3126,13 @@ const TaskManagement = () => {
         };
 
         initializeData();
+
+        const savedFilters = localStorage.getItem('taskManagementFilters');
+        if (savedFilters) {
+          const parsedFilters = JSON.parse(savedFilters);
+          setFilters(parsedFilters);
+          getAllTasks(parsedFilters);
+        }
     }, []);
 
     // Effect to load tasks when filters change or when balagruhas are loaded

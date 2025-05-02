@@ -2017,6 +2017,8 @@
 
 .filter-option {
     padding: 8px 0;
+    min-width: 350px;
+    max-width: auto;
 }
 
 .filter-option label {

@@ -317,7 +317,7 @@ function CoachDashboard() {
                     onUpdateTask={handleUpdateTask}
                 />
             )}
-            <div className="sticky-chat-buttons">
+            {/* <div className="sticky-chat-buttons">
                 <button
                     className="sticky-chat-button child"
                     onClick={() => handleChatClick("child")}
@@ -334,7 +334,7 @@ function CoachDashboard() {
                     A
                     <span className="sticky-chat-badge">7</span>
                 </button>
-            </div>
+            </div> */}
 
             <div className="main-content full-width">
                 <div className="full-panel">

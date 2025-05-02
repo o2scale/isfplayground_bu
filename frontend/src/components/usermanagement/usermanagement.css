@@ -1364,3 +1364,8 @@ select {
 .user-balagruha-checkbox {
   width: auto !important;
 }
+
+.search-box-input {
+  display: flex;
+  gap: 40px;
+}

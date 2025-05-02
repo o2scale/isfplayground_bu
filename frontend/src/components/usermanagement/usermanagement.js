@@ -483,129 +483,129 @@ const UserManagement = () => {
   };
 
   // Filter and sort users
-//   const filteredUsers = users
-//     .filter((user) => {
-//       // Filter by search term
-//       if (
-//         searchTerm &&
-//         !user.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-//         !user.email.toLowerCase().includes(searchTerm.toLowerCase())
-//       ) {
-//         return false;
-//       }
+  //   const filteredUsers = users
+  //     .filter((user) => {
+  //       // Filter by search term
+  //       if (
+  //         searchTerm &&
+  //         !user.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  //         !user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  //       ) {
+  //         return false;
+  //       }
 
-//       // Filter by role
-//       if (filterRole !== "all" && user.role !== filterRole) {
-//         return false;
-//       }
+  //       // Filter by role
+  //       if (filterRole !== "all" && user.role !== filterRole) {
+  //         return false;
+  //       }
 
-//       // Filter by status
-//       if (filterStatus !== "all" && user.status !== filterStatus) {
-//         return false;
-//       }
+  //       // Filter by status
+  //       if (filterStatus !== "all" && user.status !== filterStatus) {
+  //         return false;
+  //       }
 
-//       return true;
-//     })
-//     .sort((a, b) => {
-//       // Sort by selected field
-//       let valueA, valueB;
+  //       return true;
+  //     })
+  //     .sort((a, b) => {
+  //       // Sort by selected field
+  //       let valueA, valueB;
 
-//       switch (sortBy) {
-//         case "name":
-//           valueA = a.name.toLowerCase();
-//           valueB = b.name.toLowerCase();
-//           break;
-//         case "email":
-//           valueA = a.email.toLowerCase();
-//           valueB = b.email.toLowerCase();
-//           break;
-//         case "role":
-//           valueA = a.role.toLowerCase();
-//           valueB = b.role.toLowerCase();
-//           break;
-//         case "status":
-//           valueA = a.status.toLowerCase();
-//           valueB = b.status.toLowerCase();
-//           break;
-//         case "lastLogin":
-//           valueA = a.lastLogin ? new Date(a.lastLogin) : new Date(0);
-//           valueB = b.lastLogin ? new Date(b.lastLogin) : new Date(0);
-//           break;
-//         default:
-//           valueA = a.name.toLowerCase();
-//           valueB = b.name.toLowerCase();
-//       }
+  //       switch (sortBy) {
+  //         case "name":
+  //           valueA = a.name.toLowerCase();
+  //           valueB = b.name.toLowerCase();
+  //           break;
+  //         case "email":
+  //           valueA = a.email.toLowerCase();
+  //           valueB = b.email.toLowerCase();
+  //           break;
+  //         case "role":
+  //           valueA = a.role.toLowerCase();
+  //           valueB = b.role.toLowerCase();
+  //           break;
+  //         case "status":
+  //           valueA = a.status.toLowerCase();
+  //           valueB = b.status.toLowerCase();
+  //           break;
+  //         case "lastLogin":
+  //           valueA = a.lastLogin ? new Date(a.lastLogin) : new Date(0);
+  //           valueB = b.lastLogin ? new Date(b.lastLogin) : new Date(0);
+  //           break;
+  //         default:
+  //           valueA = a.name.toLowerCase();
+  //           valueB = b.name.toLowerCase();
+  //       }
 
-//       // Apply sort order
-//       if (sortOrder === "asc") {
-//         return valueA > valueB ? 1 : -1;
-//       } else {
-//         return valueA < valueB ? 1 : -1;
-//       }
-//     });
+  //       // Apply sort order
+  //       if (sortOrder === "asc") {
+  //         return valueA > valueB ? 1 : -1;
+  //       } else {
+  //         return valueA < valueB ? 1 : -1;
+  //       }
+  //     });
 
-const filteredUsers = users
-  .filter((user) => {
-    const role = localStorage.getItem("role");
+  const filteredUsers = users
+    .filter((user) => {
+      const role = localStorage.getItem("role");
 
-    // Filter by search term
-    if (
-      searchTerm &&
-      !user.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
-      return false;
-    }
+      // Filter by search term
+      if (
+        searchTerm &&
+        !user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
 
-    // Filter by role
-    if (filterRole !== "all" && user.role !== filterRole) {
-      return false;
-    }
+      // Filter by role
+      if (filterRole !== "all" && user.role !== filterRole) {
+        return false;
+      }
 
-    // Filter by status
-    if (filterStatus !== "all" && user.status !== filterStatus) {
-      return false;
-    }
+      // Filter by status
+      if (filterStatus !== "all" && user.status !== filterStatus) {
+        return false;
+      }
 
-    // Coach-specific Balagruha filter
-    if (role === "coach" && filterBalagruha !== "all") {
-      const userBalagruhaIds = user.balagruhaIds?.map((bg) => bg._id) || [];
-      return userBalagruhaIds.includes(filterBalagruha);
-    }
+      // Coach-specific Balagruha filter
+      if (role === "coach" && filterBalagruha !== "all") {
+        const userBalagruhaIds = user.balagruhaIds?.map((bg) => bg._id) || [];
+        return userBalagruhaIds.includes(filterBalagruha);
+      }
 
-    return true;
-  })
-  .sort((a, b) => {
-    let valueA, valueB;
+      return true;
+    })
+    .sort((a, b) => {
+      let valueA, valueB;
 
-    switch (sortBy) {
-      case "name":
-        valueA = a.name.toLowerCase();
-        valueB = b.name.toLowerCase();
-        break;
-      case "email":
-        valueA = a.email.toLowerCase();
-        valueB = b.email.toLowerCase();
-        break;
-      case "role":
-        valueA = a.role.toLowerCase();
-        valueB = b.role.toLowerCase();
-        break;
-      case "status":
-        valueA = a.status.toLowerCase();
-        valueB = b.status.toLowerCase();
-        break;
-      case "lastLogin":
-        valueA = a.lastLogin ? new Date(a.lastLogin) : new Date(0);
-        valueB = b.lastLogin ? new Date(b.lastLogin) : new Date(0);
-        break;
-      default:
-        valueA = a.name.toLowerCase();
-        valueB = b.name.toLowerCase();
-    }
+      switch (sortBy) {
+        case "name":
+          valueA = a?.name?.toLowerCase();
+          valueB = b?.name?.toLowerCase();
+          break;
+        case "email":
+          valueA = a?.email?.toLowerCase();
+          valueB = b?.email?.toLowerCase();
+          break;
+        case "role":
+          valueA = a?.role?.toLowerCase();
+          valueB = b?.role?.toLowerCase();
+          break;
+        case "status":
+          valueA = a?.status?.toLowerCase();
+          valueB = b?.status?.toLowerCase();
+          break;
+        case "lastLogin":
+          valueA = a?.lastLogin ? new Date(a.lastLogin) : new Date(0);
+          valueB = b?.lastLogin ? new Date(b.lastLogin) : new Date(0);
+          break;
+        default:
+          valueA = a?.name.toLowerCase();
+          valueB = b?.name.toLowerCase();
+      }
 
-    return sortOrder === "asc" ? (valueA > valueB ? 1 : -1) : (valueA < valueB ? 1 : -1);
-  });
+      return sortOrder === "asc" ? (valueA > valueB ? 1 : -1) : (valueA < valueB ? 1 : -1);
+    });
 
 
   // Get unique roles for filter dropdown
@@ -937,11 +937,11 @@ const filteredUsers = users
     const allEvents = users.flatMap((user) =>
       user.loginEvents
         ? user.loginEvents.map((event) => ({
-            ...event,
-            userName: user.name,
-            userRole: user.role,
-            userId: user.id,
-          }))
+          ...event,
+          userName: user.name,
+          userRole: user.role,
+          userId: user.id,
+        }))
         : []
     );
 
@@ -1031,7 +1031,7 @@ const filteredUsers = users
                       {Math.round(
                         (calculateMetrics().usersByRole[role] /
                           calculateMetrics().totalUsers) *
-                          100
+                        100
                       )}
                       %
                     </div>
@@ -1049,10 +1049,10 @@ const filteredUsers = users
                       {activity.action === "Login"
                         ? "🔑"
                         : activity.action === "Logout"
-                        ? "👋"
-                        : activity.action === "Password Change"
-                        ? "🔒"
-                        : "✏️"}
+                          ? "👋"
+                          : activity.action === "Password Change"
+                            ? "🔒"
+                            : "✏️"}
                     </div>
                     <div className="activity-details">
                       <div className="activity-title">
@@ -1119,15 +1119,19 @@ const filteredUsers = users
           )}
 
           <div className="list-controls">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-              <span className="search-icon">🔍</span>
+            <div className="search-box  search-box-input">
+              <div>
+                <p className="search-icon">🔍</p>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
             </div>
 
             {localStorage?.getItem("role") !== "sports-coach" && (
@@ -1817,10 +1821,10 @@ const filteredUsers = users
                       {event.action === "Login"
                         ? "🔑"
                         : event.action === "Logout"
-                        ? "👋"
-                        : event.action === "Password Change"
-                        ? "🔒"
-                        : "✏️"}
+                          ? "👋"
+                          : event.action === "Password Change"
+                            ? "🔒"
+                            : "✏️"}
                     </div>
                     <div className="timeline-content">
                       <div className="timeline-time">

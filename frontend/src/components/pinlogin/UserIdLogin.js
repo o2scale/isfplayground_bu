@@ -37,8 +37,17 @@ export default function UserIdLogin({ onToggle }) {
 
             const response = await studentPinLogin(data);
 
+            console.log(response);
+
             if (response.data && response.data.data) {
                 const { token, user } = response.data.data;
+
+                if (user.status === 'inactive') {
+                    const errorMessage = 'Your account is inactive. Please contact support.';
+                    setError(errorMessage);
+                    showToast(errorMessage, "error");
+                    return; // ⛔ Stop login process here
+                }
 
                 // Format the user data to match our auth context expectations
                 const userData = {
@@ -123,7 +132,7 @@ export default function UserIdLogin({ onToggle }) {
 
             <Link to={'/admin/login'}>
             <p className="toggle-link admin-btn">
-                Admin Login
+                User Login
             </p>
             </Link>
         </div>
