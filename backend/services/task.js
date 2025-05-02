@@ -405,6 +405,9 @@ class Task {
                     userHierarchy = userHierarchy.filter(role => role !== UserTypes.STUDENT);
                 }
             }
+            // if (userRole != UserTypes.ADMIN && userRole != UserTypes.STUDENT) {
+            //     userHierarchy = [UserTypes.COACH, UserTypes.IN_CHARGE, UserTypes.STUDENT, UserTypes.PURCHASE_MANAGER, UserTypes.MEDICAL_IN_CHARGE, UserTypes.SPORTS_COACH, UserTypes.MUSIC_COACH, UserTypes.AMMA]
+            // }
             let assignedByUserIds = await getUserIdsByRoles({ roles: userHierarchy })
             let assignedIds = []
             if (assignedByUserIds && assignedByUserIds.success) {
