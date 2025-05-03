@@ -1,9 +1,9 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
-const ReqSource = {
-  ELECTRON: "electron",
-  WEB: "web",
+export const ReqSource = {
+  ELECTRON: 'electron',
+  WEB: 'web',
 };
 
 const checkOnlineStatus = async () => {
@@ -42,7 +42,9 @@ const checkOnlineStatus = async () => {
       const token = localStorage.getItem('token');
       if (token) config.headers.Authorization = `Bearer ${token}`;
 
-      config.headers['req-source'] = JSON.stringify(ReqSource)
+       // Detect Electron and set ReqSource accordingly
+      const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+      config.headers['ReqSource'] = isElectron ? ReqSource.ELECTRON : ReqSource.WEB;
   
       return config;
     });
@@ -86,7 +88,9 @@ const checkOnlineStatus = async () => {
       const token = localStorage.getItem('token');
       if (token) config.headers.Authorization = `Bearer ${token}`;
 
-      config.headers['req-source'] = JSON.stringify(ReqSource)
+       // Detect Electron and set ReqSource accordingly
+      const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+      config.headers['ReqSource'] = isElectron ? ReqSource.ELECTRON : ReqSource.WEB;
   
       return config;
     });

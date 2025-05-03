@@ -997,7 +997,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
 
 
                 {
-                    (localStorage.getItem('role') === "sports-coach" || type == "sports" || localStorage.getItem('role') === "music-coach" || type == "music") && (
+                    (type == "sports" || type == "music") && (
                         <div className="form-group">
                             <label htmlFor="drillOrExerciseType">Drill or Exercise Type</label>
                             <input
@@ -1017,7 +1017,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
                 }
 
                 {
-                    (type == "order" || localStorage.getItem('role') === "purchase-manager" || type == "purchase") && (
+                    (type == "repair" || type == "purchase") && (
                         <>
                             <div className="form-group">
                                 <label htmlFor="drillOrExerciseType">Machine Details</label>
@@ -1069,7 +1069,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
                 }
 
                 {
-                    (localStorage.getItem('role') === "purchase-manager" || type == "purchase") && (
+                    (type == "purchase") && (
                         <div className="form-group">
                             <label htmlFor="requiredParts">Required Parts</label>
                             <input

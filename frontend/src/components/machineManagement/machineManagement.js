@@ -16,6 +16,7 @@ const MachineManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [error, setError] = useState();
     const [selectedBalagruha, setSelectedBalagruha] = useState('');
     const [newMachine, setNewMachine] = useState({
         machineId: '',
@@ -98,6 +99,7 @@ const MachineManagement = () => {
     const handleAddMachine = async (e) => {
         e.preventDefault();
         console.log('New Machine:', JSON.stringify(newMachine));
+       try {
         const response = await addMachines(JSON.stringify(newMachine));
         console.log('machine added succesfullu', response)
         getMachinesData()
@@ -110,6 +112,9 @@ const MachineManagement = () => {
             assignedBalagruha: '',
             status: 'active'
         });
+       } catch (error) {
+        setError(error.response.data.message);
+       }
     };
 
     const toggleStatus = async (id) => {
@@ -639,6 +644,7 @@ const MachineManagement = () => {
                                             Cancel
                                         </button>
                                     </div>
+                                    <p className='error-message'>{error}</p>
                                 </form>
                             </div>
                         )}
