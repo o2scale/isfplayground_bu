@@ -13,7 +13,7 @@ const {
 const { uploadFileToS3 } = require("./aws/s3");
 const { getFileContentType, getUploadedFilesFullPath } = require("../utils/helper");
 const User = require("../models/user");
-
+const { getStudentMedicalCheckInsByBalagruhaIds } = require("../data-access/User")
 class MedicalCheckIns {
     constructor(obj) {
         this.studentId = obj.studentId || null;
@@ -424,6 +424,35 @@ class MedicalCheckIns {
             }
         } catch (error) {
             errorLogger.error({ data: { error: error } }, `Error occurred during deleting attachment: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async getMedicalCheckInsByBalagruhaIds(balagruhaIds) {
+        try {
+            if (!balagruhaIds || !Array.isArray(balagruhaIds) || balagruhaIds?.length === 0) {
+                //    get all balagruha ids from the database
+                balagruhaIds = await Balagruha.find({}).select('_id').lean();
+                balagruhaIds = balagruhaIds.map(item => item._id.toString());
+            }
+            const result = await getStudentMedicalCheckInsByBalagruhaIds({ balagruhaIds });
+            if (result.success) {
+                let medicalCheckIns = []
+                result.data.forEach(item => {
+                    medicalCheckIns.push(item.medicalCheckIns)
+                })
+
+                return {
+                    success: true,
+                    data: {
+                        medicalCheckIns: medicalCheckIns
+                    },
+                    message: "Fetched medical check-ins by balagruha Ids successfully"
+                };
+            }
+            return result;
+        } catch (error) {
+            errorLogger.error({ data: { error: error } }, `Error occurred during getting medical check-ins by balagruha Ids: ${error.message}`);
             throw error;
         }
     }

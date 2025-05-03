@@ -338,4 +338,31 @@ exports.deleteAttachment = async (req, res) => {
             error: error.message
         });
     }
-}; 
+};
+
+// Get all medical check-ins by balagruha Ids list 
+exports.getMedicalCheckInsByBalagruhaIds = async (req, res) => {
+    try {
+        const { balagruhaIds } = req.body;
+        const result = await MedicalCheckIns.getMedicalCheckInsByBalagruhaIds(balagruhaIds);
+        if (result.success) {
+            res.status(HTTP_STATUS_CODE.OK).json({
+                success: true,
+                data: result.data,
+                message: result.message
+            });
+        } else {
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+                success: false,
+                message: result.message
+            });
+        }
+    } catch (error) {
+        logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, error: error.message }, "Error getting medical check-ins by balagruha Ids list");
+        res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}

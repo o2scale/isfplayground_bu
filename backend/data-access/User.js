@@ -1509,3 +1509,74 @@ exports.getStudentMoodTrackerDetailsByBalagruhaIds = async ({ balagruhaIds }) =>
         throw error;
     })
 }
+
+// Function for fetch the student medical check-ins by balagruhaIds list 
+exports.getStudentMedicalCheckInsByBalagruhaIds = async ({ balagruhaIds }) => {
+    // convert the balagruhaIds to array of object ids if any of the balagruhaIds is a string
+    balagruhaIds = balagruhaIds.map(id => mongoose.Types.ObjectId.createFromHexString(id));
+    return await User.aggregate([
+        {
+            '$match': {
+                'role': 'student',
+                'balagruhaIds': {
+                    '$in': balagruhaIds
+                }
+            }
+        }, {
+            '$lookup': {
+                'from': 'medical_check_ins',
+                'let': {
+                    'userId': '$_id'
+                },
+                'pipeline': [
+                    {
+                        '$match': {
+                            '$expr': {
+                                '$eq': [
+                                    '$studentId', '$$userId'
+                                ]
+                            }
+                        }
+                    }, {
+                        '$sort': {
+                            'date': -1
+                        }
+                    }, {
+                        '$limit': 1
+                    }
+                ],
+                'as': 'medicalCheckIns'
+            }
+        }, {
+            '$addFields': {
+                'medicalCheckIns.userName': '$name',
+                'medicalCheckIns.userId': '$userId'
+            }
+        }, {
+            '$project': {
+                'medicalCheckIns': {
+                    '$arrayElemAt': [
+                        '$medicalCheckIns', 0
+                    ]
+                }
+            }
+        }, {
+            '$match': {
+                'medicalCheckIns': {
+                    '$ne': null
+                }
+            }
+        }, {
+            '$limit': 100
+        }
+    ]).then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "Student medical check-ins fetched successfully"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}

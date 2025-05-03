@@ -73,5 +73,12 @@ router.delete(
     // authorize('Medical Management', 'Update'),
     medicalCheckInsController.deleteAttachment
 );
+// Get all medical check-ins by balagruha Ids list 
+router.post(
+    '/students/list',
+    authenticate,
+    // authorize('Medical Management', 'Read'),
+    medicalCheckInsController.getMedicalCheckInsByBalagruhaIds
+);
 
 module.exports = router; 
