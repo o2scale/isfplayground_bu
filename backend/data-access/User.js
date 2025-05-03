@@ -1548,9 +1548,21 @@ exports.getStudentMedicalCheckInsByBalagruhaIds = async ({ balagruhaIds }) => {
                 'as': 'medicalCheckIns'
             }
         }, {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'medicalCheckIns.createdBy',
+                'foreignField': '_id',
+                'as': 'createdByUser'
+            }
+        }, {
+            '$unwind': {
+                'path': '$createdByUser'
+            }
+        }, {
             '$addFields': {
                 'medicalCheckIns.userName': '$name',
-                'medicalCheckIns.userId': '$userId'
+                'medicalCheckIns.userId': '$userId',
+                'medicalCheckIns.createdByUser': '$createdByUser.name'
             }
         }, {
             '$project': {
