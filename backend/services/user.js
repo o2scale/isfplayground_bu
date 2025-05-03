@@ -470,3 +470,32 @@ exports.getUserIdFromGeneratedId = async ({ generatedId }) => {
         throw error;
     }
 }
+
+// Remove the given machines from the user 
+exports.removeMachinesFromUser = async ({ userId, machineIds }) => {
+    try {
+        let userList = await UserDataAccess.getStudentListByAssignedMachinesId({ machineIds })
+        if (userList.success && userList.data) {
+            // iterate the userList and remove the machines from the user 
+            for (let user of userList.data) {
+                // remove the machines from the user from matching the machineIds array 
+                let machineIdsString = machineIds.map(id => id.toString())
+                user.assignedMachines = user.assignedMachines.filter(item => {
+                    if (machineIdsString.includes(item.toString())) {
+                        return false
+                    } else {
+                        return true
+                    }
+                })
+
+                // update the user 
+                await UserDataAccess.updateUserById({ userId: user._id, payload: { assignedMachines: user.assignedMachines } })
+            }
+        } else {
+            return []
+        }
+    } catch (error) {
+        console.log('error', error)
+        throw error;
+    }
+}

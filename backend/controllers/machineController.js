@@ -6,6 +6,7 @@ const { getMachineById, deleteMachine } = require('../data-access/machines')
 const { isRequestFromLocalhost, generateRandomString } = require("../utils/helper");
 const { createOfflineRequest } = require('../services/offlineRequestQueue');
 const { OfflineReqNames } = require('../constants/general');
+const { removeMachinesFromUser } = require('../services/user');
 
 
 exports.getAllMachines = async (req, res) => {
@@ -199,6 +200,9 @@ exports.assignMachine = async (req, res) => {
                     let updateResult = await updateBalagruha(newBalagruha, { assignedMachines: assignedMachines })
                     console.log('updateResult', updateResult)
                 }
+
+                removeMachinesFromUser({ machineIds: [machine._id] })
+
                 if (isOfflineReq) {
                     let result = await createOfflineRequest({
                         operation: OfflineReqNames.ASSIGN_MACHINE,

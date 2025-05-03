@@ -3,7 +3,7 @@ const { UserTypes } = require("../constants/users");
 const { createBalagruha, getAllBalagruha, getBalagruhaById, updateBalagruha, deleteBalagruha, getAllBalagruhaDetails, getBalagruhaByGeneratedId } = require("../data-access/balagruha");
 const { updateMachinesByIds } = require("../data-access/machines");
 const { getBalagruhaDetailsByUserId } = require("../data-access/User");
-
+const { removeMachinesFromUser } = require("./user");
 class Balagruha {
     constructor(obj = {}) {
         // this._id = obj._id || null;
@@ -120,6 +120,8 @@ class Balagruha {
                     let removedMachinesIds = removedMachines.map(machineId => machineId._id);
                     if (removedMachinesIds.length > 0) {
                         let updateResult = await updateMachinesByIds(removedMachinesIds, { assignedBalagruha: null })
+                        removeMachinesFromUser({ machineIds: removedMachinesIds })
+
                     }
                 } else {
                     // set balagruhaId to null to all the machines which are not assigned to any balagruha

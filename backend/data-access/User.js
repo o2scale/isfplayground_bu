@@ -1413,3 +1413,28 @@ exports.getIdByGeneratedId = async ({ generatedId }) => {
     })
 }
 
+// Function for fetch the student list by assigned machines id 
+exports.getStudentListByAssignedMachinesId = async ({ machineIds }) => {
+    return await User.aggregate([
+        {
+            '$match': {
+                'role': 'student'
+            }
+        }, {
+            '$match': {
+                'assignedMachines': {
+                    '$in': machineIds
+                }
+            }
+        }
+    ]).then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "Student list fetched successfully"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}
