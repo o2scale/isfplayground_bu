@@ -1,59 +1,45 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const medicalCheckInSchema = new Schema({
-    student: {
-        type: Schema.Types.ObjectId,
-        ref: 'Student',
-        required: true
-    },
-    dateTime: {
-        type: Date,
-        required: true
-    },
-    temperature: {
-        type: Number,
-        required: true
-    },
-    mood: {
-        type: String,
-        required: true,
-        enum: ['Happy', 'Sad', 'Neutral', 'Tired', 'Energetic', 'Irritable', 'Anxious', 'Calm'] // Adjust based on actual mood options
-    },
-    healthObservations: {
-        type: String,
-        required: false
-    },
-    images: [{
-        filename: String,
-        path: String,
-        contentType: String,
-        size: Number
-    }],
-    pdfs: [{
-        filename: String,
-        path: String,
-        contentType: String,
-        size: Number
-    }],
-    medicalNotes: [{
-        note: String,
-        createdAt: {
-            type: Date,
-            default: Date.now
+const medicalCheckInSchema = new mongoose.Schema(
+    {
+        studentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Student',
+            required: true
         },
+        temperature: {
+            type: Number,
+            required: true
+        },
+        date: {
+            type: Date,
+            required: true
+        },
+        healthStatus: {
+            type: String,
+            enum: ['normal', 'warning', 'alert'],
+            default: 'normal'
+        },
+        notes: {
+            type: String
+        },
+        attachments: [{
+            fileName: { type: String },
+            fileUrl: { type: String },
+            fileType: { type: String },
+            fileSize: { type: Number },
+            uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            uploadedAt: { type: Date, default: Date.now }
+        }],
         createdBy: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
         }
-    }]
-}, {
-    timestamps: true
-});
+    },
+    { timestamps: true }
+);
 
-// Create indexes for faster queries
-medicalCheckInSchema.index({ student: 1, dateTime: -1 });
-
-const MedicalCheckIn = mongoose.model('MedicalCheckIn', medicalCheckInSchema);
+const MedicalCheckIn = mongoose.model('medical_check_ins', medicalCheckInSchema);
 
 module.exports = MedicalCheckIn;
