@@ -108,5 +108,12 @@ router.put(
 
 // API for purchase manager overview details 
 router.get("/overview", authenticate, authorize('Machine Management', 'Read'), repairRequestController.getPurchaseManagerOverview);
-
+// Get all purchase orders with pagination and filtering by balagruha ids list
+router.post(
+    '/purchase-orders/all',
+    authenticate,
+    authorize('Machine Management', 'Read'),
+    repairRequestController.getAllPurchaseOrdersByBalagruhaIds
+);
 module.exports = router;
+

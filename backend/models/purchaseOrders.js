@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 
 const purchaseOrderSchema = new mongoose.Schema(
     {
+        balagruhaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Balagruha' },
         machineDetails: { type: String, default: "", required: true },
         vendorDetails: { type: String, default: "", required: true },
         costEstimate: { type: Number, default: 0 },

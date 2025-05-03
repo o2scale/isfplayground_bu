@@ -48,6 +48,27 @@ const purchaseOrdersDA = {
             .populate('createdBy', 'name email')
             .populate('attachments.uploadedBy', 'name email');
     },
+    // Get all purchase orders by balagruha ids list
+    findAllByBalagruhaIds: async (balagruhaIds) => {
+        // convert balagruhaIds to array if it is a string
+        if (typeof balagruhaIds === 'string') {
+            balagruhaIds = balagruhaIds.split(',');
+        }
+        return await PurchaseOrder.find({ balagruhaId: { $in: balagruhaIds } })
+            .populate('balagruhaId', '_id name location').lean().then(result => {
+                return {
+                    success: true,
+                    data: result,
+                    message: 'Purchase orders fetched successfully'
+                }
+            }).catch(error => {
+                return {
+                    success: false,
+                    message: 'Failed to fetch purchase orders by balagruha ids',
+                    error: error.message
+                }
+            })
+    }
 };
 
 module.exports = purchaseOrdersDA;

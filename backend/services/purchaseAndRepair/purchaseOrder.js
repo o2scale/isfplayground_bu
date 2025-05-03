@@ -6,6 +6,7 @@ const { getUploadedFilesFullPath } = require("../../utils/helper")
 class PurchaseOrder {
 
     constructor(obj) {
+        this.balagruhaId = obj.balagruhaId || null
         this.machineDetails = obj.machineDetails || ""
         this.vendorDetails = obj.vendorDetails || ""
         this.costEstimate = obj.costEstimate || 0
@@ -17,6 +18,7 @@ class PurchaseOrder {
     }
     toJSON() {
         return {
+            balagruhaId: this.balagruhaId,
             machineDetails: this.machineDetails,
             vendorDetails: this.vendorDetails,
             costEstimate: this.costEstimate,
@@ -175,6 +177,26 @@ class PurchaseOrder {
         } catch (error) {
             console.error("Error getting purchase manager overview:", error);
             return { success: false, data: {}, message: error.message };
+        }
+    }
+
+    // Get all purchase orders by balagruha ids list
+    static async getAllPurchaseOrdersByBalagruhaIds(balagruhaIds) {
+        let result = await purchaseOrdersDA.findAllByBalagruhaIds(balagruhaIds);
+        if (result.success) {
+            if (result.data) {
+                result.data = result.data.map(order => {
+                    return {
+                        ...order,
+                        balagruhaId: order.balagruhaId._id,
+                        balagruhaName: order.balagruhaId.name,
+                        balagruhaLocation: order.balagruhaId.location
+                    }
+                })
+            }
+            return { success: true, data: { purchaseOrders: result.data }, message: result.message };
+        } else {
+            return { success: false, data: {}, message: result.message };
         }
     }
 }

@@ -1,7 +1,7 @@
 const PurchaseOrder = require('../services/purchaseAndRepair/purchaseOrder');
 const RepairRequest = require('../services/purchaseAndRepair/repairRequests');
 const { isRequestFromLocalhost } = require('../utils/helper');
-
+const { getAllBalagruhaIds } = require("../data-access/balagruha")
 const repairRequestController = {
     // Create a new repair request
     createRepairRequest: async (req, res) => {
@@ -446,8 +446,42 @@ const repairRequestController = {
                 error: error.message
             });
         }
+    },
+    getAllPurchaseOrdersByBalagruhaIds: async (req, res) => {
+        try {
+            let { balagruhaIds } = req.body;
+            // if no balagruhaIds, return all balagruha ids
+            if (!balagruhaIds || balagruhaIds.length === 0) {
+                balagruhaIds = await getAllBalagruhaIds();
+                balagruhaIds = balagruhaIds.data.map(balagruha => balagruha._id.toString());
+            }
+            const purchaseOrders = await PurchaseOrder.getAllPurchaseOrdersByBalagruhaIds(balagruhaIds);
+            if (purchaseOrders.success) {
+                return res.status(200).json({
+                    success: true,
+                    data: purchaseOrders.data,
+                    message: 'Purchase orders fetched successfully'
+                });
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to fetch purchase orders by balagruha ids',
+                    error: purchaseOrders.message
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching purchase orders by balagruha ids:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to fetch purchase orders by balagruha ids',
+                error: error.message
+            });
+        }
     }
 
 };
 
+
 module.exports = repairRequestController;
+
+
