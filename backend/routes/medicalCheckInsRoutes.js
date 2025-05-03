@@ -44,6 +44,7 @@ router.put(
     '/:checkInId',
     authenticate,
     // authorize('Medical Management', 'Update'),
+    upload.none(),
     medicalCheckInsController.updateMedicalCheckIn
 );
 

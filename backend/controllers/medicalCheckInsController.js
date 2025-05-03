@@ -189,15 +189,14 @@ exports.getMedicalCheckInById = async (req, res) => {
 exports.updateMedicalCheckIn = async (req, res) => {
     try {
         const { checkInId } = req.params;
-        const { student, temperature, date, time, healthStatus, notes } = req.body;
+        const { studentId, temperature, date, healthStatus, notes } = req.body;
 
         logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, checkInId }, `Request received to update medical check-in with ID: ${checkInId}`);
 
         const updateData = {};
-        if (student) updateData.student = student;
+        if (studentId) updateData.studentId = studentId;
         if (temperature) updateData.temperature = temperature;
         if (date) updateData.date = new Date(date);
-        if (time) updateData.time = time;
         if (healthStatus) updateData.healthStatus = healthStatus;
         if (notes !== undefined) updateData.notes = notes;
 

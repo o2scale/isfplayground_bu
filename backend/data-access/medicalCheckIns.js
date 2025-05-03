@@ -71,7 +71,7 @@ exports.getMedicalCheckInsByStudentId = async (studentId, pagination = {}) => {
 // Function to get medical check-in by ID
 exports.getMedicalCheckInById = async (checkInId) => {
     return await MedicalCheckIn.findById(checkInId)
-        .populate('student', 'firstName lastName studentId')
+        .populate('studentId', 'firstName lastName studentId')
         .populate('createdBy', 'name email')
         .lean()
         .then(result => {
