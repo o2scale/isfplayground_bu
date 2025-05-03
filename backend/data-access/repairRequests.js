@@ -68,6 +68,25 @@ const repairRequestsDA = {
             .populate('createdBy', 'name email')
             .populate('attachments.uploadedBy', 'name email');
     },
+    findAllByBalagruhaIds: async (balagruhaIds) => {
+        // convert balagruhaIds to array if it is a string
+
+        return await RepairRequests.find({ balagruhaId: { $in: balagruhaIds } })
+            .populate('balagruhaId', '_id name location').lean().then(result => {
+                return {
+                    success: true,
+                    data: result,
+                    message: 'Repair requests fetched successfully'
+                }
+            }).catch(error => {
+                console.log('error', error)
+                return {
+                    success: false,
+                    message: 'Failed to fetch repair requests by balagruha ids',
+                    error: error.message
+                }
+            })
+    }
 };
 
 module.exports = repairRequestsDA;

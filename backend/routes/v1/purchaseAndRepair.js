@@ -115,5 +115,13 @@ router.post(
     authorize('Machine Management', 'Read'),
     repairRequestController.getAllPurchaseOrdersByBalagruhaIds
 );
+
+// Get all repair requests with pagination and filtering by balagruha ids list
+router.post(
+    '/repair-requests/all',
+    authenticate,
+    authorize('Machine Management', 'Read'),
+    repairRequestController.getAllRepairRequestsByBalagruhaIds
+);
 module.exports = router;
 

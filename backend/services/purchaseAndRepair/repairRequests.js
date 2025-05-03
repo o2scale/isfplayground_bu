@@ -4,6 +4,7 @@ const { uploadFileToS3 } = require('../aws/s3');
 
 class RepairRequest {
     constructor(obj) {
+        this.balagruhaId = obj.balagruhaId || null
         this.issueName = obj.issueName || ""
         this.description = obj.description || ""
         this.dateReported = obj.dateReported || null
@@ -16,6 +17,7 @@ class RepairRequest {
 
     toJSON() {
         return {
+            balagruhaId: this.balagruhaId,
             issueName: this.issueName,
             description: this.description,
             dateReported: this.dateReported,
@@ -91,6 +93,25 @@ class RepairRequest {
     // Add the missing countRepairRequests function
     static async countRepairRequests(query = {}) {
         return await repairRequestsDA.count(query);
+    }
+
+    static async getAllRepairRequestsByBalagruhaIds(balagruhaIds) {
+        let result = await repairRequestsDA.findAllByBalagruhaIds(balagruhaIds);
+        if (result.success) {
+            let repairRequests = result.data;
+            // merge the balagruha details with the repair requests
+            result.data = result.data.map(repairRequest => {
+                return {
+                    ...repairRequest,
+                    balagruhaId: repairRequest.balagruhaId._id,
+                    balagruhaName: repairRequest.balagruhaId.name,
+                    balagruhaLocation: repairRequest.balagruhaId.location
+                }
+            })
+            return { success: true, data: result.data, message: 'Repair requests fetched successfully' };
+        } else {
+            return { success: false, data: {}, message: 'Failed to fetch repair requests by balagruha ids' };
+        }
     }
 }
 

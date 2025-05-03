@@ -477,8 +477,38 @@ const repairRequestController = {
                 error: error.message
             });
         }
+    },
+    getAllRepairRequestsByBalagruhaIds: async (req, res) => {
+        try {
+            let { balagruhaIds } = req.body;
+            // if no balagruhaIds, return all balagruha ids
+            if (!balagruhaIds || balagruhaIds.length === 0) {
+                balagruhaIds = await getAllBalagruhaIds();
+                balagruhaIds = balagruhaIds.data.map(balagruha => balagruha._id.toString());
+            }
+            const repairRequests = await RepairRequest.getAllRepairRequestsByBalagruhaIds(balagruhaIds);
+            if (repairRequests.success) {
+                return res.status(200).json({
+                    success: true,
+                    data: repairRequests.data,
+                    message: 'Repair requests fetched successfully'
+                });
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to fetch repair requests by balagruha ids',
+                    error: repairRequests.message
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching repair requests by balagruha ids:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to fetch repair requests by balagruha ids',
+                error: error.message
+            });
+        }
     }
-
 };
 
 

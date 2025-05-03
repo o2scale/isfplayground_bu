@@ -62,6 +62,7 @@ const purchaseOrdersDA = {
                     message: 'Purchase orders fetched successfully'
                 }
             }).catch(error => {
+                console.log('error', error)
                 return {
                     success: false,
                     message: 'Failed to fetch purchase orders by balagruha ids',
