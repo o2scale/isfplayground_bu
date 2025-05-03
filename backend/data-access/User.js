@@ -1477,6 +1477,11 @@ exports.getStudentMoodTrackerDetailsByBalagruhaIds = async ({ balagruhaIds }) =>
                 'as': 'latestMoodTracker'
             }
         }, {
+            '$addFields': {
+                'latestMoodTracker.userName': '$name',
+                'latestMoodTracker.userId': '$userId'
+            }
+        }, {
             '$project': {
                 'latestMoodTracker': {
                     '$arrayElemAt': [
@@ -1490,6 +1495,8 @@ exports.getStudentMoodTrackerDetailsByBalagruhaIds = async ({ balagruhaIds }) =>
                     '$ne': null
                 }
             }
+        }, {
+            '$limit': 100
         }
     ]).then(result => {
         return {

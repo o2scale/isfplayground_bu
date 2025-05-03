@@ -86,10 +86,15 @@ exports.getLatestMoodEntryByBalagruhaIds = async (balagruhaIds) => {
     try {
         let result = await getStudentMoodTrackerDetailsByBalagruhaIds({ balagruhaIds });
         if (result.success) {
+            // iterate the response 
+            let moodInfo = [];
+            result.data.forEach(item => {
+                moodInfo.push({ ...item.latestMoodTracker });
+            });
             return {
                 success: true,
                 data: {
-                    moodInfo: result.data
+                    moodInfo: moodInfo
                 },
                 message: "Latest mood entry fetched successfully"
             }
