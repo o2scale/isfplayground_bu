@@ -1,5 +1,5 @@
 const StudentMoodTracker = require('../models/studentMoodTracker');
-
+const { getStudentMoodTrackerDetailsByBalagruhaIds } = require('../data-access/User');
 // Create or update mood tracker entry
 exports.createOrUpdateMoodEntry = async (moodData) => {
     try {
@@ -77,6 +77,25 @@ exports.getMoodEntriesByDateRange = async (userId, startDate, endDate) => {
                 $lte: new Date(endDate)
             }
         }).sort({ date: -1 });
+    } catch (error) {
+        throw error;
+    }
+};
+
+exports.getLatestMoodEntryByBalagruhaIds = async (balagruhaIds) => {
+    try {
+        let result = await getStudentMoodTrackerDetailsByBalagruhaIds({ balagruhaIds });
+        if (result.success) {
+            return {
+                success: true,
+                data: {
+                    moodInfo: result.data
+                },
+                message: "Latest mood entry fetched successfully"
+            }
+        } else {
+            throw new Error(result.message);
+        }
     } catch (error) {
         throw error;
     }

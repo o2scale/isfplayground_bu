@@ -76,7 +76,7 @@ exports.authenticate = async (req, res, next) => {
 exports.authorize = (module, action) => {
     return async (req, res, next) => {
         try {
-            console.log('auth res: ', req.user)
+            // console.log('auth res: ', req.user)
             const userRole = req.user.role;
 
             const role = await Role.findOne({ roleName: userRole });

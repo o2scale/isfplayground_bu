@@ -9,7 +9,6 @@ const { authenticateToken, authenticate, authorize } = require('../middleware/au
 // Create or update mood entry
 router.post('/',
     authenticate, // Ensure the user is authenticated
-    authorize('User Management', 'Update'), // Ensure the user has permission to update tasks
     studentMoodTrackerController.createOrUpdateMoodEntry);
 
 // Get mood entries by userId
@@ -22,5 +21,7 @@ router.get('/dateRange', studentMoodTrackerController.getMoodEntriesByDateRange)
 router.get('/:id', studentMoodTrackerController.getMoodEntryById);
 router.put('/:id', studentMoodTrackerController.updateMoodEntry);
 router.delete('/:id', studentMoodTrackerController.deleteMoodEntry);
+// get mood tracker latest details by balagruha
+router.post('/latest', studentMoodTrackerController.getLatestMoodEntry);
 
 module.exports = router;

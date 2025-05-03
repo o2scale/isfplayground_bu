@@ -1438,3 +1438,67 @@ exports.getStudentListByAssignedMachinesId = async ({ machineIds }) => {
         throw error;
     })
 }
+
+// Function for fetch the student mood tracker details by balagruhaIds list 
+exports.getStudentMoodTrackerDetailsByBalagruhaIds = async ({ balagruhaIds }) => {
+    // convert the balagruhaIds to array of object ids
+    balagruhaIds = balagruhaIds.map(id => mongoose.Types.ObjectId.createFromHexString(id));
+    return await User.aggregate([
+        {
+            '$match': {
+                'role': 'student',
+                'balagruhaIds': {
+                    '$in': balagruhaIds
+                }
+            }
+        }, {
+            '$lookup': {
+                'from': 'student_mood_trackers',
+                'let': {
+                    'userId': '$_id'
+                },
+                'pipeline': [
+                    {
+                        '$match': {
+                            '$expr': {
+                                '$eq': [
+                                    '$userId', '$$userId'
+                                ]
+                            }
+                        }
+                    }, {
+                        '$sort': {
+                            'date': -1
+                        }
+                    }, {
+                        '$limit': 1
+                    }
+                ],
+                'as': 'latestMoodTracker'
+            }
+        }, {
+            '$project': {
+                'latestMoodTracker': {
+                    '$arrayElemAt': [
+                        '$latestMoodTracker', 0
+                    ]
+                }
+            }
+        }, {
+            '$match': {
+                'latestMoodTracker': {
+                    '$ne': null
+                }
+            }
+        }
+    ]).then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "Student mood tracker details fetched successfully"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}

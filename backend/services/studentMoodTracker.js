@@ -195,3 +195,17 @@ exports.getMoodEntriesByDateRange = async (userId, startDate, endDate) => {
         };
     }
 };
+
+// Get latest mood entry by balagruha
+exports.getLatestMoodEntry = async (balagruhaIds) => {
+    try {
+        const result = await moodTrackerDA.getLatestMoodEntryByBalagruhaIds(balagruhaIds);
+        return result;
+    } catch (error) {
+        errorLogger.error(`Error in getLatestMoodEntry service: ${error.message}`);
+        return {
+            success: false,
+            message: error.message
+        };
+    }
+};

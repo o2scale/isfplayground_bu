@@ -186,3 +186,20 @@ exports.getMoodEntriesByDateRange = async (req, res) => {
         });
     }
 };
+
+// API for fetch the latest mood entry by balagruhaIds list 
+exports.getLatestMoodEntry = async (req, res) => {
+    try {
+        const { balagruhaIds } = req.body;
+        const result = await moodTrackerService.getLatestMoodEntry(balagruhaIds);
+        return res.status(200).json(result);
+    } catch (error) {
+        errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, data: { error: error.message } },
+            `Error occurred while processing get latest mood entry request: ${error.message}`);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
