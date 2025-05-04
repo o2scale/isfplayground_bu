@@ -20,6 +20,8 @@ import AttendanceComponent from './components/Attendance/attendance';
 import BalagruhaManagement from './components/balagruhaManagement/balagruhamanagement';
 import CourseManagement from './components/courseManagement/CourseManagement';
 import StudentLogin from './components/login/StudentLogin';
+import RepairManagement from './components/repairManagement/RepairManagement';
+import PurchaseManagement from './components/purchaseManagement/PurchaseManagement';
 
 const App = () => {
   return (
@@ -108,6 +110,22 @@ const App = () => {
                   element={
                     // <ProtectedRoute module="Machine Management" action="Read">
                     <CourseManagement />
+                    // </ProtectedRoute>  
+                  }
+                />
+                <Route
+                  path="/repair"
+                  element={
+                    // <ProtectedRoute module="Machine Management" action="Read">
+                    <RepairManagement />
+                    // </ProtectedRoute>  
+                  }
+                />
+                <Route
+                  path="/purchase"
+                  element={
+                    // <ProtectedRoute module="Machine Management" action="Read">
+                    <PurchaseManagement />
                     // </ProtectedRoute>  
                   }
                 />

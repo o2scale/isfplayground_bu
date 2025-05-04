@@ -22,7 +22,7 @@ const AttendanceComponent = () => {
         }
     };
 
-    const getStudentListBasedonDate = async (id) => {
+    const getStudentListBasedonDate = async (id, date) => {
         try {
             const response = await getStudentListforAttendance(id, date);
             setStudents(response?.data?.studentList || []);
@@ -59,7 +59,7 @@ const AttendanceComponent = () => {
 
         try {
             await postmarkAttendance(JSON.stringify(data));
-            getStudentListBasedonDate(selectedBalagruha);
+            getStudentListBasedonDate(selectedBalagruha, date);
         } catch (error) {
             console.error('Error marking attendance:', error);
         }
@@ -74,7 +74,7 @@ const AttendanceComponent = () => {
         updateMetrics(resetStudents);
 
         if (selectedBalagruha) {
-            getStudentListBasedonDate(selectedBalagruha);
+            getStudentListBasedonDate(selectedBalagruha, e.target.value);
         }
     };
 
@@ -106,7 +106,7 @@ const AttendanceComponent = () => {
                             className={`balagruha-card ${selectedBalagruha === balagruha._id ? 'active' : ''}`}
                             onClick={() => {
                                 setSelectedBalagruha(balagruha._id);
-                                getStudentListBasedonDate(balagruha._id);
+                                getStudentListBasedonDate(balagruha._id, date);
                             }}
                         >
                             <div className="balagruha-icon">🏠</div>

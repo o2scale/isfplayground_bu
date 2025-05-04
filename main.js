@@ -369,8 +369,10 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
-  // mainWindow.loadURL("https://www.bing.com");
+  // mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
+  mainWindow.loadURL("http://localhost:3000");
+  mainWindow.webContents.openDevTools();
+
 }
 
 // MAC address API

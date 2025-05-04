@@ -714,7 +714,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
       console.error("Error submitting form:", error);
       setErrors((prev) => ({
         ...prev,
-        submit: error.message || "An error occurred while saving the user",
+        submit: error.response.data.message || "An error occurred while saving the user",
       }));
     } finally {
       setIsSubmitting(false);
@@ -854,7 +854,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
               <option value="coach">Coach</option>
               <option value="balagruha-incharge">Balagruha In-charge</option>
               <option value="purchase-manager">Purchase Manager</option>
-              <option value="medical-incharge">Medical Manager</option>
+              <option value="medical-incharge">Medical Incharge</option>
               <option value="sports-coach">Sports Coach</option>
               <option value="music-coach">Music Coach</option>
               <option value="amma">Amma</option>
