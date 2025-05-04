@@ -19,7 +19,9 @@ exports.getAllUsers = async (_, res) => {
             .populate('medicalRecords');
         if (users) {
             users = users.map(item => {
-
+                if (item.userId === 5454) {
+                    console.log('dfsdf',)
+                }
                 let medicalHistoryItem = []
                 let nextActionDate = null;
                 if (item?.medicalRecords?.length > 0) {
@@ -475,6 +477,15 @@ exports.updateUserDetails = async (req, res) => {
             req.body.facialData = req.files.filter(file => file.fieldname === 'facialData')[0];
 
             // Handle any other file uploads if needed
+            // const medicalHistory = extractMedicalHistory(req);
+            // if (medicalHistory.length > 0) {
+            //     req.body.medicalHistory = medicalHistory;
+            //     req.body.medicalHistory = await Student.handleStudentMedicalRecordUpdate(req.body);
+            // }
+        }
+
+        if (req.body.role === UserTypes.STUDENT) {
+            // Handle any other file uploads if needed
             const medicalHistory = extractMedicalHistory(req);
             if (medicalHistory.length > 0) {
                 req.body.medicalHistory = medicalHistory;
@@ -500,7 +511,7 @@ exports.updateUserDetails = async (req, res) => {
                 const medicalHistory = extractMedicalHistory(req);
                 req.body.medicalHistory = medicalHistory
 
-                updateStudentMedicalRecords({ studentId: result.data.user._id, medicalData: req.body.medicalHistory, nextActionDate: req.body.nextActionDate, createdBy: createdBy, isOfflineReq: isOfflineReq })
+                await updateStudentMedicalRecords({ studentId: result.data.user._id, medicalData: req.body.medicalHistory, nextActionDate: req.body.nextActionDate, createdBy: createdBy, isOfflineReq: isOfflineReq })
             }
             if (req.body.nextActionDate) {
                 result.data.user.nextActionDate = req.body.nextActionDate

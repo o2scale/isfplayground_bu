@@ -1,4 +1,4 @@
-const { createMedicalRecords, deleteMedicalRecords } = require("../data-access/medicalRecords");
+const { createMedicalRecords, deleteMedicalRecords, getMedicalHistoryByItemIds } = require("../data-access/medicalRecords");
 const { getUserDetailsById, updateUserById } = require("../data-access/User");
 const { getUploadedFilesFullPath } = require("../utils/helper");
 const { uploadFileToS3 } = require("./aws/s3");
@@ -60,9 +60,17 @@ class MedicalRecords {
     static async updateStudentMedicalRecords({ studentId, medicalData, nextActionDate, createdBy, isOfflineReq }) {
         try {
             // delete existing medical records by student id
-            let deleteResult = await deleteMedicalRecords(studentId)
             let medicalHistory = [];
             if (medicalData && medicalData.length > 0) {
+                let existingMedicalHistoryIds = []
+                medicalData.forEach(record => {
+                    if (record._id) {
+                        existingMedicalHistoryIds.push(record._id)
+                    }
+                })
+                // get all the medical history from the existing medical history
+                let existingMedicalHistory = await getMedicalHistoryByItemIds(existingMedicalHistoryIds)
+
                 for (let i = 0; i < medicalData.length; i++) {
                     let record = medicalData[i];
                     let otherAttachments = record.otherAttachments;
@@ -97,6 +105,18 @@ class MedicalRecords {
                                 })
                             }
                         }
+                    } else {
+                        console.log('no other attachments')
+                        let currentItemId = record._id
+                        // get the corresponding medical history from the existing medical history
+                        if (existingMedicalHistory.data && existingMedicalHistory.data.length > 0) {
+                            for (let i = 0; i < existingMedicalHistory.data.length; i++) {
+                                let medicalHistoryItem = existingMedicalHistory.data[i]
+                                if (medicalHistoryItem.medicalHistory._id.toString() === currentItemId) {
+                                    otherAttachmentsArray = medicalHistoryItem.medicalHistory.otherAttachments
+                                }
+                            }
+                        }
                     }
 
                     if (prescriptions && prescriptions.length > 0) {
@@ -123,6 +143,18 @@ class MedicalRecords {
                                     name: originalname,
                                     date: new Date()
                                 })
+                            }
+                        }
+                    } else {
+                        console.log('no prescriptions')
+                        let currentItemId = record._id
+                        // get the corresponding medical history from the existing medical history
+                        if (existingMedicalHistory.data && existingMedicalHistory.data.length > 0) {
+                            for (let i = 0; i < existingMedicalHistory.data.length; i++) {
+                                let medicalHistoryItem = existingMedicalHistory.data[i]
+                                if (medicalHistoryItem.medicalHistory._id.toString() === currentItemId) {
+                                    prescriptionsArray = medicalHistoryItem.medicalHistory.prescriptions
+                                }
                             }
                         }
                     }
@@ -154,6 +186,8 @@ class MedicalRecords {
                     notes: "",
                     createdBy: createdBy || null
                 }
+                let deleteResult = await deleteMedicalRecords(studentId)
+
                 let medicalRecordsSaveResult = await createMedicalRecords(medicalRecordsEntry);
                 if (medicalRecordsSaveResult && medicalRecordsSaveResult.success) {
                     // update the student records by appending the medical records id to the field 

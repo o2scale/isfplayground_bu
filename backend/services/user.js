@@ -420,7 +420,7 @@ exports.getUserListByAssignedBalagruhaByRole = async ({ role, userId }) => {
                             'sports-coach',
                             'music-coach',
                             'amma']
-                        let result = await UserDataAccess.getUsersByRolesAndBalagruhaIdList({ roles: allRoles, balagruhaId: balagruhaIds });
+                        let result = await UserDataAccess.getUsersByRolesAndBalagruhaIdList({ roles: allRoles, balagruhaId: balagruhaIds, includeAdmin: true });
                         if (result.success && result.data) {
                             return result.data || []
                         } else {

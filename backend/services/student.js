@@ -1,6 +1,6 @@
 const { errorLogger } = require('../config/pino-config');
 const { UserTypes } = require('../constants/users');
-const { createMedicalRecords } = require('../data-access/medicalRecords');
+const { createMedicalRecords, getMedicalHistoryByIds, getMedicalHistoryByItemIds } = require('../data-access/medicalRecords');
 const { createUser, getAllUserDetailsForOverview, getUserInfoById, updateUserById, getStudentListByBalagruhaIdWithAttendance, findUsersByRole, getUserObjectById, getUserDetailsById } = require('../data-access/User')
 const MedicalRecords = require("../services/medicalRecords");
 const { dateToString, getUploadedFilesFullPath } = require('../utils/helper');
@@ -671,6 +671,15 @@ class Student {
             let isOfflineReq = payload.isOfflineReq || false;
             let medicalHistory = []
             if (payload.medicalHistory && payload.medicalHistory.length > 0) {
+                let existingMedicalHistoryIds = []
+                payload.medicalHistory.forEach(record => {
+                    if (record._id) {
+                        existingMedicalHistoryIds.push(record._id)
+                    }
+                })
+                // get all the medical history from the existing medical history
+                let existingMedicalHistory = await getMedicalHistoryByItemIds(existingMedicalHistoryIds)
+                // get all the medical history from the existing medical history
                 for (let i = 0; i < payload.medicalHistory.length; i++) {
                     let record = payload.medicalHistory[i];
                     let otherAttachments = record.otherAttachments;
@@ -704,6 +713,20 @@ class Student {
                                 })
                             }
                         }
+                    } else {
+                        console.log('no other attachments')
+                        let currentItemId = record._id
+                        // get the corresponding medical history from the existing medical history
+                        if (existingMedicalHistory.data && existingMedicalHistory.data.length > 0) {
+                            for (let i = 0; i < existingMedicalHistory.data.length; i++) {
+                                let medicalHistoryItem = existingMedicalHistory.data[i]
+                                console.log('medicalHistoryItem', medicalHistoryItem)
+                                if (medicalHistoryItem.medicalHistory._id.toString() === currentItemId) {
+                                    console.log('medicalHistoryItem.medicalHistory', medicalHistoryItem.medicalHistory)
+                                    otherAttachmentsArray = medicalHistoryItem.medicalHistory.otherAttachments
+                                }
+                            }
+                        }
                     }
 
                     if (prescriptions && prescriptions.length > 0) {
@@ -730,6 +753,20 @@ class Student {
                                     name: originalname,
                                     date: new Date()
                                 })
+                            }
+                        }
+                    } else {
+                        console.log('no prescriptions')
+                        let currentItemId = record._id
+                        // get the corresponding medical history from the existing medical history
+                        if (existingMedicalHistory.data && existingMedicalHistory.data.length > 0) {
+                            for (let i = 0; i < existingMedicalHistory.data.length; i++) {
+                                let medicalHistoryItem = existingMedicalHistory.data[i]
+                                console.log('medicalHistoryItem', medicalHistoryItem)
+                                if (medicalHistoryItem.medicalHistory._id.toString() === currentItemId) {
+                                    console.log('medicalHistoryItem.medicalHistory', medicalHistoryItem.medicalHistory)
+                                    prescriptionsArray = medicalHistoryItem.medicalHistory.prescriptions
+                                }
                             }
                         }
                     }

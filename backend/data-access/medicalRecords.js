@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose")
 const Medical = require("../models/medical")
 
 // Function for create the medical records 
@@ -47,3 +48,31 @@ exports.deleteMedicalRecords = async (studentId) => {
         throw error;
     })
 }
+
+// get the medical history by _ids list 
+exports.getMedicalHistoryByItemIds = async (ids) => {
+    // convert the ids to object id
+    let idsArray = ids.map(id => mongoose.Types.ObjectId.createFromHexString(id))
+    return await Medical.aggregate([
+        {
+            '$unwind': '$medicalHistory'
+        }, {
+            '$match': {
+                'medicalHistory._id': {
+                    '$in': idsArray
+                }
+            }
+        }
+    ]).then(result => {
+        return {
+            success: true,
+            data: result,
+            message: "Successfully fetched the medical history"
+        }
+    }).catch(error => {
+        console.log('error', error)
+        throw error;
+    })
+}
+
+// get the all medical history by medicalHistory._id list
