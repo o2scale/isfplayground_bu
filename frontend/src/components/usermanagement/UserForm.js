@@ -655,7 +655,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
           );
 
           formDataToSend.append(
-            `medicalHistory[${index}].currentStatus._id`,
+            `medicalHistory[${index}]._id`,
             history._id
           )
 
