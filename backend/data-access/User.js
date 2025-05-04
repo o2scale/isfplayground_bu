@@ -1360,7 +1360,7 @@ exports.getUsersByRoleAndBalagruhaIdList = async ({ role, balagruhaId }) => {
 }
 
 // Function for fetch the details of all users by role and balagruha id
-exports.getUsersByRolesAndBalagruhaIdList = async ({ roles, balagruhaId }) => {
+exports.getUsersByRolesAndBalagruhaIdList = async ({ roles, balagruhaId, includeAdmin = false }) => {
     let query = {};
     if (roles && Array.isArray(roles) && roles.length > 0) {
         query.role = { $in: roles };
@@ -1383,11 +1383,24 @@ exports.getUsersByRolesAndBalagruhaIdList = async ({ roles, balagruhaId }) => {
             message: "No filters provided"
         };
     }
+    // also write query for fetch the users with role admin if includeAdmin is true without checking the balagruhaId
 
     return await User.find(query)
         .select('-password -passwordResetToken -loginAttempts -lockUntil -facialData -updatedAt -__v')
         .lean()
-        .then(result => {
+        .then(async (result) => {
+            // also fetch the users with role admin if includeAdmin is true without checking the balagruhaId
+            if (includeAdmin) {
+                const adminQuery = {
+                    role: 'admin',
+                    balagruhaIds: { $exists: true }
+                };
+                const adminResult = await User.find(adminQuery)
+                    .select('-password -passwordResetToken -loginAttempts -lockUntil -facialData -updatedAt -__v')
+                    .lean();
+                result.push(...adminResult);
+            }
+
             return {
                 success: true,
                 data: result,
