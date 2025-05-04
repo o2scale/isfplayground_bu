@@ -7,7 +7,7 @@ exports.UserTypes = {
     STUDENT: 'student',
     PURCHASE_MANAGER: 'purchase-manager',
     MEDICAL_IN_CHARGE: 'medical-incharge',
-    SPORTS_COACH: 'sport-coach',
+    SPORTS_COACH: 'sports-coach',
     MUSIC_COACH: 'music-coach',
     AMMA: 'amma'
 }
@@ -21,7 +21,7 @@ exports.userTypeHierarchy = {
     'student': [this.UserTypes.STUDENT],
     'purchase-manager': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
     'medical-incharge': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
-    'sport-coach': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
+    'sports-coach': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
     'music-coach': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
     'amma': [this.UserTypes.ADMIN, this.UserTypes.COACH, this.UserTypes.STUDENT, this.UserTypes.SPORTS_COACH, this.UserTypes.MUSIC_COACH, this.UserTypes.AMMA, this.UserTypes.IN_CHARGE, this.UserTypes.MEDICAL_IN_CHARGE, this.UserTypes.PURCHASE_MANAGER],
 }

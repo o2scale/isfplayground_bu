@@ -417,7 +417,7 @@ exports.getUserListByAssignedBalagruhaByRole = async ({ role, userId }) => {
                             'student',
                             'purchase-manager',
                             'medical-incharge',
-                            'sport-coach',
+                            'sports-coach',
                             'music-coach',
                             'amma']
                         let result = await UserDataAccess.getUsersByRolesAndBalagruhaIdList({ roles: allRoles, balagruhaId: balagruhaIds });
