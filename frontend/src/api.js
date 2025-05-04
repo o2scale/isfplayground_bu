@@ -744,3 +744,47 @@ export const getAnyUserBasedonRoleandBalagruha = async (role, balagruhaId) => {
     throw error;
   }
 }
+
+export const createMood = async (payload) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.post(`/api/v1/mood-tracker`, payload)
+    return response.data;
+  } catch (error) {
+    console.error("Error in creating mood", error)
+    throw error;
+  }
+}
+
+export const getMedicalConditionBasedOnBalagruha = async (balagruhaIds) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.post(`/api/medical-check-ins/students/list`, balagruhaIds)
+    return response.data;
+  } catch (error) {
+    console.error("Failed to get Medical Condition data", error);
+    throw error;
+  }
+}
+
+export const getMoodBasedOnBalagruha = async (balagruhaId) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.post(`/api/v1/mood-tracker/latest`, balagruhaId)
+    return response.data;
+  } catch (error) {
+    console.error("Failed to get Medical Condition data", error);
+    throw error;
+  }
+}
+
+export const createMedicalCheckin = async (formdata) => {
+  try {
+    const api = await getApiWithoutContentTypeInstance();
+    const response = await api.post(`/api/medical-check-ins/`, formdata, {headers});
+    return response.data;
+  } catch (error) {
+    console.error("Failed to create medical checkin", error);
+    throw error;
+  }
+}

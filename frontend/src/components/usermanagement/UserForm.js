@@ -43,6 +43,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
         },
         prescriptions: [],
         otherAttachments: [],
+        _id: ""
       },
     ],
   });
@@ -82,8 +83,9 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
   };
 
   useEffect(() => {
+    console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii', mode, user)
     if (mode === "edit" && user) {
-      console.log("edit user data", user);
+      console.log("edit user dataiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", user);
       // Set basic user data
       setFormData({
         name: user.name || "",
@@ -118,6 +120,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
                 },
                 prescriptions: history.prescriptions || [],
                 otherAttachments: history.otherAttachments || [],
+                _id: history._id
               }))
             : [
                 {
@@ -134,6 +137,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
                   },
                   prescriptions: [],
                   otherAttachments: [],
+                  _id: ''
                 },
               ],
       });
@@ -234,6 +238,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
           },
           prescriptions: [],
           otherAttachments: [],
+          _id: ''
         },
       ],
     }));
@@ -649,6 +654,11 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
             history.currentStatus.date
           );
 
+          formDataToSend.append(
+            `medicalHistory[${index}].currentStatus._id`,
+            history._id
+          )
+
           // Add files if available
           if (files.medicalHistoryFiles[index]?.prescriptions) {
             files.medicalHistoryFiles[index].prescriptions.forEach((file) => {
@@ -680,7 +690,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
             //         formDataToSend.append(`medicalHistory[${index}].existingPrescriptions`, prescriptionId);
             //     });
             // }
-            // For other attachments that weren't changed
+            // // For other attachments that weren't changed
             // if (user.medicalHistory[index].otherAttachments?.length > 0 &&
             //     (!files.medicalHistoryFiles[index]?.otherAttachments ||
             //         files.medicalHistoryFiles[index]?.otherAttachments.length === 0)) {
@@ -688,6 +698,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
             //         formDataToSend.append(`medicalHistory[${index}].existingOtherAttachments`, attachmentId);
             //     });
             // }
+            
           }
         });
       }

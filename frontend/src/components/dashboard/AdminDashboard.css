@@ -455,8 +455,8 @@
 }
 
 .admin-menus .menu-grid .menu-item {
-    min-width: 150px;
-    padding: 12px;
+    /* min-width: 200px; */
+    padding: 20px 80px;
     background-color: #f9cb9c;
     border-radius: 20px;
     text-align: center;
@@ -996,6 +996,7 @@
 }
 
 .select-all-option {
+    width: 100%;
     padding: 10px 15px;
     border-bottom: 2px dotted #ffb347;
     background-color: #fff3d8;
@@ -1121,4 +1122,8 @@
 
 .student-dropdown-content::-webkit-scrollbar-thumb:hover {
     background: #ff9e1f;
+}
+
+.drop-container {
+    width: 100%;
 }

@@ -1,96 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./MedicInchargeDashboard.css";
 import { useAuth } from "../../contexts/AuthContext";
 import CheckInModal from "./CheckInModal";
 import TaskManagement from "../TaskManagement/taskmanagement";
+import UserManagement from "../usermanagement/usermanagement";
+import { createMedicalCheckin, getAnyUserBasedonRoleandBalagruha, getBalagruha, getMedicalConditionBasedOnBalagruha } from "../../api";
+import showToast from '../../utils/toast';
 
 const MedicInchargeDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
   const { logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [balagruhaData, setBalagruhaData] = useState([]);
   const [checkIns, setCheckIns] = useState([
-    {
-      id: "HC001",
-      studentId: "STU001",
-      studentName: "Alex Johnson",
-      temperature: 36.8,
-      mood: "Happy",
-      timestamp: "2025-03-26 08:30 AM",
-      status: "Normal",
-    },
-    {
-      id: "HC002",
-      studentId: "STU002",
-      studentName: "Maya Patel",
-      temperature: 37.9,
-      mood: "Tired",
-      timestamp: "2025-03-26 09:15 AM",
-      status: "Warning",
-    },
-    {
-      id: "HC003",
-      studentId: "STU003",
-      studentName: "Tyler Smith",
-      temperature: 36.5,
-      mood: "Neutral",
-      timestamp: "2025-03-26 10:00 AM",
-      status: "Normal",
-    },
-    {
-      id: "HC004",
-      studentId: "STU004",
-      studentName: "Emma Wilson",
-      temperature: 38.2,
-      mood: "Unwell",
-      timestamp: "2025-03-26 10:45 AM",
-      status: "Alert",
-    },
+    // {
+    //   id: "HC001",
+    //   studentId: "STU001",
+    //   studentName: "Alex Johnson",
+    //   temperature: 36.8,
+    //   mood: "Happy",
+    //   timestamp: "2025-03-26 08:30 AM",
+    //   status: "Normal",
+    // },
+    // {
+    //   id: "HC002",
+    //   studentId: "STU002",
+    //   studentName: "Maya Patel",
+    //   temperature: 37.9,
+    //   mood: "Tired",
+    //   timestamp: "2025-03-26 09:15 AM",
+    //   status: "Warning",
+    // },
+    // {
+    //   id: "HC003",
+    //   studentId: "STU003",
+    //   studentName: "Tyler Smith",
+    //   temperature: 36.5,
+    //   mood: "Neutral",
+    //   timestamp: "2025-03-26 10:00 AM",
+    //   status: "Normal",
+    // },
+    // {
+    //   id: "HC004",
+    //   studentId: "STU004",
+    //   studentName: "Emma Wilson",
+    //   temperature: 38.2,
+    //   mood: "Unwell",
+    //   timestamp: "2025-03-26 10:45 AM",
+    //   status: "Alert",
+    // },
   ]);
+
+  useEffect(() => {
+    fetchBalagruha()
+    fetchMedicalData()
+  }, [])
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
   // Mock data for dashboard
-  const recentHealthCheckins = [
-    {
-      id: "HC001",
-      studentId: "STU001",
-      studentName: "Alex Johnson",
-      temperature: 36.8,
-      mood: "Happy",
-      timestamp: "2025-03-26 08:30 AM",
-      status: "Normal",
-    },
-    {
-      id: "HC002",
-      studentId: "STU002",
-      studentName: "Maya Patel",
-      temperature: 37.9,
-      mood: "Tired",
-      timestamp: "2025-03-26 09:15 AM",
-      status: "Warning",
-    },
-    {
-      id: "HC003",
-      studentId: "STU003",
-      studentName: "Tyler Smith",
-      temperature: 36.5,
-      mood: "Neutral",
-      timestamp: "2025-03-26 10:00 AM",
-      status: "Normal",
-    },
-    {
-      id: "HC004",
-      studentId: "STU004",
-      studentName: "Emma Wilson",
-      temperature: 38.2,
-      mood: "Unwell",
-      timestamp: "2025-03-26 10:45 AM",
-      status: "Alert",
-    },
-  ];
+  const [recentHealthCheckins, setRecentHealthCheckins] = useState([]);
 
   const emergencyAlerts = [
     {
@@ -218,19 +190,34 @@ const MedicInchargeDashboard = () => {
     setIsModalOpen(false);
   };
 
-  const handleSubmitCheckIn = (formData) => {
-    const newCheckIn = {
-      id: `HC${String(checkIns.length + 1).padStart(3, "0")}`,
-      studentId: formData.studentId,
-      studentName: formData.studentName,
-      temperature: parseFloat(formData.temperature),
-      mood: "Normal", // You can add mood selection to the form if needed
-      timestamp: `${formData.date} ${formData.time}`,
-      status: formData.healthStatus,
-      notes: formData.notes,
-    };
+  const handleSubmitCheckIn = async(formData) => {
 
-    setCheckIns((prevCheckIns) => [newCheckIn, ...prevCheckIns]);
+    console.log(formData.uploadedImages, formData.uploadedPdfs)
+
+    const formDataToSend = new FormData();
+
+    // formDataToSend.append("id", `HC${String(checkIns.length + 1).padStart(3, "0")}`);
+    formDataToSend.append("studentId", formData.studentId);
+    // formDataToSend.append("studentName", formData.studentName);
+    formDataToSend.append("temperature", formData.temperature);
+    formDataToSend.append("date", `${formData.date} ${formData.time}`);
+    formDataToSend.append("healthStatus", formData.healthStatus);
+    formDataToSend.append("notes", formData.notes);
+    
+    // Append each file under the SAME field name: "attachments"
+    formData.uploadedImages.forEach((file) => {
+      formDataToSend.append("attachments", file);
+    });
+    formData.uploadedPdfs.forEach((file) => {
+      formDataToSend.append("attachments", file);
+    });
+    
+    const response = await createMedicalCheckin(formDataToSend);
+    if(response.success) {
+      showToast("Medical Check-in created Successfully", "success")
+      fetchMedicalData();
+    }
+    console.log(response)
   };
 
   const handleDeleteCheckIn = (id) => {
@@ -306,6 +293,37 @@ const MedicInchargeDashboard = () => {
   const handleRemovePdf = (index) => {
     setUploadedPdfs((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const fetchBalagruha = async () => {
+    const response = await getBalagruha();
+    if(response.success) {
+      const balagruhaIdsFromStorage = localStorage.getItem('balagruhaIds')?.split(',');
+
+      const filteredBalagruhas = response.data.balagruhas.filter(balagruha =>
+        balagruhaIdsFromStorage.includes(balagruha._id)
+      );
+      console.log("User Balagruha Data: ", filteredBalagruhas);
+      setBalagruhaData(filteredBalagruhas);
+    } else {
+      showToast("Error fetching balagruha", "error")
+    }
+
+  }
+
+  const fetchMedicalData = async() => {
+    const response = await getMedicalConditionBasedOnBalagruha();
+    if(response.success) {
+      const user = localStorage.getItem('userId');
+
+      const filterData = response?.data?.medicalCheckIns?.filter(item => item.createdBy === user)
+      setRecentHealthCheckins(filterData);
+
+    } else {
+      showToast("Error in fetching Medical Condition Details", "error")
+    }
+    console.log(response)
+  }
+
   return (
     <div className="medic-incharge-dashboard">
       <div className="header">
@@ -409,7 +427,7 @@ const MedicInchargeDashboard = () => {
                 </div>
               </div>
 
-              <div className="medic-dashboard-grid">
+              {/* <div className="medic-dashboard-grid">
                 <div className="medic-dashboard-card medic-health-metrics">
                   <div className="medic-card-header">
                     <h3>Health Metrics Trend</h3>
@@ -461,37 +479,38 @@ const MedicInchargeDashboard = () => {
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="medic-dashboard-card medic-recent-checkins">
                 <div className="medic-card-header">
                   <h3>Recent Health Check-ins</h3>
-                  <button
+                  {/* <button
                     className="medic-action-button"
                     onClick={handleOpenModal}
                   >
                     Record New Check-in
-                  </button>
+                  </button> */}
                 </div>
                 <div className="medic-checkins-table">
                   <table style={{ width: "100%" }}>
                     <thead>
                       <tr>
+                        <th>SI NO</th>
                         <th>Student</th>
                         <th>Temperature</th>
-                        <th>Mood</th>
                         <th>Time</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {recentHealthCheckins.map((checkin) => (
+                    <tbody style={{textAlign: "center"}}>
+                      {recentHealthCheckins.map((checkin, index) => (
                         <tr
                           key={checkin.id}
-                          className={checkin.status.toLowerCase()}
+                          className={checkin?.healthStatus?.toLowerCase()}
                         >
-                          <td>{checkin.studentName}</td>
+                          <td>{index + 1}</td>
+                          <td>{checkin.userName}</td>
                           <td
                             className={
                               checkin.temperature >= 38.0
@@ -503,15 +522,19 @@ const MedicInchargeDashboard = () => {
                           >
                             {checkin.temperature}°C
                           </td>
-                          <td>
-                            {moodEmoji[checkin.mood]} {checkin.mood}
-                          </td>
-                          <td>{checkin.timestamp}</td>
+                          <td>{new Date(checkin.date).toLocaleString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                          })}</td>
                           <td>
                             <span
-                              className={`medic-tag medic-status-${checkin.status.toLowerCase()}`}
+                              className={`medic-tag medic-status-${checkin?.healthStatus?.toLowerCase()}`}
                             >
-                              {checkin.status}
+                              {checkin.healthStatus}
                             </span>
                           </td>
                           <td>
@@ -525,7 +548,7 @@ const MedicInchargeDashboard = () => {
                               className="medic-icon-button"
                               onClick={() => handleDeleteCheckIn(checkin.id)}
                             >
-                              D
+                              🗑️
                             </button>
                           </td>
                         </tr>
@@ -562,24 +585,23 @@ const MedicInchargeDashboard = () => {
               <div className="medic-data-table">
                 <table>
                   <thead>
-                    <tr>
-                      <th>Check-in ID</th>
-                      <th>Student</th>
-                      <th>Temperature</th>
-                      <th>Mood</th>
-                      <th>Timestamp</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
+                  <tr>
+                        <th>SI NO</th>
+                        <th>Student</th>
+                        <th>Temperature</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
                   </thead>
                   <tbody>
-                    {recentHealthCheckins.map((checkin) => (
+                    {recentHealthCheckins.map((checkin, index) => (
                       <tr
                         key={checkin.id}
-                        className={checkin.status.toLowerCase()}
+                        className={checkin?.healthStatus?.toLowerCase()}
                       >
-                        <td>{checkin.id}</td>
-                        <td>{checkin.studentName}</td>
+                        <td>{index + 1}</td>
+                        <td>{checkin.userName}</td>
                         <td
                           className={
                             checkin.temperature >= 38.0
@@ -591,15 +613,19 @@ const MedicInchargeDashboard = () => {
                         >
                           {checkin.temperature}°C
                         </td>
-                        <td>
-                          {moodEmoji[checkin.mood]} {checkin.mood}
-                        </td>
-                        <td>{checkin.timestamp}</td>
+                        <td>{new Date(checkin.date).toLocaleString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                          })}</td>
                         <td>
                           <span
-                            className={`medic-tag medic-status-${checkin.status.toLowerCase()}`}
+                            className={`medic-tag medic-status-${checkin?.healthStatus?.toLowerCase()}`}
                           >
-                            {checkin.status}
+                            {checkin.healthStatus}
                           </span>
                         </td>
                         <td>
@@ -613,7 +639,7 @@ const MedicInchargeDashboard = () => {
                             className="medic-icon-button"
                             onClick={() => handleDeleteCheckIn(checkin.id)}
                           >
-                            D
+                            🗑️
                           </button>
                         </td>
                       </tr>
@@ -621,7 +647,7 @@ const MedicInchargeDashboard = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="medic-checkin-details-panel">
+              {/* <div className="medic-checkin-details-panel">
                 <h3>Health Check-in Details</h3>
                 <p>Select a check-in record to view or edit details.</p>
                 <div className="medic-checkin-form">
@@ -662,7 +688,6 @@ const MedicInchargeDashboard = () => {
                     ></textarea>
                   </div>
 
-                  {/* File Upload Section */}
                   <div className="medic-form-group">
                     <label>Upload Images (Max 5MB each)</label>
                     <input
@@ -717,7 +742,7 @@ const MedicInchargeDashboard = () => {
                     </button>
                   </div>
                 </div>
-              </div>
+              </div> */}
               );
             </div>
           )}
@@ -726,169 +751,170 @@ const MedicInchargeDashboard = () => {
 
           {/* Students Tab */}
           {activeTab === "students" && (
-            <div className="medic-students-section">
-              <div className="medic-section-header">
-                <h2>Student Health Records</h2>
-                <div className="medic-search-filter">
-                  <input type="text" placeholder="Search student..." />
-                  {/* <select>
-                                        <option>All Classes</option>
-                                        <option>6A</option>
-                                        <option>6B</option>
-                                        <option>7A</option>
-                                        <option>8C</option>
-                                    </select> */}
-                  <select>
-                    <option>All Health Statuses</option>
-                    <option>Normal</option>
-                    <option>Warning</option>
-                    <option>Alert</option>
-                  </select>
-                </div>
-              </div>
+            // <div className="medic-students-section">
+            //   <div className="medic-section-header">
+            //     <h2>Student Health Records</h2>
+            //     <div className="medic-search-filter">
+            //       <input type="text" placeholder="Search student..." />
+            //       {/* <select>
+            //                             <option>All Classes</option>
+            //                             <option>6A</option>
+            //                             <option>6B</option>
+            //                             <option>7A</option>
+            //                             <option>8C</option>
+            //                         </select> */}
+            //       <select>
+            //         <option>All Health Statuses</option>
+            //         <option>Normal</option>
+            //         <option>Warning</option>
+            //         <option>Alert</option>
+            //       </select>
+            //     </div>
+            //   </div>
 
-              <div className="medic-data-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Student ID</th>
-                      <th>Name</th>
-                      <th>Age</th>
-                      <th>Last Check-in</th>
-                      <th>Health Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {studentList.map((student) => (
-                      <tr key={student.id}>
-                        <td>{student.id}</td>
-                        <td>{student.name}</td>
-                        <td>{student.age}</td>
-                        <td>{student.lastCheckIn}</td>
-                        <td>
-                          <span
-                            className={`medic-tag medic-status-${student.healthStatus.toLowerCase()}`}
-                          >
-                            {student.healthStatus}
-                          </span>
-                        </td>
-                        <td>
-                          {/* <button className="medic-icon-button">🩺</button>
-                                                    <button className="medic-icon-button">📊</button> */}
-                          <button
-                            className="medic-icon-button"
-                            onClick={() => handleOpenUpdateModal(student)}
-                          >
-                            ✏️
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            //   <div className="medic-data-table">
+            //     <table>
+            //       <thead>
+            //         <tr>
+            //           <th>Student ID</th>
+            //           <th>Name</th>
+            //           <th>Age</th>
+            //           <th>Last Check-in</th>
+            //           <th>Health Status</th>
+            //           <th>Actions</th>
+            //         </tr>
+            //       </thead>
+            //       <tbody>
+            //         {studentList.map((student) => (
+            //           <tr key={student.id}>
+            //             <td>{student.id}</td>
+            //             <td>{student.name}</td>
+            //             <td>{student.age}</td>
+            //             <td>{student.lastCheckIn}</td>
+            //             <td>
+            //               <span
+            //                 className={`medic-tag medic-status-${student.healthStatus.toLowerCase()}`}
+            //               >
+            //                 {student.healthStatus}
+            //               </span>
+            //             </td>
+            //             <td>
+            //               {/* <button className="medic-icon-button">🩺</button>
+            //                                         <button className="medic-icon-button">📊</button> */}
+            //               <button
+            //                 className="medic-icon-button"
+            //                 onClick={() => handleOpenUpdateModal(student)}
+            //               >
+            //                 ✏️
+            //               </button>
+            //             </td>
+            //           </tr>
+            //         ))}
+            //       </tbody>
+            //     </table>
+            //   </div>
 
-              {/* Update Modal */}
-              {isUpdateModalOpen && (
-                <div className="modal-overlay">
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <h3>Update Student Record</h3>
-                      <button
-                        className="close-button"
-                        onClick={handleCloseUpdateModal}
-                      >
-                        &times;
-                      </button>
-                    </div>
-                    <form onSubmit={handleUpdateSubmit}>
-                      <div className="form-group">
-                        <label>Student ID</label>
-                        <input
-                          type="text"
-                          value={selectedStudent?.id || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Name</label>
-                        <input
-                          type="text"
-                          value={selectedStudent?.name || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Age</label>
-                        <input
-                          type="number"
-                          value={selectedStudent?.age || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Last Check-in</label>
-                        <input
-                          type="text"
-                          value={selectedStudent?.lastCheckIn || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Health Status</label>
-                        <select
-                          value={selectedStudent?.healthStatus || ""}
-                          onChange={(e) =>
-                            setSelectedStudent((prev) => ({
-                              ...prev,
-                              healthStatus: e.target.value,
-                            }))
-                          }
-                        >
-                          <option value="Normal">Normal</option>
-                          <option value="Warning">Warning</option>
-                          <option value="Alert">Alert</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label>Upload Files</label>
-                        <input
-                          type="file"
-                          multiple
-                          onChange={handleFileUpload}
-                        />
-                        <div className="uploaded-files">
-                          {uploadedFiles.map((file, index) => (
-                            <div key={index} className="uploaded-item">
-                              <span>{file.name}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFile(index)}
-                              >
-                                ❌
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="modal-footer">
-                        <button
-                          type="button"
-                          className="cancel-button"
-                          onClick={handleCloseUpdateModal}
-                        >
-                          Cancel
-                        </button>
-                        <button type="submit" className="submit-button">
-                          Update
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
-            </div>
+            //   {/* Update Modal */}
+            //   {isUpdateModalOpen && (
+            //     <div className="modal-overlay">
+            //       <div className="modal-content">
+            //         <div className="modal-header">
+            //           <h3>Update Student Record</h3>
+            //           <button
+            //             className="close-button"
+            //             onClick={handleCloseUpdateModal}
+            //           >
+            //             &times;
+            //           </button>
+            //         </div>
+            //         <form onSubmit={handleUpdateSubmit}>
+            //           <div className="form-group">
+            //             <label>Student ID</label>
+            //             <input
+            //               type="text"
+            //               value={selectedStudent?.id || ""}
+            //               readOnly
+            //             />
+            //           </div>
+            //           <div className="form-group">
+            //             <label>Name</label>
+            //             <input
+            //               type="text"
+            //               value={selectedStudent?.name || ""}
+            //               readOnly
+            //             />
+            //           </div>
+            //           <div className="form-group">
+            //             <label>Age</label>
+            //             <input
+            //               type="number"
+            //               value={selectedStudent?.age || ""}
+            //               readOnly
+            //             />
+            //           </div>
+            //           <div className="form-group">
+            //             <label>Last Check-in</label>
+            //             <input
+            //               type="text"
+            //               value={selectedStudent?.lastCheckIn || ""}
+            //               readOnly
+            //             />
+            //           </div>
+            //           <div className="form-group">
+            //             <label>Health Status</label>
+            //             <select
+            //               value={selectedStudent?.healthStatus || ""}
+            //               onChange={(e) =>
+            //                 setSelectedStudent((prev) => ({
+            //                   ...prev,
+            //                   healthStatus: e.target.value,
+            //                 }))
+            //               }
+            //             >
+            //               <option value="Normal">Normal</option>
+            //               <option value="Warning">Warning</option>
+            //               <option value="Alert">Alert</option>
+            //             </select>
+            //           </div>
+            //           <div className="form-group">
+            //             <label>Upload Files</label>
+            //             <input
+            //               type="file"
+            //               multiple
+            //               onChange={handleFileUpload}
+            //             />
+            //             <div className="uploaded-files">
+            //               {uploadedFiles.map((file, index) => (
+            //                 <div key={index} className="uploaded-item">
+            //                   <span>{file.name}</span>
+            //                   <button
+            //                     type="button"
+            //                     onClick={() => handleRemoveFile(index)}
+            //                   >
+            //                     ❌
+            //                   </button>
+            //                 </div>
+            //               ))}
+            //             </div>
+            //           </div>
+            //           <div className="modal-footer">
+            //             <button
+            //               type="button"
+            //               className="cancel-button"
+            //               onClick={handleCloseUpdateModal}
+            //             >
+            //               Cancel
+            //             </button>
+            //             <button type="submit" className="submit-button">
+            //               Update
+            //             </button>
+            //           </div>
+            //         </form>
+            //       </div>
+            //     </div>
+            //   )}
+            // </div>
+            <UserManagement />
           )}
 
           {/* Health Alerts Tab */}
@@ -908,8 +934,7 @@ const MedicInchargeDashboard = () => {
               <div className="medic-alerts-list">
                 {emergencyAlerts.map((alert, index) => (
                   <div
-                    className={`medic-alert-card ${alert.status
-                      .toLowerCase()
+                    className={`medic-alert-card ${alert?.status?.toLowerCase()
                       .replace(" ", "-")}`}
                     key={index}
                   >
@@ -919,8 +944,7 @@ const MedicInchargeDashboard = () => {
                         <span>Emergency Alert</span>
                       </div>
                       <span
-                        className={`medic-tag medic-status-${alert.status
-                          .toLowerCase()
+                        className={`medic-tag medic-status-${alert?.status?.toLowerCase()
                           .replace(" ", "-")}`}
                       >
                         {alert.status}
@@ -1186,7 +1210,8 @@ const MedicInchargeDashboard = () => {
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             onSubmit={handleSubmitCheckIn}
-            students={studentList}
+            // students={studentList}
+            balagruhas={balagruhaData}
           />
         </div>
       </div>

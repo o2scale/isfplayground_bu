@@ -1629,7 +1629,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
 //     );
 // };
 
-export const TaskDetailsModal = ({ task, getTask, onClose, users, onStatusChange, onUpdateTask }) => {
+export const TaskDetailsModal = ({ task, getTask, onClose, users, onStatusChange, onUpdateTask, getAllTasks, filters }) => {
     const [activeTab, setActiveTab] = useState('details');
     const [commentText, setCommentText] = useState('');
     const [files, setFiles] = useState([]);
@@ -1836,6 +1836,7 @@ export const TaskDetailsModal = ({ task, getTask, onClose, users, onStatusChange
             if (response && response.success) {
                 getTaskDetailsByTaskId(selectedTask._id);
                 setEditMode(prev => ({ ...prev, [field]: false }));
+                getAllTasks(filters);
             } else {
                 console.error(`Error updating ${field}:`, response?.message || 'Unknown error');
             }
@@ -3268,7 +3269,8 @@ const TaskManagement = () => {
                     users={users}
                     onStatusChange={updateTaskStatus}
                     onUpdateTask={handleUpdateTask}
-
+                    getAllTasks={getAllTasks}
+                    filters={filters}
                 />
             )}
 
