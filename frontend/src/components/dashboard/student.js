@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './style.css';
+import { createMood } from '../../api';
+import showToast from '../../utils/toast';
 
 function StudentDashboard() {
     const [mood, setMood] = useState("happy");
     const [moodMessage, setMoodMessage] = useState("I'm feeling happy today!");
-    const [sessionTime, setSessionTime] = useState(0); // Start from 0 seconds
+    const [sessionTime, setSessionTime] = useState(30 * 60); // Start from 0 seconds
     const [isTimerRunning, setIsTimerRunning] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState("Spoken English");
     const [coins, setCoins] = useState(50);
@@ -46,20 +48,32 @@ function StudentDashboard() {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')} : ${secs.toString().padStart(2, '0')}`;
-    };
+      };
 
     // Timer effect - modified to count up instead of down
+    // useEffect(() => {
+    //     if (sessionTime <= 0) return; // Stop countdown at 0
+
+    //     const interval = setInterval(() => {
+    //       setSessionTime((prev) => prev - 1);
+    //     }, 1000);
+    
+    //     return () => clearInterval(interval);
+    // }, [sessionTime]);
+
     useEffect(() => {
-        let interval = null;
-
-        if (isTimerRunning) {
-            interval = setInterval(() => {
-                setSessionTime((prevTime) => prevTime + 1);
-            }, 1000);
-        }
-
-        return () => clearInterval(interval);
-    }, [isTimerRunning]);
+        const interval = setInterval(() => {
+          setSessionTime((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      
+        return () => clearInterval(interval); // Clean up on unmount
+      }, []);
 
     // Categories
     const categories = [
@@ -93,11 +107,11 @@ function StudentDashboard() {
 
     // Mood options
     const moodOptions = [
-        { id: "happy", emoji: "😀", alt: "Happy", message: "I'm feeling happy today!" },
-        { id: "excited", emoji: "🤩", alt: "Excited", message: "I'm so excited!" },
-        { id: "sad", emoji: "😔", alt: "Sad", message: "I'm feeling a bit sad..." },
-        { id: "crying", emoji: "😢", alt: "Crying", message: "I need some help..." },
-        { id: "sick", emoji: "🤒", alt: "Sick", message: "I'm not feeling well today." },
+        { id: "happy", emoji: "😁", alt: "Happy", message: "I'm feeling happy today!" },
+        { id: "sad", emoji: "😢", alt: "Sad", message: "I'm feeling a bit sad..." },
+        { id: "afraid", emoji: "😨", alt: "Afraid", message: "I'm feeling scared or anxious right now." },
+        { id: "angry", emoji: "😠", alt: "Angry", message: "I'm feeling really upset and frustrated." },
+        { id: "unwell", emoji: "🤒", alt: "Unwell", message: "I'm not feeling well today." },
     ];
 
     // Chat contacts
@@ -107,7 +121,19 @@ function StudentDashboard() {
     ];
 
     // Handle mood selection
-    const handleMoodSelect = (moodId) => {
+    const handleMoodSelect = async(moodId) => {
+
+        const payload = {
+            mood: moodId,
+            date: Date.now(),
+            notes: ""
+        }
+
+        const response = await createMood(payload);
+        if(response.success) {
+            showToast("Today's mood updated successfully", "success")
+        }
+
         setMood(moodId);
         const selectedMood = moodOptions.find(m => m.id === moodId);
         setMoodMessage(selectedMood.message);

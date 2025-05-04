@@ -375,11 +375,12 @@ const UserManagement = () => {
   const getUsers = async () => {
     try {
       const response = await fetchUsers();
-      console.log("Users fetched:", response);
 
       if (
         localStorage.getItem("role") === "sports-coach" ||
-        localStorage.getItem("role") === "coach"
+        localStorage.getItem("role") === "coach" ||
+        localStorage.getItem("role") === "medical-incharge" ||
+        localStorage.getItem("role") === "music-coach"
       ) {
         const allowedBalagruhaIds =
           localStorage.getItem("balagruhaIds")?.split(",") || [];
@@ -568,7 +569,13 @@ const UserManagement = () => {
       }
 
       // Coach-specific Balagruha filter
-      if (role === "coach" && filterBalagruha !== "all") {
+      if (
+        (role === "coach" && filterBalagruha !== "all") ||
+        (role === "medical-incharge" && filterBalagruha !== "all") ||
+        (role === "sports-coach" && filterBalagruha !== "all") ||
+        (role === "music-coach" && filterBalagruha !== "all") ||
+        (role === "admin" && filterBalagruha !== "all")
+      ) {
         const userBalagruhaIds = user.balagruhaIds?.map((bg) => bg._id) || [];
         return userBalagruhaIds.includes(filterBalagruha);
       }
@@ -604,9 +611,14 @@ const UserManagement = () => {
           valueB = b?.name.toLowerCase();
       }
 
-      return sortOrder === "asc" ? (valueA > valueB ? 1 : -1) : (valueA < valueB ? 1 : -1);
+      return sortOrder === "asc"
+        ? valueA > valueB
+          ? 1
+          : -1
+        : valueA < valueB
+        ? 1
+        : -1;
     });
-
 
   // Get unique roles for filter dropdown
   const uniqueRoles = [...new Set(users.map((user) => user.role))];
@@ -937,11 +949,11 @@ const UserManagement = () => {
     const allEvents = users.flatMap((user) =>
       user.loginEvents
         ? user.loginEvents.map((event) => ({
-          ...event,
-          userName: user.name,
-          userRole: user.role,
-          userId: user.id,
-        }))
+            ...event,
+            userName: user.name,
+            userRole: user.role,
+            userId: user.id,
+          }))
         : []
     );
 
@@ -1031,7 +1043,7 @@ const UserManagement = () => {
                       {Math.round(
                         (calculateMetrics().usersByRole[role] /
                           calculateMetrics().totalUsers) *
-                        100
+                          100
                       )}
                       %
                     </div>
@@ -1049,10 +1061,10 @@ const UserManagement = () => {
                       {activity.action === "Login"
                         ? "🔑"
                         : activity.action === "Logout"
-                          ? "👋"
-                          : activity.action === "Password Change"
-                            ? "🔒"
-                            : "✏️"}
+                        ? "👋"
+                        : activity.action === "Password Change"
+                        ? "🔒"
+                        : "✏️"}
                     </div>
                     <div className="activity-details">
                       <div className="activity-title">
@@ -1134,36 +1146,36 @@ const UserManagement = () => {
               </div>
             </div>
 
-            {localStorage?.getItem("role") !== "sports-coach" && (
-              <div className="filters">
-                {canCreateUser && (
-                  <button
-                    className={`tab ${view === "add" ? "active" : ""}`}
-                    onClick={() => {
-                      setView("add");
-                      setFormData({
-                        name: "",
-                        email: "",
-                        password: "",
-                        role: "student",
-                        status: "active",
-                        age: "",
-                        gender: "",
-                        balagruhaIds: "",
-                        parentalStatus: "",
-                        guardianContact: "",
-                      });
-                      setMedicalHistoryFile(null);
-                      setFacialDataFile(null);
-                      setMedicalHistoryPreview(null);
-                      setFacialDataPreview(null);
-                      setFormErrors({});
-                    }}
-                  >
-                    ➕ Add User
-                  </button>
-                )}
-                {localStorage.getItem("role") === "coach" ? (
+            {/* {localStorage?.getItem("role") !== "sports-coach" && ( */}
+            <div className="filters">
+              {canCreateUser && (
+                <button
+                  className={`tab ${view === "add" ? "active" : ""}`}
+                  onClick={() => {
+                    setView("add");
+                    setFormData({
+                      name: "",
+                      email: "",
+                      password: "",
+                      role: "student",
+                      status: "active",
+                      age: "",
+                      gender: "",
+                      balagruhaIds: "",
+                      parentalStatus: "",
+                      guardianContact: "",
+                    });
+                    setMedicalHistoryFile(null);
+                    setFacialDataFile(null);
+                    setMedicalHistoryPreview(null);
+                    setFacialDataPreview(null);
+                    setFormErrors({});
+                  }}
+                >
+                  ➕ Add User
+                </button>
+              )}
+              {/* {localStorage.getItem("role") === "coach" || localStorage.getItem("role") === "medical-incharge" || localStorage.getItem("role") === "sports-coach" || localStorage.getItem("role") === "music-coach" ? (
                   <select
                     value={filterBalagruha}
                     onChange={(e) => setFilterBalagruha(e.target.value)}
@@ -1172,7 +1184,6 @@ const UserManagement = () => {
                     <option value="all">All Balagruhas</option>
                     {balagruhas.map((bg, index) => (
                       <option key={index} value={bg._id}>
-                        {/* {role.charAt(0).toUpperCase() + role.slice(1)} */}
                         {bg.name}
                       </option>
                     ))}
@@ -1190,19 +1201,80 @@ const UserManagement = () => {
                       </option>
                     ))}
                   </select>
-                )}
+                )} */}
 
+              {localStorage.getItem("role") === "admin" ? (
+                <>
+                  <select
+                    value={filterBalagruha}
+                    onChange={(e) => setFilterBalagruha(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Balagruhas</option>
+                    {balagruhas.map((bg, index) => (
+                      <option key={index} value={bg._id}>
+                        {bg.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filterRole}
+                    onChange={(e) => setFilterRole(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Roles</option>
+                    {uniqueRoles.map((role, index) => (
+                      <option key={index} value={role}>
+                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : [
+                  "coach",
+                  "medical-incharge",
+                  "sports-coach",
+                  "music-coach",
+                ].includes(localStorage.getItem("role")) ? (
                 <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
+                  value={filterBalagruha}
+                  onChange={(e) => setFilterBalagruha(e.target.value)}
                   className="filter-select"
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="all">All Balagruhas</option>
+                  {balagruhas.map((bg, index) => (
+                    <option key={index} value={bg._id}>
+                      {bg.name}
+                    </option>
+                  ))}
                 </select>
-              </div>
-            )}
+              ) : (
+                <select
+                  value={filterRole}
+                  onChange={(e) => setFilterRole(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="all">All Roles</option>
+                  {uniqueRoles.map((role, index) => (
+                    <option key={index} value={role}>
+                      {role.charAt(0).toUpperCase() + role.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            {/* )} */}
           </div>
 
           <div className="user-table-container">
@@ -1248,37 +1320,37 @@ const UserManagement = () => {
                     Role{" "}
                     {sortBy === "role" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
-                  {localStorage.getItem("role") !== "sports-coach" && (
-                    <th
-                      onClick={() => {
-                        if (sortBy === "status") {
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        } else {
-                          setSortBy("status");
-                          setSortOrder("asc");
-                        }
-                      }}
-                    >
-                      Status{" "}
-                      {sortBy === "status" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
-                  )}
-                  {localStorage.getItem("role") !== "sports-coach" && (
-                    <th
-                      onClick={() => {
-                        if (sortBy === "lastLogin") {
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        } else {
-                          setSortBy("lastLogin");
-                          setSortOrder("desc");
-                        }
-                      }}
-                    >
-                      Last Login{" "}
-                      {sortBy === "lastLogin" &&
-                        (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
-                  )}
+                  {/* {localStorage.getItem("role") !== "sports-coach" && ( */}
+                  <th
+                    onClick={() => {
+                      if (sortBy === "status") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("status");
+                        setSortOrder("asc");
+                      }
+                    }}
+                  >
+                    Status{" "}
+                    {sortBy === "status" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  {/* )} */}
+                  {/* {localStorage.getItem("role") !== "sports-coach" && ( */}
+                  <th
+                    onClick={() => {
+                      if (sortBy === "lastLogin") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("lastLogin");
+                        setSortOrder("desc");
+                      }
+                    }}
+                  >
+                    Last Login{" "}
+                    {sortBy === "lastLogin" &&
+                      (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  {/* )} */}
                   {(canUpdateUser || canDeleteUser) && <th>Actions</th>}
                 </tr>
               </thead>
@@ -1314,21 +1386,21 @@ const UserManagement = () => {
                         </span>
                       </div>
                     </td>
-                    {localStorage.getItem("role") !== "sports-coach" && (
-                      <td>
-                        <div
-                          className="user-status-indicator"
-                          style={{
-                            backgroundColor: getStatusColor(user.status),
-                          }}
-                        >
-                          {user.status === "active" ? "Active" : "Inactive"}
-                        </div>
-                      </td>
-                    )}
-                    {localStorage.getItem("role") !== "sports-coach" && (
-                      <td>{formatDate(user.lastLogin)}</td>
-                    )}
+                    {/* {localStorage.getItem("role") !== "sports-coach" && ( */}
+                    <td>
+                      <div
+                        className="user-status-indicator"
+                        style={{
+                          backgroundColor: getStatusColor(user.status),
+                        }}
+                      >
+                        {user.status === "active" ? "Active" : "Inactive"}
+                      </div>
+                    </td>
+                    {/* )} */}
+                    {/* {localStorage.getItem("role") !== "sports-coach" && ( */}
+                    <td>{formatDate(user.lastLogin)}</td>
+                    {/* )} */}
                     {(canUpdateUser || canDeleteUser) && (
                       <td>
                         <div className="action-buttons">
@@ -1821,10 +1893,10 @@ const UserManagement = () => {
                       {event.action === "Login"
                         ? "🔑"
                         : event.action === "Logout"
-                          ? "👋"
-                          : event.action === "Password Change"
-                            ? "🔒"
-                            : "✏️"}
+                        ? "👋"
+                        : event.action === "Password Change"
+                        ? "🔒"
+                        : "✏️"}
                     </div>
                     <div className="timeline-content">
                       <div className="timeline-time">

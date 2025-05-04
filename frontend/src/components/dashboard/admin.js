@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./AdminDashboard.css";
-import { getBalagruha, getTasks, updateTask, fetchUsers, getStudentListforAttendance, getMachines, getTaskBytaskId, getAnyUserBasedonRoleandBalagruha } from "../../api";
+import { getBalagruha, getTasks, updateTask, fetchUsers, getStudentListforAttendance, getMachines, getTaskBytaskId, getAnyUserBasedonRoleandBalagruha, getMedicalConditionBasedOnBalagruha, getMoodBasedOnBalagruha } from "../../api";
 import { TaskDetailsModal } from "../TaskManagement/taskmanagement";
 import WeeklyCalendar from "./WeeklyCalendar";
 
@@ -15,6 +15,9 @@ function AdminDashboard() {
     const [showStudentDropdown, setShowStudentDropdown] = useState(false);
     const [balagruhaStudents, setBalagruhaStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
+    const [medicalIssuesData, setMedicalIssuesData] = useState();
+    const [studentUserId, setStudentUserId] = useState([]);
+    const [moodData, setMoodData] = useState();
 
     // New state variables for task modal
     const [showTaskModal, setShowTaskModal] = useState(false);
@@ -100,22 +103,101 @@ function AdminDashboard() {
 
 
     // Handle student checkbox change
-    const handleStudentCheckboxChange = (studentId) => {
-        setSelectedStudents(prevSelected => {
-            if (prevSelected.includes(studentId)) {
-                return prevSelected.filter(id => id !== studentId);
-            } else {
-                return [...prevSelected, studentId];
-            }
-        });
+    // const handleStudentCheckboxChange = async (studentId, userId) => {
+    //     setSelectedStudents(prevSelected => {
+    //         if (prevSelected?.includes(studentId)) {
+    //             return prevSelected.filter(id => id !== studentId);
+    //         } else {
+    //             return [...prevSelected, studentId];
+    //         }
+    //     });
+
+    //     setStudentUserId(prevSelected => {
+    //         if (prevSelected?.includes(userId)) {
+    //             return prevSelected.filter(id => id !== userId);
+    //         } else {
+    //             return [...prevSelected, userId];
+    //         }
+    //     });
+
+    //     // setSelectedStudents(studentId)
+    //     // setStudentUserId(userId);
+
+    //     const balagruhaIds = {
+    //         balagruhaIds: [selectedBalagruha]
+    //     }
+
+    //     const response = await getMedicalConditionBasedOnBalagruha(balagruhaIds);
+    //     const moodResponse = await getMoodBasedOnBalagruha(balagruhaIds);
+    
+    //     if (response.success) {
+    //         setMedicalIssuesData(prev => {
+    //             const selectedIds = [...selectedStudents]; // Using stale state here
+    //             const filteredCheckIns = response.data.medicalCheckIns.filter(
+    //                 checkIn => selectedIds.includes(checkIn.studentId)
+    //             );
+    //             return filteredCheckIns;
+    //         });
+    //     }
+    
+    //     if (moodResponse.success) {
+    //         setMoodData(prev => {
+    //             const selectedUserIds = [...studentUserId]; // Also stale
+    //             const filteredMood = moodResponse.data.moodInfor.filter(
+    //                 mood => selectedUserIds.includes(mood.userId)
+    //             );
+    //             return filteredMood;
+    //         });
+    //     }
+        
+    //     console.log(response, moodResponse, balagruhaIds);
+    // };
+
+    const handleStudentCheckboxChange = async (studentId, userId) => {
+        // Calculate new selections
+        const newSelectedStudents = selectedStudents.includes(studentId)
+            ? selectedStudents.filter(id => id !== studentId)
+            : [...selectedStudents, studentId];
+    
+        const newStudentUserIds = studentUserId.includes(userId)
+            ? studentUserId.filter(id => id !== userId)
+            : [...studentUserId, userId];
+    
+        // Apply them to state
+        setSelectedStudents(newSelectedStudents);
+        setStudentUserId(newStudentUserIds);
+    
+        const balagruhaIds = { balagruhaIds: [selectedBalagruha] };
+    
+        const response = await getMedicalConditionBasedOnBalagruha(balagruhaIds);
+        if (response.success) {
+            const filteredCheckIns = response?.data?.medicalCheckIns?.filter(
+                checkIn => newSelectedStudents.includes(checkIn.studentId)
+            );
+            setMedicalIssuesData(filteredCheckIns);
+        }
+    
+        const moodResponse = await getMoodBasedOnBalagruha(balagruhaIds);
+        console.log(moodResponse, "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+        if (moodResponse.success) {
+            const filteredMood = moodResponse?.data?.moodInfo?.filter(
+                mood => {
+                    return newStudentUserIds.includes(mood.userId)
+                }
+            );
+            setMoodData(filteredMood);
+        }
+    
+        console.log(response, moodResponse, balagruhaIds);
     };
+    
 
     // Handle select all students
     const handleSelectAllStudents = () => {
         if (selectedStudents.length === balagruhaStudents.length) {
             setSelectedStudents([]);
         } else {
-            setSelectedStudents(balagruhaStudents.map(student => student._id));
+            setSelectedStudents(balagruhaStudents?.map(student => student._id));
         }
     };
 
@@ -154,12 +236,13 @@ function AdminDashboard() {
     };
 
     const adminMenus = [
-        { id: 1, name: "Subject wise progress" },
-        { id: 2, name: "Computer Usage" },
+        // { id: 1, name: "Subject wise progress" },
+        // { id: 2, name: "Computer Usage" },
         { id: 3, name: "Medical Issues" },
-        { id: 4, name: "Balgruh & Children Details" },
-        { id: 5, name: "Performance Reports" },
-        { id: 6, name: "Attendance" },
+        // { id: 4, name: "Balgruh & Children Details" },
+        // { id: 5, name: "Performance Reports" },
+        // { id: 6, name: "Attendance" },
+        { id: 7, name: "Mood" }
     ];
 
     const coachMenus = [
@@ -207,7 +290,7 @@ function AdminDashboard() {
             ];
         }
 
-        return tasks.map(task => ({
+        return tasks?.map(task => ({
             id: task._id,
             title: task.title,
             location: task.location || "Not specified",
@@ -262,13 +345,13 @@ function AdminDashboard() {
     ];
 
     // Medical issues data
-    const medicalIssuesData = [
-        { id: 1, studentName: "Rahul Sharma", balagruhaName: "Balagruha 1", doctorName: "Dr. Mehta", disease: "Common Cold" },
-        { id: 2, studentName: "Priya Patel", balagruhaName: "Balagruha 2", doctorName: "Dr. Sharma", disease: "Allergic Rhinitis" },
-        { id: 3, studentName: "Amit Kumar", balagruhaName: "Balagruha 1", doctorName: "Dr. Gupta", disease: "Viral Fever" },
-        { id: 4, studentName: "Sneha Gupta", balagruhaName: "Balagruha 3", doctorName: "Dr. Patel", disease: "Skin Rash" },
-        { id: 5, studentName: "Raj Malhotra", balagruhaName: "Balagruha 2", doctorName: "Dr. Singh", disease: "Gastroenteritis" }
-    ];
+    // const medicalIssuesData = [
+    //     { id: 1, studentName: "Rahul Sharma", balagruhaName: "Balagruha 1", doctorName: "Dr. Mehta", disease: "Common Cold" },
+    //     { id: 2, studentName: "Priya Patel", balagruhaName: "Balagruha 2", doctorName: "Dr. Sharma", disease: "Allergic Rhinitis" },
+    //     { id: 3, studentName: "Amit Kumar", balagruhaName: "Balagruha 1", doctorName: "Dr. Gupta", disease: "Viral Fever" },
+    //     { id: 4, studentName: "Sneha Gupta", balagruhaName: "Balagruha 3", doctorName: "Dr. Patel", disease: "Skin Rash" },
+    //     { id: 5, studentName: "Raj Malhotra", balagruhaName: "Balagruha 2", doctorName: "Dr. Singh", disease: "Gastroenteritis" }
+    // ];
 
     // Balagruha and children details
     const balagruhaDetailsData = [
@@ -322,14 +405,18 @@ function AdminDashboard() {
                         <div className="balagruha-selection">
                             <h3>Balagruhas</h3>
                             <div className="scroll-container scrollable-menu">
-                                {balagruhas.map(bal => (
+                                {balagruhas?.map(bal => (
                                     <div
                                         key={bal._id}
                                         className={`balagruha-item ${selectedBalagruha === bal._id ? 'selected' : ''}`}
                                         onClick={() => {
+                                            setSelectedStudents([]);
+                                            setStudentUserId([]);
+                                            setMoodData();
+                                            setMedicalIssuesData();
                                             setSelectedBalagruha(bal._id);
                                             getStudentListBasedonDate(bal._id);
-                                            setAdminMenuSelected(1);
+                                            // setAdminMenuSelected(3);
                                         }}
                                     >
                                         <div>{bal.name}</div>
@@ -339,55 +426,61 @@ function AdminDashboard() {
                         </div>
 
                         {/* Student Dropdown */}
-                        {showStudentDropdown && (
-                            <div className="student-dropdown-container">
-                                <div className="student-dropdown-header" onClick={() => setShowStudentDropdown(!showStudentDropdown)}>
-                                    <h3>Students</h3>
-                                    <span className="dropdown-arrow">{showStudentDropdown ? '▲' : '▼'}</span>
-                                </div>
+                        {/* {showStudentDropdown && (
+                            
+                        )} */}
 
-                                <div className={`student-dropdown-content ${showStudentDropdown ? 'show' : ''}`}>
-                                    <div className="select-all-option">
-                                        <label className="checkbox-container">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedStudents.length === balagruhaStudents.length && balagruhaStudents.length > 0}
-                                                onChange={handleSelectAllStudents}
-                                            />
-                                            <span className="checkmark"></span>
-                                            Select All
-                                        </label>
-                                    </div>
-
-                                    <div className="student-list">
-                                        {balagruhaStudents.length > 0 ? (
-                                            balagruhaStudents.map(student => (
-                                                <div key={student._id} className="student-item">
-                                                    <label className="checkbox-container">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedStudents.includes(student._id)}
-                                                            onChange={() => handleStudentCheckboxChange(student._id)}
-                                                        />
-                                                        <span className="checkmark"></span>
-                                                        {student.name}
-                                                    </label>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="no-students-message">No students found for this balagruha</div>
-                                        )}
-                                    </div>
-                                </div>
+                        <div className="student-dropdown-container">
+                            <div className="student-dropdown-header" onClick={() => setShowStudentDropdown(!showStudentDropdown)}>
+                                <h3>Students</h3>
+                                <span className="dropdown-arrow">{showStudentDropdown ? '▲' : '▼'}</span>
                             </div>
-                        )}
+
+                            <div className={`drop-container`}>
+                                {/* <div className="select-all-option">
+                                    <label className="checkbox-container">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedStudents.length === balagruhaStudents.length && balagruhaStudents.length > 0}
+                                            onChange={handleSelectAllStudents}
+                                        />
+                                        <span className="checkmark"></span>
+                                        Select All
+                                    </label>
+                                </div> */}
+
+                                {
+                                    showStudentDropdown && (
+                                        <div className="student-list">
+                                            {balagruhaStudents.length > 0 ? (
+                                                balagruhaStudents?.map(student => (
+                                                    <div key={student._id} className="student-item">
+                                                        <label className="checkbox-container">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedStudents?.includes(student._id)}
+                                                                onChange={() => handleStudentCheckboxChange(student._id, student.userId)}
+                                                            />
+                                                            <span className="checkmark"></span>
+                                                            {student.name}
+                                                        </label>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="no-students-message">No students found for this balagruha</div>
+                                            )}
+                                        </div>
+                                    )
+                                }
+                            </div>
+                        </div>
 
                         {/* Admin Menus (shown when Balagruha is selected) */}
                         {selectedBalagruha && (
                             <div className="admin-menus">
                                 <h3>Management Options</h3>
                                 <div className="menu-grid scrollable-menu">
-                                    {adminMenus.map(menu => (
+                                    {adminMenus?.map(menu => (
                                         <div
                                             key={menu.id}
                                             className={`menu-item ${adminMenuSelected === menu.id ? 'selected' : ''}`}
@@ -398,8 +491,7 @@ function AdminDashboard() {
                                     ))}
                                 </div>
 
-                                {/* Subject wise progress */}
-                                {adminMenuSelected === 1 && (
+                                {/* {adminMenuSelected === 1 && (
                                     <div className="data-display">
                                         <h3>Subject Wise Progress</h3>
                                         <div className="table-container">
@@ -436,10 +528,9 @@ function AdminDashboard() {
                                             </table>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
 
-                                {/* Computer Usage */}
-                                {adminMenuSelected === 2 && (
+                                {/* {adminMenuSelected === 2 && (
                                     <div className="data-display">
                                         <h3>Computer Usage</h3>
                                         <div className="computer-stats-container">
@@ -454,9 +545,8 @@ function AdminDashboard() {
                                             ))}
                                         </div>
                                     </div>
-                                )}
+                                )} */}
 
-                                {/* Medical Issues */}
                                 {adminMenuSelected === 3 && (
                                     <div className="data-display">
                                         <h3>Medical Issues</h3>
@@ -464,19 +554,30 @@ function AdminDashboard() {
                                             <table className="data-table">
                                                 <thead>
                                                     <tr>
+                                                        <th>SI NO</th>
                                                         <th>Student Name</th>
-                                                        <th>Balagruha</th>
-                                                        <th>Doctor</th>
-                                                        <th>Disease/Condition</th>
+                                                        <th>Medical Incharge</th>
+                                                        <th>Temperature</th>
+                                                        <th>Time Stamp</th>
+                                                        <th>Status</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {medicalIssuesData.map((item, index) => (
+                                                    {medicalIssuesData?.map((item, index) => (
                                                         <tr key={item.id} className={index % 2 === 0 ? 'even-row' : ''}>
-                                                            <td>{students[index]?.name || item.studentName}</td>
-                                                            <td>{item.balagruhaName}</td>
-                                                            <td>{item.doctorName}</td>
-                                                            <td>{item.disease}</td>
+                                                            <td>{index + 1}</td>
+                                                            <td>{item?.userName}</td>
+                                                            <td>{item.createdByUser}</td>
+                                                            <td>{item.temperature}</td>
+                                                            <td>{new Date(item.date).toLocaleString('en-IN', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            })}</td>
+                                                            <td>{item.healthStatus}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -485,8 +586,7 @@ function AdminDashboard() {
                                     </div>
                                 )}
 
-                                {/* Balagruha & Children Details */}
-                                {adminMenuSelected === 4 && (
+                                {/* {adminMenuSelected === 4 && (
                                     <div className="data-display">
                                         <h3>Balagruha & Children Details</h3>
                                         <div className="table-container">
@@ -512,10 +612,9 @@ function AdminDashboard() {
                                             </table>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
 
-                                {/* Performance Reports */}
-                                {adminMenuSelected === 5 && (
+                                {/* {adminMenuSelected === 5 && (
                                     <div className="data-display">
                                         <h3>Performance Reports</h3>
                                         <div className="table-container">
@@ -549,10 +648,9 @@ function AdminDashboard() {
                                             </table>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
 
-                                {/* Attendance */}
-                                {adminMenuSelected === 6 && (
+                                {/* {adminMenuSelected === 6 && (
                                     <div className="data-display">
                                         <h3>Attendance</h3>
                                         <div className="table-container">
@@ -576,6 +674,45 @@ function AdminDashboard() {
                                                                 </span>
                                                             </td>
 
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )} */}
+
+                                {adminMenuSelected === 7 && (
+                                    <div className="data-display">
+                                        <h3>Mood</h3>
+                                        <div className="table-container">
+                                            <table className="data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>SI NO</th>
+                                                        <th>Student Name</th>
+                                                        <th>User ID</th>
+                                                        <th>Mood</th>
+                                                        <th>Time Stamp</th>
+                                                        <th>Notes</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {moodData?.map((item, index) => (
+                                                        <tr key={item.id} className={index % 2 === 0 ? 'even-row' : ''}>
+                                                            <td>{index + 1}</td>
+                                                            <td>{item?.userName}</td>
+                                                            <td>{item.userId}</td>
+                                                            <td>{item.mood}</td>
+                                                            <td>{new Date(item.date).toLocaleString('en-IN', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            })}</td>
+                                                            <td>{item.notes}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -628,14 +765,14 @@ function AdminDashboard() {
                         <div className="assigned-balagruha">
                             <h3>Assigned Balagruhas</h3>
                             <div className="scroll-container scrollable-menu">
-                                {balagruhas.map(bal => (
+                                {balagruhas?.map(bal => (
                                     <div
                                         key={bal._id}
                                         className={`balagruha-item ${selectedBalagruha === bal._id ? 'selected' : ''}`}
                                         onClick={() => {
                                             setSelectedBalagruha(bal._id);
                                             getStudentListBasedonDate(bal._id);
-                                            setAdminMenuSelected(1);
+                                            setAdminMenuSelected(3);
                                         }}
                                     >
                                         <div>{bal.name}</div>
@@ -649,7 +786,7 @@ function AdminDashboard() {
                             <h3>Coaches</h3>
                             <div className="scroll-container scrollable-menu">
                                 {coaches.length > 0 ?
-                                    coaches.map(coach => (
+                                    coaches?.map(coach => (
                                         <div
                                             key={coach._id}
                                             className={`coach-item ${selectedCoach === coach._id ? 'selected' : ''}`}
@@ -672,7 +809,7 @@ function AdminDashboard() {
                             <div className="coach-menus">
                                 <h3>Coach Options</h3>
                                 <div className="menu-grid scrollable-menu" style={{ paddingTop: "15px", boxSizing: "border-box" }}>
-                                    {coachMenus.map(menu => (
+                                    {coachMenus?.map(menu => (
                                         <div style={{ position: 'relative' }}>
                                             <div
                                                 key={menu.id}
