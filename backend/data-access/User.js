@@ -1575,7 +1575,8 @@ exports.getStudentMedicalCheckInsByBalagruhaIds = async ({ balagruhaIds }) => {
             '$addFields': {
                 'medicalCheckIns.userName': '$name',
                 'medicalCheckIns.userId': '$userId',
-                'medicalCheckIns.createdByUser': '$createdByUser.name'
+                'medicalCheckIns.createdByUser': '$createdByUser.name',
+                'medicalCheckIns.balagruhaIds': '$balagruhaIds'
             }
         }, {
             '$project': {

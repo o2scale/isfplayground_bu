@@ -19,7 +19,7 @@ exports.getAllMedicalCheckIns = async (filters = {}, pagination = {}) => {
     const { page = 1, limit = 10 } = pagination;
 
     return await MedicalCheckIn.find(filters)
-        .populate('student', 'firstName lastName studentId')
+        .populate('student', 'firstName lastName studentId balagruhaId')
         .populate('createdBy', 'name email')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
