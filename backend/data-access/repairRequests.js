@@ -12,6 +12,7 @@ const repairRequestsDA = {
             .sort(sort)
             .skip(skip)
             .limit(limit)
+            .populate('balagruhaId', '_id name location')
             .populate('createdBy', 'name email')
             .populate('attachments.uploadedBy', 'name email');
     },
