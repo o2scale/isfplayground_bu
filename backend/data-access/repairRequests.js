@@ -8,7 +8,7 @@ const repairRequestsDA = {
 
     findAll: async (query = {}, options = {}) => {
         const { limit = 10, skip = 0, sort = { createdAt: -1 } } = options;
-        return await RepairRequests.find(query)
+        return await RepairRequests.find(query).lean()
             .sort(sort)
             .skip(skip)
             .limit(limit)

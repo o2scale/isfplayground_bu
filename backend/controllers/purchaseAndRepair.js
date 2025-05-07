@@ -48,9 +48,18 @@ const repairRequestController = {
                 sort: { [sort]: order === 'desc' ? -1 : 1 }
             };
 
-            const repairRequests = await RepairRequest.getAllRepairRequests(query, options);
+            let repairRequests = await RepairRequest.getAllRepairRequests(query, options);
+            if (repairRequests && repairRequests.length > 0) {
+                repairRequests = repairRequests.map(repairRequest => {
+                    return {
+                        ...repairRequest,
+                        balagruhaName: repairRequest?.balagruhaId?.name,
+                        balagruhaLocation: repairRequest?.balagruhaId?.location,
+                        balagruhaId: repairRequest?.balagruhaId?._id
+                    }
+                })
+            }
             const total = await RepairRequest.countRepairRequests(query);
-
             return res.status(200).json({
                 success: true,
                 data: { repairRequests: repairRequests },
@@ -260,9 +269,18 @@ const repairRequestController = {
                 sort: { [sort]: order === 'desc' ? -1 : 1 }
             };
 
-            const purchaseOrders = await PurchaseOrder.getAllPurchaseOrders(query, options);
+            let purchaseOrders = await PurchaseOrder.getAllPurchaseOrders(query, options);
+            if (purchaseOrders && purchaseOrders.length > 0) {
+                purchaseOrders = purchaseOrders.map(purchaseOrder => {
+                    return {
+                        ...purchaseOrder,
+                        balagruhaName: purchaseOrder?.balagruhaId?.name,
+                        balagruhaLocation: purchaseOrder?.balagruhaId?.location,
+                        balagruhaId: purchaseOrder?.balagruhaId?._id
+                    }
+                })
+            }
             const total = await PurchaseOrder.countPurchaseOrders(query);
-
             return res.status(200).json({
                 success: true,
                 data: { purchaseOrders: purchaseOrders },
