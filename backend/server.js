@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const machineRoutes = require('./routes/v1/machines');
 const roleRoutes = require('./routes/roleRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes');
 const sportsRoute = require("./routes/v1/sports")
 const musicRoute = require("./routes/v1/music")
 const purchaseAndRepair = require("./routes/v1/purchaseAndRepair")
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/v1/machines', machineRoutes)
 app.use('/api/roles', roleRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/schedules', scheduleRoutes);
 app.use("/api/v1/sports", sportsRoute)
 app.use("/api/v1/music", musicRoute)
 app.use("/api/v1/purchase-repair", purchaseAndRepair)
