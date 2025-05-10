@@ -195,14 +195,16 @@ class Schedule {
             // check the schedule is overlapping with any other schedule for the same date and within the start time and end time and same assigned to
             const overlappingSchedule = await this.getOverlappingScheduleOtherThanGivenSchedule(scheduleId, updateData);
             if (overlappingSchedule) {
-                if (scheduleId != overlappingSchedule._id.toString()) {
+                if (scheduleId == overlappingSchedule._id.toString()) {
                     // update the schedule
                 } else {
 
+                    // return the overlapping schedule
                     return {
                         success: false,
                         message: 'You have an overlapping schedule for the same date and within the start time and end time',
                         data: {},
+                        overlappingSchedules: overlappingSchedule,
                     }
                 }
             }
@@ -233,7 +235,7 @@ class Schedule {
                 logger.info('Schedule deleted successfully');
                 return {
                     success: true,
-                    data: result.data,
+                    data: { schedule: result.data },
                     message: 'Schedule deleted successfully'
                 };
             }
@@ -274,9 +276,9 @@ class Schedule {
         const overlappingSchedule = await getOverlappingSchedule(assignedTo, date, startTime, endTime);
         return overlappingSchedule;
     }
-    static async getOverlappingScheduleOtherThanGivenSchedule(payload) {
-        const { scheduleId, assignedTo, date, startTime, endTime } = payload;
-        const overlappingSchedule = await getOverlappingScheduleOtherThanGivenSchedule(scheduleId, assignedTo, date, startTime, endTime);
+    static async getOverlappingScheduleOtherThanGivenSchedule(scheduleId, payload) {
+        const { assignedTo, date, startTime, endTime } = payload;
+        const overlappingSchedule = await getOverlappingScheduleOtherThanGivenSchedule({ scheduleId, assignedTo, date, startTime, endTime });
         return overlappingSchedule;
     }
 

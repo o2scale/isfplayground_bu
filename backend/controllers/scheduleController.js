@@ -113,10 +113,7 @@ exports.updateSchedule = async (req, res) => {
             });
         } else {
             logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to update schedule: ${result.message}`);
-            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-                success: false,
-                message: result.message
-            });
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json(result);
         }
     } catch (error) {
         logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Error updating schedule: ${error.message}`);

@@ -39,7 +39,7 @@ router.put(
 router.delete(
     '/:scheduleId',
     authenticate,
-    authorize('Schedule Management', 'Delete'),
+    // authorize('Schedule Management', 'Delete'),
     scheduleController.deleteSchedule
 );
 

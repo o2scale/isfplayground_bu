@@ -170,7 +170,7 @@ const getOverlappingSchedule = async (assignedTo, date, startTime, endTime) => {
 };
 
 // Find the schedule by the assignedTo, date, and in between the start time and end time
-const getOverlappingScheduleOtherThanGivenSchedule = async (scheduleId, assignedTo, date, startTime, endTime) => {
+const getOverlappingScheduleOtherThanGivenSchedule = async ({ scheduleId, assignedTo, date, startTime, endTime }) => {
     const overlappingSchedule = await Schedules.findOne({ assignedTo, date, startTime: { $lte: endTime }, endTime: { $gte: startTime }, _id: { $ne: scheduleId } });
     return overlappingSchedule;
 };
