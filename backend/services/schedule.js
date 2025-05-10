@@ -6,7 +6,8 @@ const {
     deleteSchedule,
     getSchedulesByUser,
     getOverlappingSchedule,
-    getSchedulesForAdmin
+    getSchedulesForAdmin,
+    getOverlappingScheduleOtherThanGivenSchedule
 } = require('../data-access/schedule');
 const { logger } = require('../config/pino-config');
 const { UserTypes } = require('../constants/users');
@@ -58,6 +59,91 @@ class Schedule {
             };
         }
     }
+    static async createScheduleNew(payload) {
+        try {
+            logger.info('Creating new schedules');
+            if (payload.userRole != UserTypes.ADMIN) {
+                return {
+                    success: false,
+                    message: 'You are not authorized to create a schedule',
+                    data: null
+                }
+            }
+
+            const { balagruhaIds, assignedTo, schedules } = payload;
+            const overlappingSchedules = [];
+
+            // Check for overlapping schedules for each balagruha and schedule combination
+            for (const balagruhaId of balagruhaIds) {
+                for (const schedule of schedules) {
+                    const schedulePayload = {
+                        ...schedule,
+                        balagruhaId,
+                        assignedTo: assignedTo[0] // Since assignedTo is an array with single element
+                    };
+
+                    const overlappingSchedule = await this.getOverlappingSchedule(schedulePayload);
+                    if (overlappingSchedule) {
+                        overlappingSchedules.push({
+                            balagruhaId,
+                            schedule,
+                            overlappingSchedule
+                        });
+                    }
+                }
+            }
+
+            // If any overlapping schedules found, return them without creating new schedules
+            if (overlappingSchedules.length > 0) {
+                return {
+                    success: false,
+                    data: null,
+                    message: 'Found overlapping schedules',
+                    overlappingSchedules: overlappingSchedules,
+                };
+            }
+
+            // Create schedules for each balagruha and schedule combination
+            const createdSchedules = [];
+            for (const balagruhaId of balagruhaIds) {
+                for (const schedule of schedules) {
+                    const schedulePayload = {
+                        ...schedule,
+                        balagruhaId,
+                        assignedTo: assignedTo[0],
+                        userRole: payload.userRole,
+                        createdBy: payload.createdBy
+                    };
+
+                    // Get time slot
+                    const timeSlot = this.getTimeSlot(schedulePayload.startTime, schedulePayload.endTime);
+                    schedulePayload.timeSlot = timeSlot;
+
+                    const result = await createSchedule(schedulePayload);
+                    if (result.success) {
+                        const scheduleDetails = await this.getScheduleById(result.data._id);
+                        createdSchedules.push(scheduleDetails.data);
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                data: {
+                    schedules: createdSchedules
+                },
+                message: 'Schedules created successfully'
+            };
+
+        } catch (error) {
+            logger.error('Error creating schedules:', error);
+            return {
+                success: false,
+                message: error.message
+            };
+        }
+    }
+
 
     static async getScheduleById(scheduleId) {
         try {
@@ -106,6 +192,20 @@ class Schedule {
     static async updateSchedule(scheduleId, updateData) {
         try {
             logger.info(`Updating schedule with ID: ${scheduleId}`);
+            // check the schedule is overlapping with any other schedule for the same date and within the start time and end time and same assigned to
+            const overlappingSchedule = await this.getOverlappingScheduleOtherThanGivenSchedule(scheduleId, updateData);
+            if (overlappingSchedule) {
+                if (scheduleId != overlappingSchedule._id.toString()) {
+                    // update the schedule
+                } else {
+
+                    return {
+                        success: false,
+                        message: 'You have an overlapping schedule for the same date and within the start time and end time',
+                        data: {},
+                    }
+                }
+            }
             const result = await updateSchedule(scheduleId, updateData);
             if (result.success) {
                 logger.info('Schedule updated successfully');
@@ -172,6 +272,11 @@ class Schedule {
     static async getOverlappingSchedule(payload) {
         const { assignedTo, date, startTime, endTime } = payload;
         const overlappingSchedule = await getOverlappingSchedule(assignedTo, date, startTime, endTime);
+        return overlappingSchedule;
+    }
+    static async getOverlappingScheduleOtherThanGivenSchedule(payload) {
+        const { scheduleId, assignedTo, date, startTime, endTime } = payload;
+        const overlappingSchedule = await getOverlappingScheduleOtherThanGivenSchedule(scheduleId, assignedTo, date, startTime, endTime);
         return overlappingSchedule;
     }
 

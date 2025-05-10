@@ -207,6 +207,31 @@ class Balagruha {
             throw error;
         }
     }
+    // Function for fetch list of assigned balagruha details by user id 
+    static async getAssignedBalagruhaListByUserId(userId) {
+        try {
+            let result = await getBalagruhaDetailsByUserId({ userId });
+
+            if (result.success) {
+                return {
+                    success: true,
+                    data: {
+                        balagruhas: result?.data?.balagruhas || []
+                    },
+                    message: "Assigned balagruha fetched successfully"
+                }
+            } else {
+                return {
+                    success: false,
+                    data: {},
+                    message: "Error fetching assigned balagruha"
+                }
+            }
+        } catch (error) {
+            errorLogger.error({ error: error.message }, 'Error in getBalagruhaListByUserId service');
+            throw error;
+        }
+    }
     static async getBalagruhaByGeneratedId(generatedId) {
         try {
             const result = await getBalagruhaByGeneratedId(generatedId);

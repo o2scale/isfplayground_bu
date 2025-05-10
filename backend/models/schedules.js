@@ -18,7 +18,7 @@ const scheduleSchema = new mongoose.Schema(
 );
 
 // Add compound index for uniqueness
-scheduleSchema.index({ assignedTo: 1, startTime: 1, endTime: 1, date: 1 }, { unique: true });
+scheduleSchema.index({ balagruhaId: 1, assignedTo: 1, startTime: 1, endTime: 1, date: 1 }, { unique: true });
 
 const Schedules = mongoose.model('schedules', scheduleSchema);
 

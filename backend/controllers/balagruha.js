@@ -160,6 +160,24 @@ exports.getBalagruhaListByUserId = async (req, res) => {
         res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ success: false, message: error.message });
     }
 }
+// Get balagruha list by user ID
+exports.getAssignedBalagruhaListByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, userId }, `Request received to fetch balagruha list by user ID`);
+        const result = await Balagruha.getAssignedBalagruhaListByUserId(userId);
+        if (result.success) {
+            logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Successfully fetched balagruha list by user ID`);
+            res.status(HTTP_STATUS_CODE.OK).json(result);
+        } else {
+            errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to fetch balagruha list by user ID`);
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json(result);
+        }
+    } catch (error) {
+        errorLogger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl, error: error.message }, `Error occurred while fetching balagruha list by user ID`);
+        res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ success: false, message: error.message });
+    }
+}
 
 // Get balagruha by generated ID
 exports.getBalagruhaByGeneratedId = async (req, res) => {

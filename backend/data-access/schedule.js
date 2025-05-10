@@ -169,6 +169,12 @@ const getOverlappingSchedule = async (assignedTo, date, startTime, endTime) => {
     return overlappingSchedule;
 };
 
+// Find the schedule by the assignedTo, date, and in between the start time and end time
+const getOverlappingScheduleOtherThanGivenSchedule = async (scheduleId, assignedTo, date, startTime, endTime) => {
+    const overlappingSchedule = await Schedules.findOne({ assignedTo, date, startTime: { $lte: endTime }, endTime: { $gte: startTime }, _id: { $ne: scheduleId } });
+    return overlappingSchedule;
+};
+
 // Get schedules for admin
 const getSchedulesForAdmin = async (balagruhaId, assignedTo, startDate, endDate, status) => {
     if (status == null || status == undefined || status.length == 0) {
@@ -297,5 +303,6 @@ module.exports = {
     deleteSchedule,
     getSchedulesByUser,
     getOverlappingSchedule,
-    getSchedulesForAdmin
+    getSchedulesForAdmin,
+    getOverlappingScheduleOtherThanGivenSchedule
 }; 

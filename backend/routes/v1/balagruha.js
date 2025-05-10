@@ -1,6 +1,7 @@
 const express = require("express");
 const { authorize, authenticate } = require("../../middleware/auth");
-const { createBalagruha, getAllBalagruha, getBalagruhaById, updateBalagruha, deleteBalagruha, getBalagruhaListByUserId, getBalagruhaByGeneratedId } = require("../../controllers/balagruha");
+const { createBalagruha, getAllBalagruha, getBalagruhaById, updateBalagruha, deleteBalagruha, getBalagruhaListByUserId,
+    getBalagruhaByGeneratedId, getAssignedBalagruhaListByUserId } = require("../../controllers/balagruha");
 const router = express.Router();
 
 // API for balagruha CRUD operations
@@ -11,6 +12,8 @@ router.put('/:id', authenticate, authorize('User Management', 'Update'), updateB
 router.delete('/:id', authenticate, authorize('User Management', 'Delete'), deleteBalagruha);
 // API for fetch balagruha list by user id 
 router.get('/user/:userId', authenticate, authorize('User Management', 'Read'), getBalagruhaListByUserId);
+// API for fetch balagruha list by given user Id 
+router.get('/user/assigned/:userId', authenticate, authorize('User Management', 'Read'), getAssignedBalagruhaListByUserId);
 // API for fetch balagruha details by generated id
 router.get('/generated/:generatedId', authenticate, authorize('User Management', 'Read'), getBalagruhaByGeneratedId);
 module.exports = router;

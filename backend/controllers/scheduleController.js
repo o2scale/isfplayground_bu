@@ -9,7 +9,7 @@ exports.createSchedule = async (req, res) => {
         let createdBy = req.user.id;
         req.body.createdBy = createdBy;
         req.body.userRole = req.user.role;
-        const result = await Schedule.createSchedule(req.body);
+        const result = await Schedule.createScheduleNew(req.body);
 
         if (result.success) {
             logger.info({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, 'Schedule created successfully');
@@ -20,10 +20,7 @@ exports.createSchedule = async (req, res) => {
             });
         } else {
             logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Failed to create schedule: ${result.message}`);
-            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-                success: false,
-                message: result.message
-            });
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json(result);
         }
     } catch (error) {
         logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Error creating schedule: ${error.message}`);
