@@ -68,6 +68,7 @@ const TaskFilter = ({ onFilterChange, filters, balagruhas, users }) => {
         { id: 'general', label: '📝 General Tasks' },
         { id: 'purchase', label: '🛒 Purchase Tasks' },
         { id: 'order', label: '🔧 Repair Tasks' },
+        { id: 'medical', label: '🏥 Medical Tasks' },
     ];
 
     useEffect(() => {
@@ -754,6 +755,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
         { id: 'general', label: '📝 General Tasks' },
         { id: 'purchase', label: '🛒 Purchase Tasks' },
         { id: 'repair', label: '🔧 Repair Tasks' },
+        { id: 'medical', label: '🏥 Medical Tasks' },
     ];
 
     useEffect(() => {
@@ -1071,7 +1073,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
                 {
                     (type == "purchase") && (
                         <div className="form-group">
-                            <label htmlFor="requiredParts">Required Parts</label>
+                            <label htmlFor="requiredParts">Required Materials</label>
                             <input
                                 type="text"
                                 id="requiredParts"
@@ -1079,7 +1081,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
                                 value={formData.requiredParts}
                                 onChange={handleInputChange}
                                 className={formErrors.requiredParts ? 'error' : ''}
-                                placeholder="Required Parts"
+                                placeholder="Required Materials"
                             />
 
                         </div>
@@ -1088,7 +1090,7 @@ const CreateTaskForm = ({ users, coachUsers, onSubmit, onCancel, balagruhaId }) 
                 {
                     (localStorage.getItem('role') === "repair-manager" || type == "order") && (
                         <div className="form-group">
-                            <label htmlFor="repairDetails">Required Parts</label>
+                            <label htmlFor="repairDetails">Required Materials</label>
                             <input
                                 type="text"
                                 id="repairDetails"

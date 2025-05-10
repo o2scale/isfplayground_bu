@@ -83,9 +83,7 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
   };
 
   useEffect(() => {
-    console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii', mode, user)
     if (mode === "edit" && user) {
-      console.log("edit user dataiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", user);
       // Set basic user data
       setFormData({
         name: user.name || "",
@@ -713,7 +711,6 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
       // Use the API functions with FormData
       console.log(
         files.facialData,
-        "this is the form data to send to backend, ----------------->"
       );
       const response =
         mode === "add"
@@ -795,13 +792,16 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
               onChange={handleInputChange}
               className={errors.name ? "error" : ""}
               placeholder="Enter full name"
+              disabled={localStorage.getItem('role') === 'medical-incharge'}
             />
             {errors.name && (
               <span className="error-message">{errors.name}</span>
             )}
           </div>
 
-          <div className="form-group">
+          {localStorage.getItem('role') !== 'medical-incharge' && (
+          <>
+            <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
               type="email"
@@ -982,6 +982,8 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
               )}
             </div>
           )}
+          </>
+         )}
         </div>
 
         {/* Student Specific Fields */}
@@ -998,10 +1000,13 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
                 value={formData.userId}
                 onChange={handleInputChange}
                 placeholder="Enter User ID"
+                disabled={localStorage.getItem('role') === 'medical-incharge'}
               />
             </div>
 
-            <div className="form-group">
+            {localStorage.getItem('role') !== 'medical-incharge' && (
+              <>
+              <div className="form-group">
               <label>Assigned Machines</label>
               <div className="form-machine-selector">
                 <div
@@ -1331,6 +1336,8 @@ const UserForm = ({ mode = "add", user = null, onSuccess, onCancel }) => {
                 <span className="error-message">{errors.facialData}</span>
               )}
             </div>
+              </>
+            ) }
           </div>
         )}
 

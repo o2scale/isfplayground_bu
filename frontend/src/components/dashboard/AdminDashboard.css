@@ -1127,3 +1127,67 @@
 .drop-container {
     width: 100%;
 }
+
+.scrollable-menu {
+    display: flex;
+    overflow-x: auto;
+    gap: 16px;
+    padding: 10px 16px;
+    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; /* Firefox */
+    flex-wrap: nowrap;
+    scroll-behavior: smooth;
+    border-radius: 8px;
+}
+
+.scrollable-menu::-webkit-scrollbar {
+    display: none;
+}
+
+.balagruha-item {
+    flex: 0 0 auto;
+    padding: 12px 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.balagruha-item:hover {
+    background-color: #e6f7ff;
+}
+
+.balagruha-item.selected {
+    background-color: #1890ff;
+    color: white;
+    font-weight: 600;
+}
+
+.scroll-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.scroll-button {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.scroll-button.left {
+    margin-right: 8px;
+}
+
+.scroll-button.right {
+    margin-left: 8px;
+}

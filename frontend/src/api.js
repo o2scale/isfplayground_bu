@@ -733,6 +733,17 @@ export const getBalagruhaListbyUserID = async (id) => {
   }
 }
 
+export const getBalagruhaListByAssignedID = async(id) =>{
+   try {
+    const api = await getApiInstance();
+    const response = await api.get(`/api/v1/balagruha/user/assigned/${id}`)
+    return response.data
+  } catch (error) {
+    console.error("Error balagruha list by user id", error);
+    throw error;
+  }
+}
+
 
 export const getAnyUserBasedonRoleandBalagruha = async (role, balagruhaId) => {
   try {
@@ -785,6 +796,29 @@ export const createMedicalCheckin = async (formdata) => {
     return response.data;
   } catch (error) {
     console.error("Failed to create medical checkin", error);
+    throw error;
+  }
+}
+
+export const createSchedule = async (formdata) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.post(`/api/schedules`, formdata);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to create schedule", error);
+    throw error;
+  }
+}
+
+export const getSchedules = async (formdata) => {
+  try {
+    console.log(formdata, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    const api = await getApiInstance();
+    const response = await api.post(`/api/schedules/admin`, formdata);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to load schedules", error);
     throw error;
   }
 }

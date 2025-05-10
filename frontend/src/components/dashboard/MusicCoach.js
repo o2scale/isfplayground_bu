@@ -1773,7 +1773,7 @@ const MusicCoachDashboard = () => {
     { id: 3, name: "Training", activeTab: "training" },
     { id: 4, name: "Tasks", activeTab: "tasks", link: "/task" },
     // { id: 5, name: "Performance", activeTab: "performance" },
-    { id: 6, name: "Reports", activeTab: "reports" },
+    // { id: 6, name: "Reports", activeTab: "reports" },
     { id: 7, name: "Users", activeTab: "users" },
   ];
 

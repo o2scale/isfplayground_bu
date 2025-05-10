@@ -206,7 +206,7 @@ function CoachDashboard() {
         { id: 6, name: "Slow learner" },
         { id: 7, name: "Comp Usage" },
         { id: 8, name: "Med Camp" },
-        { id: 9, name: "Reports" },
+        // { id: 9, name: "Reports" },
         { id: 10, name: "Settings" },
     ];
 
