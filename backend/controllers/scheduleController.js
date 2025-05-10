@@ -192,7 +192,7 @@ exports.getSchedulesByUser = async (req, res) => {
 // Get schedules for admin
 exports.getSchedulesForAdmin = async (req, res) => {
     try {
-        const { balagruhaId, assignedTo, startDate, endDate, status } = req.body;
+        const { balagruhaIds, assignedTo, startDate, endDate, status } = req.body;
         // check for the start date and end date is a valid date 
         if (!isValidDate(startDate) || !isValidDate(endDate)) {
             return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -200,7 +200,7 @@ exports.getSchedulesForAdmin = async (req, res) => {
                 message: 'Invalid startDate / endDate format'
             });
         }
-        const result = await Schedule.getSchedulesForAdmin(balagruhaId, assignedTo, startDate, endDate, status);
+        const result = await Schedule.getSchedulesForAdmin(balagruhaIds, assignedTo, startDate, endDate, status);
         if (result.success) {
             res.status(HTTP_STATUS_CODE.OK).json({
                 success: true,
@@ -215,6 +215,7 @@ exports.getSchedulesForAdmin = async (req, res) => {
             });
         }
     } catch (error) {
+        console.log('error', error)
         logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Error fetching schedules for admin: ${error.message}`);
         res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
             success: false,
@@ -222,4 +223,61 @@ exports.getSchedulesForAdmin = async (req, res) => {
             error: error.message
         });
     }
-}; 
+};
+
+// Get schedules for coach
+exports.getSchedulesForCoach = async (req, res) => {
+    try {
+        const { balagruhaIds, assignedTo, startDate, endDate, status } = req.body;
+        const result = await Schedule.getSchedulesForCoach(balagruhaIds, assignedTo, startDate, endDate, status);
+        if (result.success) {
+            res.status(HTTP_STATUS_CODE.OK).json({
+                success: true,
+                data: result.data,
+                message: result.message
+            });
+        } else {
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+                success: false,
+                message: result.message
+            });
+        }
+    } catch (error) {
+        console.log('error', error)
+        logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Error fetching schedules for coach: ${error.message}`);
+        res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+}
+
+// Update schedule status
+exports.updateScheduleStatus = async (req, res) => {
+    try {
+        const { scheduleId } = req.params;
+        const { status } = req.body;
+        const result = await Schedule.updateScheduleStatus(scheduleId, status);
+        if (result.success) {
+            res.status(HTTP_STATUS_CODE.OK).json({
+                success: true,
+                data: result.data,
+                message: result.message
+            });
+        } else {
+            res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+                success: false,
+                message: result.message
+            });
+        }
+    } catch (error) {
+        console.log('error', error)
+        logger.error({ clientIP: req.socket.remoteAddress, method: req.method, api: req.originalUrl }, `Error updating schedule status: ${error.message}`);
+        res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+}

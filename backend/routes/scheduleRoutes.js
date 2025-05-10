@@ -57,4 +57,19 @@ router.post(
     // authorize('Schedule Management', 'Read'),
     scheduleController.getSchedulesForAdmin
 );
+// Create POST API for fetch the schedules list for coach with balagruhaId, assignedTo Id, startDate, endDate, status
+router.post(
+    '/coach',
+    authenticate,
+    // authorize('Schedule Management', 'Read'),
+    scheduleController.getSchedulesForCoach
+);
+
+// Create API for update the schedule status
+router.put(
+    '/status/:scheduleId',
+    authenticate,
+    scheduleController.updateScheduleStatus
+);
+
 module.exports = router; 

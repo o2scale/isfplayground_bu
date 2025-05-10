@@ -7,7 +7,8 @@ const {
     getSchedulesByUser,
     getOverlappingSchedule,
     getSchedulesForAdmin,
-    getOverlappingScheduleOtherThanGivenSchedule
+    getOverlappingScheduleOtherThanGivenSchedule,
+    updateScheduleStatus
 } = require('../data-access/schedule');
 const { logger } = require('../config/pino-config');
 const { UserTypes } = require('../constants/users');
@@ -213,7 +214,7 @@ class Schedule {
                 logger.info('Schedule updated successfully');
                 return {
                     success: true,
-                    data: result.data,
+                    data: { schedule: result.data },
                     message: 'Schedule updated successfully'
                 };
             }
@@ -290,8 +291,8 @@ class Schedule {
 
     }
 
-    static async getSchedulesForAdmin(balagruhaId, assignedTo, startDate, endDate, status) {
-        const result = await getSchedulesForAdmin(balagruhaId, assignedTo, startDate, endDate, status);
+    static async getSchedulesForAdmin(balagruhaIds, assignedTo, startDate, endDate, status) {
+        const result = await getSchedulesForAdmin(balagruhaIds, assignedTo, startDate, endDate, status);
         if (result.success) {
             if (result.data) {
                 // iterate the data and create an array of object with the format [{date: '2025-05-05',schedules: [{startTime: '11:00 AM', endTime: '12:00 PM', assignedTo: 'John Doe', createdBy: 'Jane Doe', status: 'pending'}]}]
@@ -322,6 +323,45 @@ class Schedule {
                 message: 'Schedules fetched successfully'
             };
         }
+    }
+
+    static async getSchedulesForCoach(balagruhaIds, assignedTo, startDate, endDate, status) {
+        const result = await getSchedulesForAdmin(balagruhaIds, assignedTo, startDate, endDate, status);
+        if (result.success) {
+            if (result.data) {
+                // iterate the data and create an array of object with the format [{date: '2025-05-05',schedules: [{startTime: '11:00 AM', endTime: '12:00 PM', assignedTo: 'John Doe', createdBy: 'Jane Doe', status: 'pending'}]}]
+
+                const schedulesObj = {};
+                result.data.forEach(schedule => {
+                    let date = format(schedule.date, 'yyyy-MM-dd');
+                    if (!schedulesObj[date]) {
+                        schedulesObj[date] = [];
+                    }
+                    schedulesObj[date].push(schedule);
+                });
+                // get the keys of the schedulesObj 
+                const dates = Object.keys(schedulesObj);
+                // sort the dates in ascending order
+                dates.sort();
+                // create an array of object with the format [{date: '2025-05-05',schedules: [{startTime: '11:00 AM', endTime: '12:00 PM', assignedTo: 'John Doe', createdBy: 'Jane Doe', status: 'pending'}]}]
+                const sortedSchedulesObj = dates.map(date => ({ date, schedules: schedulesObj[date] }));
+                return {
+                    success: true,
+                    data: { schedules: sortedSchedulesObj },
+                    message: 'Schedules fetched successfully'
+                };
+            }
+            return {
+                success: true,
+                data: result.data,
+                message: 'Schedules fetched successfully'
+            };
+        }
+    }
+
+    static async updateScheduleStatus(scheduleId, status) {
+        const result = await updateScheduleStatus(scheduleId, status);
+        return result;
     }
 }
 

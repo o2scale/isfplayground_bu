@@ -176,18 +176,18 @@ const getOverlappingScheduleOtherThanGivenSchedule = async ({ scheduleId, assign
 };
 
 // Get schedules for admin
-const getSchedulesForAdmin = async (balagruhaId, assignedTo, startDate, endDate, status) => {
+const getSchedulesForAdmin = async (balagruhaIds, assignedTo, startDate, endDate, status) => {
     if (status == null || status == undefined || status.length == 0) {
         status = ["pending", "inprogress", "completed", "cancelled"];
     }
-    if (balagruhaId == null || balagruhaId == undefined || balagruhaId.length == 0) {
+    if (balagruhaIds == null || balagruhaIds == undefined || balagruhaIds.length == 0) {
         return {
             success: false,
             message: 'Balagruha ID is required'
         };
     } else {
         // convert the balagruhaId to object id if it is a string 
-        balagruhaId = mongoose.Types.ObjectId.createFromHexString(balagruhaId)
+        balagruhaIds = balagruhaIds.map(balagruhaId => mongoose.Types.ObjectId.createFromHexString(balagruhaId))
     }
 
     if (assignedTo == null || assignedTo == undefined || assignedTo.length == 0) {
@@ -207,7 +207,7 @@ const getSchedulesForAdmin = async (balagruhaId, assignedTo, startDate, endDate,
         {
             '$match': {
                 'balagruhaId': {
-                    '$eq': balagruhaId
+                    '$in': balagruhaIds
                 },
                 'assignedTo': {
                     '$eq': assignedTo
@@ -294,6 +294,11 @@ const getSchedulesForAdmin = async (balagruhaId, assignedTo, startDate, endDate,
     return schedules;
 };
 
+// Update schedule status
+const updateScheduleStatus = async (scheduleId, status) => {
+    const schedule = await Schedules.findByIdAndUpdate(scheduleId, { status }, { new: true });
+    return schedule;
+};
 
 module.exports = {
     createSchedule,
@@ -304,5 +309,7 @@ module.exports = {
     getSchedulesByUser,
     getOverlappingSchedule,
     getSchedulesForAdmin,
-    getOverlappingScheduleOtherThanGivenSchedule
-}; 
+    getOverlappingScheduleOtherThanGivenSchedule,
+    updateScheduleStatus
+};
+
