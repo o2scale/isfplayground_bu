@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CheckInModal.css";
 import { getAnyUserBasedonRoleandBalagruha } from "../../api";
 
-const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
+const CheckInModal = ({ isOpen, onClose, onSubmit, studentData, balagruhas, editMode }) => {
   const [formData, setFormData] = useState({
     studentId: "",
     studentName: "",
@@ -17,6 +17,42 @@ const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
   const [selectedBalagruha, setSelectedBalagruha] = useState();
   const [selectedStudent, setSelectedStudent] = useState();
   const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    if(studentData) {
+      setSelectedBalagruha(studentData.balagruhaIds[0]);
+      fetchStudents(studentData.balagruhaIds[0]);
+      setSelectedStudent(studentData.studentId);
+      setFormData({
+        // studentId: ,
+        studentName: studentData.userName,
+        temperature: studentData.temperature,
+        date: new Date(studentData.date).toISOString().split("T")[0],
+        time: new Date(studentData.updatedAt).toISOString().split("T")[1].slice(0, 5),
+        healthStatus: studentData.healthStatus,
+        notes: studentData.notes,
+        uploadedImages: studentData.attachments?.filter(att => att.fileType.startsWith("image/")) || [],
+        uploadedPdfs: studentData.attachments?.filter(att => att.fileType === "application/pdf") || [],
+      })
+      // setSelectedStudent(studentData.balagruhaIds[0]);
+      // setSelectedStudent(studentData.studentId)
+    } else{
+      setFormData({
+        studentId: "",
+        studentName: "",
+        temperature: "",
+        date: new Date().toISOString().split("T")[0],
+        time: new Date().toTimeString().slice(0, 5),
+        healthStatus: "normal",
+        notes: "",
+        uploadedImages: [],
+        uploadedPdfs: [],
+      })
+      setSelectedStudent();
+    }
+
+    console.log(studentData, 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+  }, [studentData]);
 
   if (!isOpen) return null;
 
@@ -126,7 +162,7 @@ const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
               onChange={(e) => fetchStudents(e.target.value)}
               required
             >
-              <option value="">Select Balagruha</option>
+              <option value="">Select Balagruha</option>  
               {balagruhas.map((bal) => (
                 <option key={bal.id} value={bal._id}>
                   {bal.name}
@@ -246,7 +282,7 @@ const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
               />
             </label>
 
-            <div className="uploaded-files">
+            {/* <div className="uploaded-files">
               {formData.uploadedImages.map((file, index) => (
                 <div key={index} className="uploaded-item">
                   <img
@@ -258,7 +294,37 @@ const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
                   <button onClick={() => handleRemoveImage(index)}>❌</button>
                 </div>
               ))}
-            </div>
+            </div> */}
+
+           {!editMode ? (
+             <div className="uploaded-files">
+             {formData.uploadedImages.map((file, index) => (
+               <div key={index} className="uploaded-item">
+                 <span>{file.name}</span>
+                 <button onClick={() => handleRemovePdf(index)}>❌</button>
+               </div>
+             ))}
+           </div>
+           ) : (
+            <div className="uploaded-files">
+            {formData.uploadedImages.map((file, index) => (
+              <div key={index} className="uploaded-item">
+                <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src={file.fileUrl}
+                    alt={file.fileName || "Uploaded image"}
+                    width="50"
+                    height="50"
+                    style={{ cursor: "pointer" }}
+                  />
+                </a>
+                <button type="button" onClick={() => handleRemoveImage(index)}>❌</button>
+              </div>
+            ))}
+          </div>
+          
+           )}
+
           </div>
 
           <div className="form-group">
@@ -288,7 +354,9 @@ const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
                 hidden
               />
             </label>
-            <div className="uploaded-files">
+            
+            {!editMode ? (
+              <div className="uploaded-files">
               {formData.uploadedPdfs.map((file, index) => (
                 <div key={index} className="uploaded-item">
                   <span>{file.name}</span>
@@ -296,6 +364,22 @@ const CheckInModal = ({ isOpen, onClose, onSubmit, balagruhas }) => {
                 </div>
               ))}
             </div>
+            ) : (
+              <div className="uploaded-files">
+              {formData.uploadedPdfs.map((file, index) => (
+                <div key={index} className="uploaded-item">
+                  <a
+                    href={file.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {file.fileName || `PDF-${index + 1}`}
+                  </a>
+                  <button type="button" onClick={() => handleRemovePdf(index)}>❌</button>
+                </div>
+              ))}
+            </div>
+            )}
           </div>
 
           <div className="modal-footer">

@@ -13,6 +13,11 @@ const MedicInchargeDashboard = () => {
   const { logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [balagruhaData, setBalagruhaData] = useState([]);
+  const [search, setSearch] = useState();
+  const [medicalStatus, setMedicalStatus] = useState('all');
+  const [selectedBalagruha, setSelectedBalagruha] = useState('all');
+  const [editData, setEditData] = useState();
+  const [editMode, setEditMode] = useState(false);
   const [checkIns, setCheckIns] = useState([
     // {
     //   id: "HC001",
@@ -179,20 +184,24 @@ const MedicInchargeDashboard = () => {
     // { id: 4, name: "Alerts", activeTab: "alerts", link: "/task" },
     { id: 5, name: "Tasks", activeTab: "tasks", link: "/task" },
     //     { id: 5, name: "Performance", activeTab: "" },
-    //     { id: 6, name: "Reports", activeTab: "reports" },
+        // { id: 6, name: "Reports", activeTab: "reports" },
   ];
-  const handleOpenModal = () => {
+  const handleOpenModal = (checkin = null, edit = null) => {
     console.log("Opening modal...");
+    setEditData(checkin);
+    setEditMode(edit);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
+    setEditMode(false);
     setIsModalOpen(false);
   };
 
   const handleSubmitCheckIn = async(formData) => {
 
-    console.log(formData.uploadedImages, formData.uploadedPdfs)
+    console.log(formData.uploadedImages, formData.uploadedPdfs);
+    setEditMode(false);
 
     const formDataToSend = new FormData();
 
@@ -323,6 +332,24 @@ const MedicInchargeDashboard = () => {
     }
     console.log(response)
   }
+
+  const filterMedicalCheckInData = recentHealthCheckins.filter((user) => {
+    if(search &&
+      !user?.userName?.toLowerCase().includes(search.toLowerCase())
+    ) {
+      return false;
+    }
+
+    if(medicalStatus !== "all" && user?.healthStatus !== medicalStatus) {
+      return false;
+    }
+    
+    if(selectedBalagruha !== 'all' && user?.balagruhaIds[0] !== selectedBalagruha) {
+      return false;
+    }
+
+    return true;
+  })
 
   return (
     <div className="medic-incharge-dashboard">
@@ -540,7 +567,7 @@ const MedicInchargeDashboard = () => {
                           <td>
                             <button
                               className="medic-icon-button"
-                              onClick={() => handleOpenModal()}
+                              // onClick={() => handleOpenModal(checkin)}
                             >
                               📝
                             </button>
@@ -566,17 +593,22 @@ const MedicInchargeDashboard = () => {
               <div className="medic-section-header">
                 <h2>Health Check-ins</h2>
                 <div className="medic-search-filter">
-                  <input type="text" placeholder="Search student..." />
-                  <select>
-                    <option>All Statuses</option>
-                    <option>Normal</option>
-                    <option>Warning</option>
-                    <option>Alert</option>
+                  <input type="text" placeholder="Search student..." onChange={(e) => setSearch(e.target.value)} />
+                  <select onChange={(e) => setMedicalStatus(e.target.value)}>
+                    <option value={'all'}>All Statuses</option>
+                    <option value={'normal'}>Normal</option>
+                    <option value={'warning'}>Warning</option>
+                    <option value={'alert'}>Alert</option>
                   </select>
-                  <input type="date" />
+                  <select onChange={(e) => setSelectedBalagruha(e.target.value)}>
+                    <option value={'all'}>All Balagruhas</option>
+                    {balagruhaData.map((bal) => (
+                      <option key={bal._id} value={bal._id}>{bal.name}</option>
+                    ))}
+                  </select>
                   <button
                     className="medic-action-button"
-                    onClick={handleOpenModal}
+                    onClick={() => handleOpenModal()}
                   >
                     Record New Check-in
                   </button>
@@ -595,7 +627,7 @@ const MedicInchargeDashboard = () => {
                       </tr>
                   </thead>
                   <tbody>
-                    {recentHealthCheckins.map((checkin, index) => (
+                    {filterMedicalCheckInData.map((checkin, index) => (
                       <tr
                         key={checkin.id}
                         className={checkin?.healthStatus?.toLowerCase()}
@@ -631,7 +663,7 @@ const MedicInchargeDashboard = () => {
                         <td>
                           <button
                             className="medic-icon-button"
-                            onClick={() => handleOpenModal()}
+                            onClick={() => handleOpenModal(checkin, true)}
                           >
                             📝
                           </button>
@@ -743,7 +775,7 @@ const MedicInchargeDashboard = () => {
                   </div>
                 </div>
               </div> */}
-              );
+              {/* ); */}
             </div>
           )}
 
@@ -1210,8 +1242,9 @@ const MedicInchargeDashboard = () => {
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             onSubmit={handleSubmitCheckIn}
-            // students={studentList}
+            studentData={editData}
             balagruhas={balagruhaData}
+            editMode={editMode}
           />
         </div>
       </div>

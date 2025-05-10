@@ -1,0 +1,78 @@
+.from-to-container {
+    display: flex;
+    gap: 5px;
+}
+
+.date-picker {
+    display: flex;
+    gap: 10px;
+}
+
+.date-picker-button {
+    padding: 15px 40px;
+    border-radius: 10px;
+    border: 2px solid #b0c2f2;
+    font-weight: 600;
+    font-size: 16px;
+    font-family: 'Patrick Hand', cursive;
+    background-color: #fff;
+    margin-bottom: 20px;
+    transition: transform 0.3s, background-color 0.3s;
+  }
+  
+  /* Hover effect only when not selected */
+  .date-picker-button:not(.selected):hover {
+    transform: scale(1.1);
+    background-color: #b0c2f2;
+  }
+  
+  /* When selected */
+  .date-picker-button.selected {
+    background-color: #7699f8;
+    transform: scale(1); /* Reset scale */
+    border: none;
+  }
+  
+
+.date-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* justify-content: end; */
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.date-submit-btn {
+    padding: 10px 30px;
+    margin: 20px 0;
+    background-color: #e6edff;
+    border-radius: 5px;
+    border: 2px solid #4a72e1 ;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 17px;
+    color: rgb(110, 110, 110);
+    font-weight: 600;
+}
+
+.date-submit-btn:hover {
+    scale: 1.1;
+    transition: 0.3s;
+    background-color: #d6e3ff;
+}
+
+.from-to-date-input {
+    padding: 10px 20px;
+}
+
+.from-to-date-input:hover {
+    scale: 1.1;
+    transition: 0.3s;
+}
+
+.custom-date-container {
+    background-color: #fff;
+    padding: 30px;
+    box-shadow: 0px 0px 10px rgb(197, 197, 197);
+    border-radius: 20px;
+}

@@ -1203,6 +1203,7 @@ const UserManagement = () => {
                   </select>
                 )} */}
 
+              <div style={{display: "flex", gap: "10px"}}>
               {localStorage.getItem("role") === "admin" ? (
                 <>
                   <select
@@ -1273,6 +1274,7 @@ const UserManagement = () => {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
+              </div>
             </div>
             {/* )} */}
           </div>

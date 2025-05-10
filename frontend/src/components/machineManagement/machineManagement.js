@@ -5,6 +5,8 @@ import {
     PieChart, Pie, Cell, LineChart, Line
 } from 'recharts';
 import { addMachines, assignMachineToAnotherBalagruha, deleteMachineById, getBalagruha, getMachines, toggleMachineStatus } from '../../api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const MachineManagement = () => {
     const [view, setView] = useState('report'); // 'dashboard', 'detail', 'report'
@@ -38,9 +40,10 @@ const MachineManagement = () => {
           const storedIds = localStorage.getItem("balagruhaIds");
           const allowedBalagruhaIds = storedIds ? storedIds.split(",") : [];
       
-          const filteredBalagruhas = role === "coach"
+          const filteredBalagruhas = (role === "coach" || role === "balagruha-incharge")
             ? allBalagruhas.filter(bg => allowedBalagruhaIds.includes(bg._id))
             : allBalagruhas;
+
       
           console.log("Filtered balagruha details", filteredBalagruhas);
           setBalagruhaOptions(filteredBalagruhas);
@@ -57,6 +60,8 @@ const MachineManagement = () => {
           const role = localStorage.getItem('role');
           const storedIds = localStorage.getItem('balagruhaIds');
           const allowedBalagruhaIds = storedIds ? storedIds.split(',') : [];
+
+          console.log(response.data?.machines, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx")
       
           if (role === 'coach') {
             const filteredMachines = allMachines.filter(machine =>
@@ -113,7 +118,7 @@ const MachineManagement = () => {
             status: 'active'
         });
        } catch (error) {
-        setError(error.response.data.message);
+        setError(error.response.data.message || "Error happened while adding machine");
        }
     };
 
@@ -251,6 +256,45 @@ const MachineManagement = () => {
         return true;
     });
 
+    const exportMachineToPDF = () => {
+        const doc = new jsPDF();
+      
+        // --- 1. Add Title --- 
+        doc.setFontSize(14);
+        doc.text("Machine Report", 14, 15);
+      
+        // --- 2. Table Data ---
+        const tableColumn = [
+          "Machine ID",
+          "MAC Address",
+          "Serial Number",
+          "Assigned Balagruha",
+          "Status"
+        ];
+      
+        // Map your data to rows
+        const tableRows = filteredMachines.map((machine) => [
+          machine.machineId,
+          machine.macAddress,
+          machine.serialNumber,
+          machine.assignedBalagruha ? machine.assignedBalagruha.name : "N/A", // Handle null values
+          machine.status,
+        ]);
+      
+        // Add table below title
+        autoTable(doc, {
+          head: [tableColumn],
+          body: tableRows,
+          startY: 30,
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [120, 153, 248] }
+        });
+      
+        // --- 3. Save ---
+        doc.save('Machines.pdf');
+      };
+      
+
     // Get unique Balagruhas for filter dropdown
     const uniqueBalagruhas = [...new Set(machines.map(machine => machine.balagruha))];
 
@@ -351,7 +395,7 @@ const MachineManagement = () => {
                 </button> */}
                 <button
                     className={`tab ${view === 'report' ? 'active' : ''}`}
-                    onClick={() => setView('report')}
+                    onClick={() => exportMachineToPDF()}
                 >
                     📝 Machine Reports
                 </button>
@@ -644,7 +688,9 @@ const MachineManagement = () => {
                                             Cancel
                                         </button>
                                     </div>
-                                    <p className='error-message'>{error}</p>
+                                    {error?.length > 0 && (
+                                         <p className='error-message'>{error}</p>
+                                    )}
                                 </form>
                             </div>
                         )}

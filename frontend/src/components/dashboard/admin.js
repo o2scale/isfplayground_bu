@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./AdminDashboard.css";
-import { getBalagruha, getTasks, updateTask, fetchUsers, getStudentListforAttendance, getMachines, getTaskBytaskId, getAnyUserBasedonRoleandBalagruha, getMedicalConditionBasedOnBalagruha, getMoodBasedOnBalagruha } from "../../api";
+import { getBalagruha, getTasks, updateTask, fetchUsers, getStudentListforAttendance, getMachines, getTaskBytaskId, getAnyUserBasedonRoleandBalagruha, getMedicalConditionBasedOnBalagruha, getMoodBasedOnBalagruha, getBalagruhaListbyUserID, getBalagruhaListByAssignedID, getSchedules } from "../../api";
 import { TaskDetailsModal } from "../TaskManagement/taskmanagement";
 import WeeklyCalendar from "./WeeklyCalendar";
 
 function AdminDashboard() {
     // Initialize with pre-selected values
     const [selectedBalagruha, setSelectedBalagruha] = useState();
-    const [selectedCoach, setSelectedCoach] = useState(1);
+    const [selectedBalagruhaOfCoach, setSelectedBalagruhaOfCoach] = useState()
+    const [selectedCoach, setSelectedCoach] = useState();
     const [adminMenuSelected, setAdminMenuSelected] = useState(1);
     const [coachMenuSelected, setCoachMenuSelected] = useState(1);
     const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
     const [balagruhas, setBalagruhas] = useState([]);
+    const [balagruhaOfCoach, setBalagruhaOfCoach] = useState([]);
     const [showStudentDropdown, setShowStudentDropdown] = useState(false);
     const [balagruhaStudents, setBalagruhaStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
@@ -28,6 +30,13 @@ function AdminDashboard() {
     const [attendance, setAttendance] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [machines, setMachines] = useState([]);
+    // const [schedules, setSchedules] = useState({
+    //     balagruhaId: '',
+    //     assignedTo: '',
+    //     startDate: '',
+    //     endDate: '',
+    //     status: []
+    // });
 
     const getBalagruhaList = async () => {
         try {
@@ -38,6 +47,19 @@ function AdminDashboard() {
             console.error('Error fetching balagruha list:', error);
         }
     };
+
+    const scrollRef = useRef(null);
+
+    const scrollMenu = direction => {
+    const scrollAmount = 200;
+    if (scrollRef.current) {
+        scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+        });
+    }
+    };
+
 
     const getCoachNameBasedonBalagruha = async () => {
         const response = await getAnyUserBasedonRoleandBalagruha("coach", selectedBalagruha);
@@ -91,6 +113,44 @@ function AdminDashboard() {
             console.error('Error fetching student list:', error);
         }
     };
+
+    const fetchBalagruhaByCoach = async (id) => {
+        try {
+            const response = await getBalagruhaListByAssignedID(id);
+            setBalagruhaOfCoach(response?.data?.balagruhas);
+        } catch (error) {
+            console.error('Error in fetching balagruha based on user', error);
+        }
+    }
+
+    const fetchSchedules = async (balagruha, startDate, endDate) => {
+        try {
+            let dataToSend;
+            if(balagruha) {
+                 dataToSend = {
+                    balagruhaIds: [balagruha],
+                    assignedTo: selectedCoach,
+                    startDate: startDate,
+                    endDate: endDate,
+                    status: []
+                }
+            } else {
+                 dataToSend = {
+                    balagruhaIds: [selectedBalagruhaOfCoach],
+                    assignedTo: selectedCoach,
+                    startDate: startDate,
+                    endDate: endDate,
+                    status: []
+                }
+            }
+            
+            const response = await getSchedules(dataToSend);
+            console.log(startDate, endDate, dataToSend, response, "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+            // setSchedules
+        } catch (error) {
+            console.error('Error in fetching schedules', error)
+        }
+    }
 
     useEffect(() => {
         getBalagruhaList();
@@ -178,7 +238,6 @@ function AdminDashboard() {
         }
     
         const moodResponse = await getMoodBasedOnBalagruha(balagruhaIds);
-        console.log(moodResponse, "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
         if (moodResponse.success) {
             const filteredMood = moodResponse?.data?.moodInfo?.filter(
                 mood => {
@@ -404,7 +463,7 @@ function AdminDashboard() {
                         {/* Balagruha Selection */}
                         <div className="balagruha-selection">
                             <h3>Balagruhas</h3>
-                            <div className="scroll-container scrollable-menu">
+                            {/* <div className="scroll-container scrollable-menu">
                                 {balagruhas?.map(bal => (
                                     <div
                                         key={bal._id}
@@ -422,7 +481,32 @@ function AdminDashboard() {
                                         <div>{bal.name}</div>
                                     </div>
                                 ))}
+                            </div> */}
+                            <div className="scroll-wrapper">
+                                <button className="scroll-button left" onClick={() => scrollMenu('left')}>&lt;</button>
+
+                                <div className="scroll-container scrollable-menu" ref={scrollRef}>
+                                    {balagruhas?.map(bal => (
+                                    <div
+                                        key={bal._id}
+                                        className={`balagruha-item ${selectedBalagruha === bal._id ? 'selected' : ''}`}
+                                        onClick={() => {
+                                        setSelectedStudents([]);
+                                        setStudentUserId([]);
+                                        setMoodData();
+                                        setMedicalIssuesData();
+                                        setSelectedBalagruha(bal._id);
+                                        getStudentListBasedonDate(bal._id);
+                                        }}
+                                    >
+                                        <div>{bal.name}</div>
+                                    </div>
+                                    ))}
+                                </div>
+
+                                <button className="scroll-button right" onClick={() => scrollMenu('right')}>&gt;</button>
                             </div>
+
                         </div>
 
                         {/* Student Dropdown */}
@@ -762,26 +846,6 @@ function AdminDashboard() {
 
                         {/* Balagruha assigned to coach */}
 
-                        <div className="assigned-balagruha">
-                            <h3>Assigned Balagruhas</h3>
-                            <div className="scroll-container scrollable-menu">
-                                {balagruhas?.map(bal => (
-                                    <div
-                                        key={bal._id}
-                                        className={`balagruha-item ${selectedBalagruha === bal._id ? 'selected' : ''}`}
-                                        onClick={() => {
-                                            setSelectedBalagruha(bal._id);
-                                            getStudentListBasedonDate(bal._id);
-                                            setAdminMenuSelected(3);
-                                        }}
-                                    >
-                                        <div>{bal.name}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-
                         <div className="coach-selection">
                             <h3>Coaches</h3>
                             <div className="scroll-container scrollable-menu">
@@ -792,7 +856,9 @@ function AdminDashboard() {
                                             className={`coach-item ${selectedCoach === coach._id ? 'selected' : ''}`}
                                             onClick={() => {
                                                 setSelectedCoach(coach._id);
-                                                setCoachMenuSelected(1);
+                                                setSelectedBalagruhaOfCoach();
+                                                fetchBalagruhaByCoach(coach._id);
+                                                // setCoachMenuSelected(1);
                                             }}
                                         >
                                             {coach.name}
@@ -803,6 +869,62 @@ function AdminDashboard() {
                                 }
                             </div>
                         </div>
+
+                        {balagruhaOfCoach.length > 0 && (
+                             <div className="assigned-balagruha">
+                            <h3>Assigned Balagruhas</h3>
+                            <div className="scroll-container scrollable-menu">
+                                {balagruhaOfCoach?.map(bal => (
+                                    <div
+                                        key={bal._id}
+                                        className={`balagruha-item ${selectedBalagruhaOfCoach === bal._id ? 'selected' : ''}`}
+                                        onClick={() => {
+                                            setSelectedBalagruhaOfCoach(bal._id);
+                                            // const today = new Date();
+                                            // const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+                                            // // Get Monday (start of week)
+                                            // const startDate = new Date(today);
+                                            // startDate.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+                                            // startDate.setHours(0, 0, 0, 0);
+
+                                            // // Get Sunday (end of week)
+                                            // const endDate = new Date(startDate);
+                                            // endDate.setDate(startDate.getDate() + 6);
+                                            // endDate.setHours(23, 59, 59, 999);
+
+                                            // // Now call fetchSchedules
+                                            // fetchSchedules(bal._id, startDate, endDate);
+
+                                            const today = new Date();
+                                            const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+                                            // Get Monday
+                                            const monday = new Date(today);
+                                            monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+                                            monday.setHours(0, 0, 0, 0);
+
+                                            // Get Sunday
+                                            const sunday = new Date(monday);
+                                            sunday.setDate(monday.getDate() + 6);
+                                            sunday.setHours(23, 59, 59, 999);
+
+                                            // Format to 'YYYY-MM-DD'
+                                            const startDate = monday.toISOString().slice(0, 10);
+                                            const endDate = sunday.toISOString().slice(0, 10);
+
+                                            // Call your function
+                                            fetchSchedules(bal._id, startDate, endDate);
+                                            // getStudentListBasedonDate(bal._id);
+                                            // setAdminMenuSelected(3);
+                                        }}
+                                    >
+                                        <div>{bal.name}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        )}
 
                         {/* Coach Menus */}
                         {selectedCoach && (

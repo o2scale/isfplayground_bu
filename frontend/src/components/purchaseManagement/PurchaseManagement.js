@@ -3,11 +3,26 @@ import {
   createPurchase,
   deletePurchase,
   getAllPurchases,
+  getBalagruha,
   updatePurchaseOrder,
 } from "../../api";
+import showToast from '../../utils/toast';
+
+import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import './PurchaseManagement.css';
+
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 export default function PurchaseManagement() {
   const [purchaseForm, setPurchaseForm] = useState({
+    balagruhaId: '',
+    status: '',
     machineDetails: "",
     vendorDetails: "",
     costEstimate: "",
@@ -22,14 +37,26 @@ export default function PurchaseManagement() {
   const [showDeletePurchaseConfirmation, setShowDeletePurchaseConfirmation] =
     useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [balagruhas, setBalagruhas] = useState([]);
+  const [selectDate, setSelectDate] = useState(null);
+  const [purchaseSearch, setPurchaseSearch] = useState()
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [filterBalagruha, setFilterBalagruha] = useState("all");
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedBalagruha, setSelectedBalagruha] = useState();
+  const [selectedStatus, setSelectedStatus] = useState();
 
   useEffect(() => {
     fetchPurchaseOrders();
+    fetchBalagruha();
   }, []);
 
   const openPurchaseModal = (purchase = null) => {
     if (purchase) {
       setPurchaseForm({
+        balagruhaId: purchase.balagruhaId,
+        status: purchase.status,
         machineDetails: purchase.machineDetails,
         vendorDetails: purchase.vendorDetails,
         costEstimate: purchase.costEstimate,
@@ -38,8 +65,14 @@ export default function PurchaseManagement() {
         existingAttachments: purchase.attachments || [],
       });
       setEditingItem(purchase);
+      // const select = balagruhas.filter((item) => {
+      //   return item._id === purchase.balagruhaId
+      // })
+      // setSelectedBalagruha(select[0].name)
     } else {
       setPurchaseForm({
+        balagruhaId: "",
+        status: "",
         machineDetails: "",
         vendorDetails: "",
         costEstimate: "",
@@ -137,9 +170,12 @@ export default function PurchaseManagement() {
   const handlePurchaseSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setSelectedBalagruha();
 
     try {
       const formData = new FormData();
+      formData.append('balagruhaId', purchaseForm.balagruhaId);
+      formData.append("status", purchaseForm.status);
       formData.append("machineDetails", purchaseForm.machineDetails);
       formData.append("vendorDetails", purchaseForm.vendorDetails);
       formData.append("costEstimate", purchaseForm.costEstimate);
@@ -166,23 +202,232 @@ export default function PurchaseManagement() {
 
   const removePurchaseFile = (index) => {
     setPurchaseForm(prev => ({
-        ...prev,
-        attachments: prev.attachments.filter((_, i) => i !== index)
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index)
     }));
-};
+  };
+
+  const fetchBalagruha = async () => {
+    const response = await getBalagruha();
+    if (response.success) {
+      // const role = localStorage.getItem('role');
+      // if(role === 'admin') {
+      setBalagruhas(response.data.balagruhas);
+      // } else {
+      //   const balagruhaIdsFromStorage = localStorage.getItem('balagruhaIds')?.split(',');
+
+      //   const filteredBalagruhas = response.data.balagruhas.filter(balagruha =>
+      //     balagruhaIdsFromStorage.includes(balagruha._id)
+      //   );
+      //   console.log("User Balagruha Data: ", filteredBalagruhas);
+      //   setBalagruhas(filteredBalagruhas);
+      // }
+    } else {
+      showToast("Error fetching balagruha", "error");
+    }
+
+  }
+
+  // const filteredBalagruhas = purchaseOrders.filter((bal) => {
+  //   console.log(purchaseOrders)
+  //   console.log(bal.balagruhaId, filterBalagruha)
+  //   if(filterBalagruha !== "all") {
+  //       return bal.balagruhaId === filterBalagruha
+  //   }
+  //   return purchaseOrders;
+  // })
+
+  const filteredPurchaseOrders = purchaseOrders.filter((bal) => {
+    const createdDate = dayjs(bal.createdAt);
+
+    let passesDateFilter = true;
+
+    if (selectDate === 'today') {
+      passesDateFilter = createdDate.isSame(dayjs(), 'day');
+    } else if (selectDate === 'thisWeek') {
+      const startOfWeek = dayjs().startOf('week');
+      const endOfWeek = dayjs().endOf('week');
+      passesDateFilter = createdDate.isSameOrAfter(startOfWeek) && createdDate.isSameOrBefore(endOfWeek);
+    } else if (selectDate === 'thisMonth') {
+      passesDateFilter = createdDate.isSame(dayjs(), 'month');
+    } else if (selectDate === 'lastMonth') {
+      const lastMonth = dayjs().subtract(1, 'month');
+      passesDateFilter = createdDate.isSame(lastMonth, 'month');
+    } else if (selectDate === 'custom' && fromDate && toDate) {
+      passesDateFilter =
+        createdDate.isSameOrAfter(dayjs(fromDate)) &&
+        createdDate.isSameOrBefore(dayjs(toDate).endOf('day'));
+    }
+
+    const passesBalagruhaFilter = filterBalagruha === "all" || bal.balagruhaId === filterBalagruha;
+
+    const searchFilter = !purchaseSearch || purchaseSearch && bal?.machineDetails?.toLowerCase().includes(purchaseSearch?.toLowerCase()) ||  purchaseSearch && bal?.vendorDetails?.toLowerCase().includes(purchaseSearch?.toLowerCase()) ||  purchaseSearch && bal?.requiredParts?.toLowerCase().includes(purchaseSearch?.toLowerCase())
+
+    const searchStatus = filterStatus === "all" || bal.status === filterStatus;
+
+    return passesDateFilter && passesBalagruhaFilter && searchFilter && searchStatus;
+  });
+
+  const exportPurchaseOrdersToPDF = () => {
+    const doc = new jsPDF();
+
+    // --- 1. Add Title & Date Filter Info ---
+    doc.setFontSize(14);
+    doc.text("Purchase Order Report", 14, 15);
+
+    // Format filter info
+    let filterInfo = "";
+    const today = dayjs();
+
+    if (selectDate === 'custom' && fromDate && toDate) {
+      filterInfo = `Date Range: ${dayjs(fromDate).format('DD-MM-YYYY')} to ${dayjs(toDate).format('DD-MM-YYYY')}`;
+    } else if (selectDate === 'today') {
+      filterInfo = `Date: ${today.format('DD-MM-YYYY')}`;
+    } else if (selectDate === 'thisWeek') {
+      const startOfWeek = today.startOf('week');
+      // Adjust the end of the week: if today is before the week's Sunday, use today as the end date.
+      const endOfWeek = today.isBefore(today.endOf('week')) ? today : today.endOf('week');
+      filterInfo = `Date Range: ${startOfWeek.format('DD-MM-YYYY')} to ${endOfWeek.format('DD-MM-YYYY')}`;
+    } else if (selectDate === 'thisMonth') {
+      const startOfMonth = today.startOf('month');
+      const endOfMonth = today.endOf('month');
+      filterInfo = `Date Range: ${startOfMonth.format('DD-MM-YYYY')} to ${endOfMonth.format('DD-MM-YYYY')}`;
+    } else if (selectDate === 'lastMonth') {
+      const startOfLastMonth = today.subtract(1, 'month').startOf('month');
+      const endOfLastMonth = today.subtract(1, 'month').endOf('month');
+      filterInfo = `Date Range: ${startOfLastMonth.format('DD-MM-YYYY')} to ${endOfLastMonth.format('DD-MM-YYYY')}`;
+    } else {
+      filterInfo = "Date Filter: All";
+    }
+
+    doc.setFontSize(10);
+    doc.text(filterInfo, 14, 25);
+
+
+
+    // --- 2. Table Data ---
+    const tableColumn = [
+      "Machine Details",
+      "Vendor Details",
+      "Required Materials",
+      "Balagruha",
+      "Cost Estimate",
+      "Date",
+      "Status"
+    ];
+
+    const tableRows = filteredPurchaseOrders.map((req) => [
+      req.machineDetails,
+      req.vendorDetails,
+      req.requiredParts,
+      req.balagruhaName,
+      `₹${req.costEstimate}`,
+      dayjs(req.createdAt).format('DD-MM-YYYY'),
+      req.status,
+    ]);
+
+    // Add table below date info
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [120, 153, 248] }
+    });
+
+    // --- 3. Total Cost Summary ---
+    const totalCost = filteredPurchaseOrders.reduce((acc, curr) => acc + (curr.costEstimate || 0), 0);
+    const finalY = doc.lastAutoTable.finalY || 30;
+
+    doc.setFontSize(11);
+    doc.text(`Total Estimated Cost: ₹${totalCost}`, 14, finalY + 10);
+
+    // --- 4. Save ---
+    doc.save('PurchaseOrders.pdf');
+  };
+
 
   return (
-    <div style={{ width: "100%", margin: "20px"}}>
+    <div style={{ width: "100%", margin: "20px" }}>
       <div className="purchase-purchases-section">
+        <div className="date-container">
+          <div className="date-picker">
+            <div>
+              <button onClick={() => setSelectDate(null)} className={`date-picker-button ${selectDate === null ? 'selected' : ''}`}>All</button>
+            </div>
+            <div>
+              <button onClick={() => setSelectDate('today')} className={`date-picker-button ${selectDate === 'today' ? 'selected' : ''}`}>Today</button>
+            </div>
+            <div>
+              <button onClick={() => setSelectDate('thisWeek')} className={`date-picker-button ${selectDate === 'thisWeek' ? 'selected' : ''}`}>This week</button>
+            </div>
+            <div>
+              <button onClick={() => setSelectDate('thisMonth')} className={`date-picker-button ${selectDate === 'thisMonth' ? 'selected' : ''}`}>This month</button>
+            </div>
+            <div>
+              <button onClick={() => setSelectDate('lastMonth')} className={`date-picker-button ${selectDate === 'lastMonth' ? 'selected' : ''}`}>Last Month</button>
+            </div>
+            <div>
+              <button onClick={() => setSelectDate('custom')} className={`date-picker-button ${selectDate === 'custom' ? 'selected' : ''}`}>Custom</button>
+            </div>
+          </div>
+          {selectDate === 'custom' && (
+            <div className="custom-date-container">
+              <div className="from-to-container">
+                <div>
+                  <label htmlFor="from">From date</label>
+                  <input type="date" className="from-to-date-input" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+                </div>
+                <div>
+                  <label htmlFor="to">To date</label>
+                  <input type="date" className="from-to-date-input" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="purchase-section-header">
           <h2>Purchase Orders</h2>
-          <button
-            className="purchase-action-button"
-            onClick={() => openPurchaseModal()}
-            disabled={loading}
+          <div>
+            <button
+              className="purchase-action-button"
+              onClick={() => openPurchaseModal()}
+              disabled={loading}
+            >
+              + New Purchase Request
+            </button>
+            <button
+              className="purchase-action-button"
+              style={{ marginLeft: "20px" }}
+              onClick={exportPurchaseOrdersToPDF}
+            >
+              Export Data
+            </button>
+          </div>
+        </div>
+        <div style={{ maxWidth: "700px", marginBottom: "20px", display: "flex", gap: "10px" }}>
+          <input type="text" placeholder="Search Machine Details, Vendor Details, Required Materials" onChange={(e) => setPurchaseSearch(e.target.value)} style={{ borderRadius: "30px", border: "2px solid #7ed6df", fontWeight: "500", fontFamily: "'Patrick Hand', cursive", color: "black" }} />
+          <select
+            value={filterBalagruha}
+            onChange={(e) => setFilterBalagruha(e.target.value)}
+            className="filter-select"
           >
-            + New Purchase Order
-          </button>
+            <option value="all">All Balagruhas</option>
+            {balagruhas.map((bg, index) => (
+              <option key={index} value={bg._id}>
+                {bg.name}
+              </option>
+            ))}
+          </select>
+          <select
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Status</option>
+            <option value="in-progress">In progress</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+          </select>
         </div>
 
         <div className="purchase-data-table">
@@ -195,18 +440,22 @@ export default function PurchaseManagement() {
                   <th>Order ID</th>
                   <th>Machine Details</th>
                   <th>Vendor Details</th>
-                  <th>Required Parts</th>
+                  <th>Required Materials</th>
+                  <th>Balagruha</th>
+                  <th>Status</th>
                   <th>Cost Estimate</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {purchaseOrders.map((order) => (
+                {filteredPurchaseOrders.map((order) => (
                   <tr key={order._id}>
                     <td>{order._id}</td>
                     <td>{order.machineDetails}</td>
                     <td>{order.vendorDetails}</td>
                     <td>{order.requiredParts}</td>
+                    <td>{order?.balagruhaName}</td>
+                    <td>{order?.status}</td>
                     <td>₹{order.costEstimate}</td>
                     <td className="action-buttons">
                       <button
@@ -288,6 +537,40 @@ export default function PurchaseManagement() {
             <form onSubmit={handlePurchaseSubmit}>
               <div className="modal-body">
                 <div className="form-group">
+                  <label>Balagruha</label>
+                  <select
+                    value={purchaseForm.balagruhaId}
+                    onChange={(e) => {
+                      setSelectedBalagruha(e.target.value)
+                      setPurchaseForm(prev => ({ ...prev, balagruhaId: e.target.value }))
+                    }}
+                    required
+                  >
+                    <option value="">Select Balagruha</option>
+                    {balagruhas.map((bal) => (
+                      <option key={bal.id} value={bal._id}>
+                        {bal.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    value={purchaseForm.status}
+                    onChange={(e) => {
+                      setSelectedStatus(e.target.value)
+                      setPurchaseForm(prev => ({ ...prev, status: e.target.value }))
+                    }}
+                    required
+                  >
+                    <option value="">Select Status</option>
+                    <option value="in-progress">In progress</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div className="form-group">
                   <label>Machine Details</label>
                   <input
                     type="text"
@@ -330,7 +613,7 @@ export default function PurchaseManagement() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Required Parts:</label>
+                  <label>Required Materials:</label>
                   <textarea
                     value={purchaseForm.requiredParts}
                     onChange={(e) =>
@@ -447,8 +730,8 @@ export default function PurchaseManagement() {
                   {loading
                     ? "Processing..."
                     : editingItem
-                    ? "Update Order"
-                    : "Create Order"}
+                      ? "Update Order"
+                      : "Create Order"}
                 </button>
               </div>
             </form>
