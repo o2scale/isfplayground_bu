@@ -30,6 +30,7 @@ function AdminDashboard() {
     const [attendance, setAttendance] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [machines, setMachines] = useState([]);
+    const [schedules, setSchedules] = useState([]);
     // const [schedules, setSchedules] = useState({
     //     balagruhaId: '',
     //     assignedTo: '',
@@ -145,8 +146,8 @@ function AdminDashboard() {
             }
             
             const response = await getSchedules(dataToSend);
-            console.log(startDate, endDate, dataToSend, response, "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
-            // setSchedules
+            console.log(response.data, "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZz")
+            setSchedules(response?.data?.schedules);
         } catch (error) {
             console.error('Error in fetching schedules', error)
         }
@@ -317,58 +318,58 @@ function AdminDashboard() {
     ];
 
     // Convert tasks to calendar events
-    const getCalendarEvents = () => {
-        if (!tasks || tasks.length === 0) {
-            // If no tasks, use dummy data
-            return [
-                {
-                    id: 1,
-                    title: "Visit to Sampare",
-                    location: "Shelpimplegaon",
-                    date: "2025-03-20",
-                    time: "09:00-11:00",
-                    type: "visit",
-                    description: "Regular visit to check on children's progress",
-                    attendees: ["Coach 1", "Admin", "Local Volunteer"],
-                    status: "Confirmed",
-                    // Create a task-like object for the modal
-                    taskData: {
-                        _id: "1",
-                        title: "Visit to Sampare",
-                        description: "Regular visit to check on children's progress",
-                        status: "pending",
-                        priority: "High",
-                        deadline: "2025-03-20T11:00:00",
-                        createdAt: "2025-03-15T09:00:00",
-                        assignedUser: "1",
-                        createdBy: "2",
-                        comments: [],
-                        attachments: []
-                    }
-                }
-            ];
-        }
+    // const getCalendarEvents = () => {
+    //     if (!tasks || tasks.length === 0) {
+    //         // If no tasks, use dummy data
+    //         return [
+    //             {
+    //                 id: 1,
+    //                 title: "Visit to Sampare",
+    //                 location: "Shelpimplegaon",
+    //                 date: "2025-03-20",
+    //                 time: "09:00-11:00",
+    //                 type: "visit",
+    //                 description: "Regular visit to check on children's progress",
+    //                 attendees: ["Coach 1", "Admin", "Local Volunteer"],
+    //                 status: "Confirmed",
+    //                 // Create a task-like object for the modal
+    //                 taskData: {
+    //                     _id: "1",
+    //                     title: "Visit to Sampare",
+    //                     description: "Regular visit to check on children's progress",
+    //                     status: "pending",
+    //                     priority: "High",
+    //                     deadline: "2025-03-20T11:00:00",
+    //                     createdAt: "2025-03-15T09:00:00",
+    //                     assignedUser: "1",
+    //                     createdBy: "2",
+    //                     comments: [],
+    //                     attachments: []
+    //                 }
+    //             }
+    //         ];
+    //     }
 
-        return tasks?.map(task => ({
-            id: task._id,
-            title: task.title,
-            location: task.location || "Not specified",
-            date: task.deadline ? task.deadline.split('T')[0] : "2025-03-20",
-            time: task.startTime || "All day",
-            type: (task.priority || "medium").toLowerCase(),
-            description: task.description,
-            attendees: [
-                users.find(u => u._id === task.assignedUser)?.name || "Unassigned",
-                users.find(u => u._id === task.createdBy)?.name || "Unknown"
-            ],
-            status: task.status === "completed" ? "Completed" :
-                task.status === "in progress" ? "In Progress" : "Pending",
-            taskData: task
-        }));
-    };
+    //     return tasks?.map(task => ({
+    //         id: task._id,
+    //         title: task.title,
+    //         location: task.location || "Not specified",
+    //         date: task.deadline ? task.deadline.split('T')[0] : "2025-03-20",
+    //         time: task.startTime || "All day",
+    //         type: (task.priority || "medium").toLowerCase(),
+    //         description: task.description,
+    //         attendees: [
+    //             users.find(u => u._id === task.assignedUser)?.name || "Unassigned",
+    //             users.find(u => u._id === task.createdBy)?.name || "Unknown"
+    //         ],
+    //         status: task.status === "completed" ? "Completed" :
+    //             task.status === "in progress" ? "In Progress" : "Pending",
+    //         taskData: task
+    //     }));
+    // };
 
-    // Calendar events data
-    const calendarEvents = getCalendarEvents();
+    // // Calendar events data
+    // const calendarEvents = getCalendarEvents();
 
     // Function to handle event click - opens the task modal
     const handleEventClick = (event) => {
@@ -987,9 +988,13 @@ function AdminDashboard() {
                                     <WeeklyCalendar
                                         currentWeekOffset={currentWeekOffset}
                                         setCurrentWeekOffset={setCurrentWeekOffset}
-                                        calendarEvents={calendarEvents}
+                                        calendarEvents={schedules}
                                         users={users}
                                         onEventClick={handleEventClick}
+                                        fetchSchedules={fetchSchedules}
+                                        selectedBalagruhaOfCoach={selectedBalagruhaOfCoach}
+                                        // selectedCoach={selectedCoach}
+
                                     />
                                 )}
                             </div>

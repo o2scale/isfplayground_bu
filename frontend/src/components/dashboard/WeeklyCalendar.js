@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './WeeklyCalendar.css'
-import { createSchedule, fetchUsers, getBalagruha, getBalagruhaListByAssignedID } from '../../api';
+import { createSchedule, fetchUsers, getBalagruha, getBalagruhaListByAssignedID, getSchedules } from '../../api';
 import showToast from '../../utils/toast';
 
 const WeeklyCalendar = ({
@@ -8,6 +8,8 @@ const WeeklyCalendar = ({
     setCurrentWeekOffset,
     calendarEvents,
     users,
+    fetchSchedules,
+    selectedBalagruhaOfCoach,
     onEventClick
 }) => {
     // Generate calendar days
@@ -36,41 +38,202 @@ const WeeklyCalendar = ({
     //     return days;
     // };
 
-    const generateCalendarDays = () => {
+    // const generateCalendarDays = () => {
+    //     // const days = [];
+    //     // const today = new Date();
+
+    //     // const startDate = new Date(today);
+    //     // const currentDay = startDate.getDay(); // 0 (Sun) to 6 (Sat)
+
+    //     // // Adjusting so Monday = 0
+    //     // const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+    //     // startDate.setDate(startDate.getDate() + diffToMonday + currentWeekOffset * 7);
+
+    //     // for (let i = 0; i < 7; i++) {
+    //     //     const currentDate = new Date(startDate);
+    //     //     currentDate.setDate(startDate.getDate() + i);
+
+    //     //     const dateString = currentDate.toISOString().split('T')[0];
+    //     //     const dayEvents = calendarEvents.filter(event => {  
+    //     //         console.log(event.date, dateString, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    //     //         return event.date === dateString
+    //     //     });
+
+    //     //     days.push({
+    //     //         date: currentDate,
+    //     //         events: dayEvents,
+    //     //         isCurrentMonth: currentDate.getMonth() === today.getMonth(),
+    //     //         isToday: currentDate.toDateString() === today.toDateString()
+    //     //     });
+    //     // }
+
+    //     // const days = [];
+    //     // const today = new Date();
+
+    //     // // Adjust current day to make Monday = 0, Sunday = 6
+    //     // const currentDay = today.getDay(); // 0 (Sun) to 6 (Sat)
+    //     // const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+
+    //     // // Get the Monday of the current week
+    //     // const monday = new Date(today);
+    //     // monday.setDate(today.getDate() + diffToMonday + currentWeekOffset * 7);
+
+    //     // for (let i = 0; i < 7; i++) {
+    //     //     const currentDate = new Date(monday);
+    //     //     currentDate.setDate(monday.getDate() + i); // Monday + i days
+
+    //     //     const dateString = currentDate.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+    //     //      const dayEvents = calendarEvents.filter(event => {  
+    //     //         console.log(event.date, dateString, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    //     //         return event.date === dateString
+    //     //     });
+
+    //     //     days.push({
+    //     //         date: currentDate,
+    //     //         dateString,
+    //     //         events: dayEvents,
+    //     //         isToday: currentDate.toDateString() === today.toDateString(),
+    //     //         isCurrentMonth: currentDate.getMonth() === today.getMonth(),
+    //     //     });
+    //     // }
+
+    //     const days = [];
+    //     const today = new Date();
+
+    //     // Fix to always get the Monday of the current week
+    //     const currentDay = today.getDay(); // 0 = Sun ... 6 = Sat
+    //     const diffToMonday = (currentDay + 6) % 7;
+
+    //     const monday = new Date(today);
+    //     monday.setDate(today.getDate() - diffToMonday + currentWeekOffset * 7);
+
+    //     for (let i = 0; i < 7; i++) {
+    //         const currentDate = new Date(monday);
+    //         currentDate.setDate(monday.getDate() + i);
+
+    //         const dateString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    //         const dayEvents = calendarEvents.filter(event => {
+    //             // console.log(event.date, dateString, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    //             return event.date === dateString;
+    //         });
+
+    //         days.push({
+    //             date: currentDate,
+    //             dateString,
+    //             events: dayEvents,
+    //             isToday: currentDate.toDateString() === today.toDateString(),
+    //             isCurrentMonth: currentDate.getMonth() === today.getMonth(),
+    //         });
+    //     }
+
+
+    //     return days;
+    // };
+
+//     const generateCalendarDays = (currentWeekOffset, calendarEvents) => {
+//     const days = [];
+//     const today = new Date();
+
+//     const currentDay = today.getDay(); // 0 = Sun ... 6 = Sat
+//     const diffToMonday = (currentDay + 6) % 7;
+
+//     const monday = new Date(today);
+//     monday.setDate(today.getDate() - diffToMonday + currentWeekOffset * 7);
+
+//     for (let i = 0; i < 7; i++) {
+//         const currentDate = new Date(monday);
+//         currentDate.setDate(monday.getDate() + i);
+
+//         const dateString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
+
+//         const dayEvents = calendarEvents.filter(event =>
+//             event.date === dateString
+//         );
+
+//         days.push({
+//             date: currentDate,
+//             dateString,
+//             events: dayEvents,
+//             isToday: currentDate.toDateString() === today.toDateString(),
+//             isCurrentMonth: currentDate.getMonth() === today.getMonth(),
+//         });
+//     }
+
+//     return days;
+// };
+
+    const generateCalendarDays = (currentWeekOffset, calendarEvents) => {
         const days = [];
         const today = new Date();
 
-        const startDate = new Date(today);
-        const currentDay = startDate.getDay(); // 0 (Sun) to 6 (Sat)
+        // Calculate Monday of the current week
+        const currentDay = today.getDay(); // 0 = Sunday ... 6 = Saturday
+        const diffToMonday = (currentDay + 6) % 7;
 
-        // Adjusting so Monday = 0
-        const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
-        startDate.setDate(startDate.getDate() + diffToMonday + currentWeekOffset * 7);
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - diffToMonday + currentWeekOffset * 7);
+
+        // Clone for endDate (Sunday)
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        console.log(monday.toISOString().split("T")[0], sunday.toISOString().split("T")[0], "FFFFFFFFFFFFFFFFFFFFFFFFFFFF")
 
         for (let i = 0; i < 7; i++) {
-            const currentDate = new Date(startDate);
-            currentDate.setDate(startDate.getDate() + i);
+            const currentDate = new Date(monday);
+            currentDate.setDate(monday.getDate() + i);
 
-            const dateString = currentDate.toISOString().split('T')[0];
-            const dayEvents = calendarEvents.filter(event => event.date === dateString);
+            const dateString = currentDate.toISOString().split("T")[0];
+
+            const dayEvents = calendarEvents.filter(event =>
+                event.date === dateString
+            );
 
             days.push({
                 date: currentDate,
+                dateString,
                 events: dayEvents,
+                isToday: currentDate.toDateString() === today.toDateString(),
                 isCurrentMonth: currentDate.getMonth() === today.getMonth(),
-                isToday: currentDate.toDateString() === today.toDateString()
             });
         }
+
+        // Return the week days along with start and end dates
+        // return {
+        //     days,
+        //     startDate: monday.toISOString().split("T")[0],
+        //     endDate: sunday.toISOString().split("T")[0],
+        // };
 
         return days;
     };
 
+    const getWeekDateRange = (currentWeekOffset) => {
+        const today = new Date();
+        const currentDay = today.getDay(); // 0 = Sunday ... 6 = Saturday
+        const diffToMonday = (currentDay + 6) % 7;
+
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - diffToMonday + currentWeekOffset * 7);
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        return {
+            startDate: monday.toISOString().split("T")[0],
+            endDate: sunday.toISOString().split("T")[0]
+        };
+    };
 
     const [showModal, setShowModal] = useState(false);
     const [selectedBalagruha, setSelectedBalagruha] = useState();
     const [balagruhas, setBalagruhas] = useState([]);
     const [inputValue, setInputValue] = useState('');
+    const [calendarDays, setCalendarDays] = useState([]);
     const [usersList, setUsersList] = useState([]);
+    const [selectDate, setSelectDate] = useState();
     const [assignToDropdown, setAssignToDropdown] = useState(false);
     const [balagruhaDropdown, setBalagruhaDropdown] = useState(false);
     const [count, setCount] = useState(1);
@@ -92,12 +255,24 @@ const WeeklyCalendar = ({
 
     useEffect(() => {
         if (users) {
+            console.log(users, "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
             const filteredUser = users.filter(user => user.role !== 'student' && user.role !== 'admin')
             setUsersList(filteredUser)
         }
     }, [users]);
 
-    const calendarDays = generateCalendarDays();
+    useEffect(() => {
+        const { startDate, endDate } = getWeekDateRange(currentWeekOffset);
+        fetchSchedules(selectedBalagruhaOfCoach, startDate, endDate);
+    }, [currentWeekOffset]);
+
+    useEffect(() => {
+        const days = generateCalendarDays(currentWeekOffset, calendarEvents);
+        setCalendarDays(days);
+        console.log("its workinggggggggggggggggggggggggggggg", days, calendarEvents)
+    }, [currentWeekOffset, calendarEvents]);
+
+    // const calendarDays = generateCalendarDays();
 
     const getEventColor = (type) => {
         switch (type) {
@@ -220,7 +395,7 @@ const WeeklyCalendar = ({
             }
 
             const response = await createSchedule(dataToBeSend);
-            if(response.success) {
+            if (response.success) {
                 showToast('Schedule created Successfully', 'success')
                 setFormData({
                     balagruhaIds: [],
@@ -236,9 +411,11 @@ const WeeklyCalendar = ({
                         description: ''
                     }
                 ])
-                setInputValue();
+                setInputValue('');
+                const { startDate, endDate } = getWeekDateRange(currentWeekOffset);
+                fetchSchedules(selectedBalagruhaOfCoach, startDate, endDate);
             }
-            setShowModal(false)
+            setShowModal(false);
         } catch (error) {
             console.error("Error submitting purchase:", error);
         }
@@ -362,60 +539,155 @@ const WeeklyCalendar = ({
                         <div className="calendar-grid">
                             {/* Day headers */}
                             <div className="calendar-row calendar-header-row">
-                                {calendarDays.map((day, index) => (
-                                    <div
-                                        key={`header-${index}`}
-                                        className={`calendar-day-header ${day.isToday ? 'today' : ''}`}
-                                    >
-                                        {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
-                                        <div className="day-date">
-                                            {day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                {calendarDays.map((day, index) => {
+                                    //  const targetDate = new Date('2025-05-10');
+
+                                    // // Ensure both are Date objects and compare only the date part
+                                    // const dayDate = new Date(day.date);
+                                    // if (dayDate.toDateString() === targetDate.toDateString()) {
+                                    //     console.log(day, "MATCHED DATE: 10-05-2025");
+                                    // } else {
+                                    //     console.log(day, "NON-MATCHING DATE");
+                                    // }
+
+                                    // console.log(day, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+                                    return (
+                                        <div
+                                            key={`header-${index}`}
+                                            onClick={() => { setSelectDate(day.date); console.log(day.date) }}
+                                            className={`calendar-day-header ${day.date?.toDateString() === selectDate?.toDateString() ? 'today' : ''}`}
+                                        >
+                                            {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                            <div className="day-date">
+                                                {day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
 
                             {/* Day columns */}
                             <div className="calendar-row calendar-body-row">
-                                {calendarDays.map((day, index) => (
-                                    <div key={`cell-${index}`} className="calendar-day-cell">
-                                        {Array.from({ length: 12 }, (_, i) => {
-                                            const slotEvents = day.events.filter(ev => {
-                                                const eventHour = new Date(ev.startTime).getHours();
-                                                return eventHour === i + 7;
-                                            });
+                                {calendarDays.map((day, index) => {
+                                    // console.log(day, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
+                                    return (
+                                        (
+                                            <div key={`cell-${index}`} className="calendar-day-cell">
+                                                {Array.from({ length: 12 }, (_, i) => {
+                                                    // const slotEvents = day.events.filter(ev => {
+                                                    //     // console.log(ev, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                                                    //     const eventHour = new Date(ev.schedules[0].startTime).getHours();
+                                                    //     return eventHour === i + 7;
+                                                    // });
 
-                                            return (
-                                                <div key={i} className="calendar-time-cell">
-                                                    {slotEvents.length === 0 ? (
-                                                        <div className="no-events">No events</div>
-                                                    ) : (
-                                                        slotEvents.map(event => (
-                                                            <div
-                                                                key={event.id}
-                                                                className="calendar-event"
-                                                                style={{ backgroundColor: getEventColor(event.type) }}
-                                                                onClick={() => onEventClick(event)}
-                                                            >
-                                                                <div className="event-title">{event.title}</div>
-                                                                <div className="event-time">{event.time}</div>
-                                                                <div
-                                                                    className="event-status-indicator"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            event.status === "Confirmed" ? "#4caf50" :
-                                                                                event.status === "Pending" ? "#ff9800" :
-                                                                                    event.status === "Completed" ? "#8a7bff" : "#f44336"
-                                                                    }}
-                                                                ></div>
-                                                            </div>
-                                                        ))
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ))}
+                                                    // const slotEvents = day.events.filter(ev => {
+                                                    //     return ev.schedules.some(schedule => {
+                                                    //         const eventHour = new Date(schedule.startTime).getHours();
+                                                    //         return eventHour === i + 7;
+                                                    //     });
+                                                    // });
+
+                                                    const slotEvents = day.events.flatMap(ev => 
+                                                        ev.schedules.filter(schedule => {
+                                                            const eventHour = new Date(schedule.startTime).getHours();
+                                                            return eventHour === i + 7;
+                                                        })
+                                                    );
+                                                    return (
+                                                        <div key={i} className="calendar-time-cell">
+                                                            {/* {slotEvents.length === 0 ? (
+                                                                <div className="no-events">No events</div>
+                                                            ) : (
+                                                                // slotEvents.map(event => {
+                                                                //     console.log("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", event)
+                                                                //     return (
+                                                                //         (
+                                                                //             <div
+                                                                //                 key={event.id}
+                                                                //                 className="calendar-event"
+                                                                //                 style={{ backgroundColor: getEventColor(event.type) }}
+                                                                //                 onClick={() => onEventClick(event)}
+                                                                //             >
+                                                                //                 <div className="event-title">{event.title}</div>
+                                                                //                 <div className="event-time">{event.time}</div>
+                                                                //                 <div
+                                                                //                     className="event-status-indicator"
+                                                                //                     style={{
+                                                                //                         backgroundColor:
+                                                                //                             event.status === "Confirmed" ? "#4caf50" :
+                                                                //                                 event.status === "Pending" ? "#ff9800" :
+                                                                //                                     event.status === "Completed" ? "#8a7bff" : "#f44336"
+                                                                //                     }}
+                                                                //                 ></div>
+                                                                //             </div>
+                                                                //         )
+                                                                //     )
+                                                                // })
+                                                                slotEvents.map(event => {
+                                                                    return event.schedules.map(schedule => {
+                                                                        const eventHour = new Date(schedule.startTime).getHours();
+                                                                        console.log(event, "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
+                                                                        return (
+                                                                            <div
+                                                                                key={schedule._id}  // Use the schedule's _id as the key
+                                                                                className="calendar-event"
+                                                                                style={{ backgroundColor: getEventColor(event.type) }}
+                                                                                onClick={() => onEventClick(event)}
+                                                                            >
+                                                                                <div className="event-title">{schedule.title}</div>
+                                                                                <div className="event-time">{schedule.timeSlot}</div>
+                                                                                <div
+                                                                                    className="event-status-indicator"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            event.status === "Confirmed" ? "#4caf50" :
+                                                                                                event.status === "Pending" ? "#ff9800" :
+                                                                                                    event.status === "Completed" ? "#8a7bff" : "#f44336"
+                                                                                    }}
+                                                                                ></div>
+                                                                            </div>
+                                                                        );
+                                                                    });
+                                                                })
+                                                            )} */}
+
+                                                            {slotEvents.length === 0 ? (
+                                                                <div className="no-events">No events</div>
+                                                            ) : (
+                                                                slotEvents.map(schedule => (
+                                                                    <div
+                                                                        key={schedule._id}
+                                                                        className="calendar-event"
+                                                                        style={{ backgroundColor: getEventColor(schedule.type) }}
+                                                                        onClick={() => onEventClick(schedule)} // You might pass the full schedule
+                                                                    >
+                                                                        <div className="event-title">{schedule.title}</div>
+                                                                        <div className="event-coach">Coach: {schedule?.assignedToUser?.name}</div>
+                                                                        {/* <div className="event-time">{new Date(schedule.timeSlot)}</div> */}
+                                                                        <div className="event-time">
+                                                                            {new Date(schedule.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+                                                                            {new Date(schedule.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                            </div>
+                                                                        <div
+                                                                            className="event-status-indicator"
+                                                                            style={{
+                                                                                backgroundColor:
+                                                                                    schedule.status === "Confirmed" ? "#4caf50" :
+                                                                                    schedule.status === "Pending" ? "#ff9800" :
+                                                                                    schedule.status === "Completed" ? "#8a7bff" : "#f44336"
+                                                                            }}
+                                                                        ></div>
+                                                                    </div>
+                                                                ))
+                                                            )}
+
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )
+                                    )
+                                })}
                             </div>
                         </div>
                     </div>
@@ -461,7 +733,7 @@ const WeeklyCalendar = ({
                                             setInputValue(e.target.value);
                                             setAssignToDropdown(true);
                                         }}
-                                        onClick={() => setAssignToDropdown(prev => !prev)}
+                                        onClick={() => {setAssignToDropdown(prev => !prev); console.log(usersList, inputValue, "YYYYYYYYYYYYYYYYYYYGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")}}
                                     />
                                     {/* {assignToDropdown && (
                                         <div style={{ position: "relative" }}>
@@ -520,7 +792,7 @@ const WeeklyCalendar = ({
                                     />
                                     {formErrors.name && <div className="error-message">{formErrors.name}</div>} */}
 
-                                     <input
+                                    <input
                                         placeholder='Select the Balagruha'
                                         type="text"
                                         onClick={() => setBalagruhaDropdown(prev => !prev)}
@@ -549,38 +821,38 @@ const WeeklyCalendar = ({
                                         ))}
                                     </select> */}
 
-                                     {balagruhaDropdown && (
+                                    {balagruhaDropdown && (
                                         <div style={{ position: "relative" }}>
                                             {balagruhas.length === 0 ? (
                                                 <div style={{ height: "20px", width: "100%", backgroundColor: "#fff", overflowY: "auto", position: "absolute" }}>
                                                     <p>No balagruha here.</p>
-                                            </div>
+                                                </div>
                                             ) : (
                                                 <div style={{ height: "200px", width: "100%", backgroundColor: "#fff", overflowY: "auto", position: "absolute" }}>
-                                                {balagruhas.map((bal) => (
-                                                    <label key={bal._id} style={{ display: "flex", gap: "20px", cursor: "pointer" }}>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={formData.balagruhaIds.includes(bal._id)}
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    setFormData(prev => ({
-                                                                        ...prev,
-                                                                        balagruhaIds: [...prev.balagruhaIds, bal._id]
-                                                                    }));
-                                                                } else {
-                                                                    setFormData(prev => ({
-                                                                        ...prev,
-                                                                        balagruhaIds: prev.balagruhaIds.filter(id => id !== bal._id)
-                                                                    }));
-                                                                }
-                                                            }}
-                                                        />
-                                                        <span>{bal.name}</span>
-                                                    </label>
-                                                ))}
+                                                    {balagruhas.map((bal) => (
+                                                        <label key={bal._id} style={{ display: "flex", gap: "20px", cursor: "pointer" }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={formData.balagruhaIds.includes(bal._id)}
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                        setFormData(prev => ({
+                                                                            ...prev,
+                                                                            balagruhaIds: [...prev.balagruhaIds, bal._id]
+                                                                        }));
+                                                                    } else {
+                                                                        setFormData(prev => ({
+                                                                            ...prev,
+                                                                            balagruhaIds: prev.balagruhaIds.filter(id => id !== bal._id)
+                                                                        }));
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <span>{bal.name}</span>
+                                                        </label>
+                                                    ))}
 
-                                            </div>
+                                                </div>
                                             )}
                                         </div>
                                     )}
