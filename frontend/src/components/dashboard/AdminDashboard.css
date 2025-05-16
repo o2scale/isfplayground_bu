@@ -1177,7 +1177,7 @@
     color: white;
     border: none;
     padding: 8px 12px;
-    font-size: 18px;
+    font-size: 13px;
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -1190,4 +1190,12 @@
 
 .scroll-button.right {
     margin-left: 8px;
+}
+
+.scroll-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 1rem;
+  padding: 0.5rem;
 }

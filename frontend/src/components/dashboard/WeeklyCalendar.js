@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './WeeklyCalendar.css'
-import { createSchedule, fetchUsers, getBalagruha, getBalagruhaListByAssignedID, getSchedules } from '../../api';
+import { createSchedule, deleteSchedule, fetchUsers, getBalagruha, getBalagruhaListByAssignedID, getSchedules, updateSchedule } from '../../api';
 import showToast from '../../utils/toast';
 
 const WeeklyCalendar = ({
@@ -132,37 +132,37 @@ const WeeklyCalendar = ({
     //     return days;
     // };
 
-//     const generateCalendarDays = (currentWeekOffset, calendarEvents) => {
-//     const days = [];
-//     const today = new Date();
+    //     const generateCalendarDays = (currentWeekOffset, calendarEvents) => {
+    //     const days = [];
+    //     const today = new Date();
 
-//     const currentDay = today.getDay(); // 0 = Sun ... 6 = Sat
-//     const diffToMonday = (currentDay + 6) % 7;
+    //     const currentDay = today.getDay(); // 0 = Sun ... 6 = Sat
+    //     const diffToMonday = (currentDay + 6) % 7;
 
-//     const monday = new Date(today);
-//     monday.setDate(today.getDate() - diffToMonday + currentWeekOffset * 7);
+    //     const monday = new Date(today);
+    //     monday.setDate(today.getDate() - diffToMonday + currentWeekOffset * 7);
 
-//     for (let i = 0; i < 7; i++) {
-//         const currentDate = new Date(monday);
-//         currentDate.setDate(monday.getDate() + i);
+    //     for (let i = 0; i < 7; i++) {
+    //         const currentDate = new Date(monday);
+    //         currentDate.setDate(monday.getDate() + i);
 
-//         const dateString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
+    //         const dateString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
 
-//         const dayEvents = calendarEvents.filter(event =>
-//             event.date === dateString
-//         );
+    //         const dayEvents = calendarEvents.filter(event =>
+    //             event.date === dateString
+    //         );
 
-//         days.push({
-//             date: currentDate,
-//             dateString,
-//             events: dayEvents,
-//             isToday: currentDate.toDateString() === today.toDateString(),
-//             isCurrentMonth: currentDate.getMonth() === today.getMonth(),
-//         });
-//     }
+    //         days.push({
+    //             date: currentDate,
+    //             dateString,
+    //             events: dayEvents,
+    //             isToday: currentDate.toDateString() === today.toDateString(),
+    //             isCurrentMonth: currentDate.getMonth() === today.getMonth(),
+    //         });
+    //     }
 
-//     return days;
-// };
+    //     return days;
+    // };
 
     const generateCalendarDays = (currentWeekOffset, calendarEvents) => {
         const days = [];
@@ -178,8 +178,6 @@ const WeeklyCalendar = ({
         // Clone for endDate (Sunday)
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-
-        console.log(monday.toISOString().split("T")[0], sunday.toISOString().split("T")[0], "FFFFFFFFFFFFFFFFFFFFFFFFFFFF")
 
         for (let i = 0; i < 7; i++) {
             const currentDate = new Date(monday);
@@ -228,14 +226,18 @@ const WeeklyCalendar = ({
     };
 
     const [showModal, setShowModal] = useState(false);
-    const [selectedBalagruha, setSelectedBalagruha] = useState();
+    const [startDate, setStartDate] = useState();
+    const [endDate, setEndDate] = useState();
     const [balagruhas, setBalagruhas] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [calendarDays, setCalendarDays] = useState([]);
     const [usersList, setUsersList] = useState([]);
     const [selectDate, setSelectDate] = useState();
+    const [singleSchedule, setSingleSchedule] = useState();
+    const [scheduleViewModal, setScheduleViewModal] = useState(false);
     const [assignToDropdown, setAssignToDropdown] = useState(false);
     const [balagruhaDropdown, setBalagruhaDropdown] = useState(false);
+    const [editScheduleInput, setEditScheduleInput] = useState();
     const [count, setCount] = useState(1);
     const [formData, setFormData] = useState({
         balagruhaIds: [],
@@ -255,7 +257,6 @@ const WeeklyCalendar = ({
 
     useEffect(() => {
         if (users) {
-            console.log(users, "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
             const filteredUser = users.filter(user => user.role !== 'student' && user.role !== 'admin')
             setUsersList(filteredUser)
         }
@@ -264,12 +265,11 @@ const WeeklyCalendar = ({
     useEffect(() => {
         const { startDate, endDate } = getWeekDateRange(currentWeekOffset);
         fetchSchedules(selectedBalagruhaOfCoach, startDate, endDate);
-    }, [currentWeekOffset]);
+    }, [currentWeekOffset, scheduleViewModal]);
 
     useEffect(() => {
         const days = generateCalendarDays(currentWeekOffset, calendarEvents);
         setCalendarDays(days);
-        console.log("its workinggggggggggggggggggggggggggggg", days, calendarEvents)
     }, [currentWeekOffset, calendarEvents]);
 
     // const calendarDays = generateCalendarDays();
@@ -381,7 +381,6 @@ const WeeklyCalendar = ({
             schedules: finalSchedules
         }))
 
-        console.log(formData)
         try {
             // const formDataToSend = new FormData();
             // formDataToSend.append('balagruhaIds', formData.balagruhaIds);
@@ -417,7 +416,7 @@ const WeeklyCalendar = ({
             }
             setShowModal(false);
         } catch (error) {
-            console.error("Error submitting purchase:", error);
+            showToast(`${error.response.data.message} Task: ${error.response.data.overlappingSchedules[0].overlappingSchedule.title}, Slot time: ${new Date(error.response.data.overlappingSchedules[0].overlappingSchedule.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(error.response.data.overlappingSchedules[0].overlappingSchedule.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, 'error')
         }
     }
 
@@ -433,6 +432,78 @@ const WeeklyCalendar = ({
         fetchBalagruhaByCoach(user._id)
     };
 
+    const handleScheduleViewModal = (schedule) => {
+        console.log('click worked', schedule);
+        setScheduleViewModal(true);
+        setSingleSchedule(schedule);
+    }
+
+    const handleEditInput = (inputName) => {
+        setEditScheduleInput(inputName)
+    }
+
+    function getLocalTimeHHMM(dateString) {
+        const date = new Date(dateString);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+        }
+
+    const handleEditOnchange = (field, value) => {
+        setSingleSchedule(prev => ({ ... prev, [field] : value }))
+    }
+
+    const handleUpdate = async() => {
+
+       try {
+         const dataToSend = {
+            balagruhaId: singleSchedule.balagruhaId,
+            assignedTo: singleSchedule.assignedTo,
+            startTime: singleSchedule.startTime,
+            endTime: singleSchedule.endTime,
+            date: singleSchedule.date,
+            title: singleSchedule.title,
+            description: singleSchedule.description,
+        }
+
+        await updateSchedule(dataToSend, singleSchedule._id);
+        showToast('Schedule updated Successfully', 'success');
+        setEditScheduleInput();
+
+       } catch (error) {
+        showToast(error.response.data.message || "Something went wrong, Failed to update schedule!", 'error')
+       }
+
+    }
+
+    const handleEditOnchangeForDate = (field, timeValue) => {
+        const currentDateTime = new Date(singleSchedule[field]); // full original datetime
+        const [hours, minutes] = timeValue.split(':').map(Number);
+
+        // Update only the time part
+        currentDateTime.setHours(hours);
+        currentDateTime.setMinutes(minutes);
+        currentDateTime.setSeconds(0);
+        currentDateTime.setMilliseconds(0);
+
+        // Save the updated datetime back as an ISO string
+        setSingleSchedule(prev => ({ ...prev, [field]: currentDateTime.toISOString() }));
+    };
+
+    const handleCloseViewSchedule = () => {
+        setScheduleViewModal(false);
+        setEditScheduleInput();
+    }
+
+    const handleDelete = async(id) => {
+        try {
+            await deleteSchedule(id);
+            setScheduleViewModal(false);
+            showToast("Schedule deleted successfully", 'success'); 
+        } catch (error) {
+            showToast("Something went wrong while deleting schedule", 'error')
+        }
+    }
 
     return (
         <>
@@ -539,63 +610,47 @@ const WeeklyCalendar = ({
                         <div className="calendar-grid">
                             {/* Day headers */}
                             <div className="calendar-row calendar-header-row">
-                                {calendarDays.map((day, index) => {
-                                    //  const targetDate = new Date('2025-05-10');
-
-                                    // // Ensure both are Date objects and compare only the date part
-                                    // const dayDate = new Date(day.date);
-                                    // if (dayDate.toDateString() === targetDate.toDateString()) {
-                                    //     console.log(day, "MATCHED DATE: 10-05-2025");
-                                    // } else {
-                                    //     console.log(day, "NON-MATCHING DATE");
-                                    // }
-
-                                    // console.log(day, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
-                                    return (
-                                        <div
-                                            key={`header-${index}`}
-                                            onClick={() => { setSelectDate(day.date); console.log(day.date) }}
-                                            className={`calendar-day-header ${day.date?.toDateString() === selectDate?.toDateString() ? 'today' : ''}`}
-                                        >
-                                            {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
-                                            <div className="day-date">
-                                                {day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                            </div>
+                                {calendarDays.map((day, index) => (
+                                    <div
+                                        key={`header-${index}`}
+                                        onClick={() => setSelectDate(day.date)}
+                                        className={`calendar-day-header ${day.date?.toDateString() === selectDate?.toDateString() ? 'today' : ''}`}
+                                    >
+                                        {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                        <div className="day-date">
+                                            {day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                         </div>
-                                    )
-                                })}
+                                    </div>
+                                ))}
                             </div>
 
                             {/* Day columns */}
                             <div className="calendar-row calendar-body-row">
-                                {calendarDays.map((day, index) => {
-                                    // console.log(day, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
-                                    return (
-                                        (
-                                            <div key={`cell-${index}`} className="calendar-day-cell">
-                                                {Array.from({ length: 12 }, (_, i) => {
-                                                    // const slotEvents = day.events.filter(ev => {
-                                                    //     // console.log(ev, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-                                                    //     const eventHour = new Date(ev.schedules[0].startTime).getHours();
-                                                    //     return eventHour === i + 7;
-                                                    // });
+                                {calendarDays.map((day, index) => (
+                                    <div key={`cell-${index}`} className="calendar-day-cell">
+                                        {Array.from({ length: 12 }, (_, i) => {
+                                            // const slotEvents = day.events.filter(ev => {
+                                            //     // console.log(ev, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                                            //     const eventHour = new Date(ev.schedules[0].startTime).getHours();
+                                            //     return eventHour === i + 7;
+                                            // });
 
-                                                    // const slotEvents = day.events.filter(ev => {
-                                                    //     return ev.schedules.some(schedule => {
-                                                    //         const eventHour = new Date(schedule.startTime).getHours();
-                                                    //         return eventHour === i + 7;
-                                                    //     });
-                                                    // });
+                                            // const slotEvents = day.events.filter(ev => {
+                                            //     return ev.schedules.some(schedule => {
+                                            //         const eventHour = new Date(schedule.startTime).getHours();
+                                            //         return eventHour === i + 7;
+                                            //     });
+                                            // });
 
-                                                    const slotEvents = day.events.flatMap(ev => 
-                                                        ev.schedules.filter(schedule => {
-                                                            const eventHour = new Date(schedule.startTime).getHours();
-                                                            return eventHour === i + 7;
-                                                        })
-                                                    );
-                                                    return (
-                                                        <div key={i} className="calendar-time-cell">
-                                                            {/* {slotEvents.length === 0 ? (
+                                            const slotEvents = day.events.flatMap(ev =>
+                                                ev.schedules.filter(schedule => {
+                                                    const eventHour = new Date(schedule.startTime).getHours();
+                                                    return eventHour === i + 7;
+                                                })
+                                            );
+                                            return (
+                                                <div key={i} className="calendar-time-cell">
+                                                    {/* {slotEvents.length === 0 ? (
                                                                 <div className="no-events">No events</div>
                                                             ) : (
                                                                 // slotEvents.map(event => {
@@ -651,43 +706,44 @@ const WeeklyCalendar = ({
                                                                 })
                                                             )} */}
 
-                                                            {slotEvents.length === 0 ? (
-                                                                <div className="no-events">No events</div>
-                                                            ) : (
-                                                                slotEvents.map(schedule => (
+                                                    {slotEvents.length === 0 ? (
+                                                        <div className="no-events">No events</div>
+                                                    ) : (
+                                                        slotEvents.map(schedule => {
+                                                            return (
+                                                                (
                                                                     <div
                                                                         key={schedule._id}
                                                                         className="calendar-event"
                                                                         style={{ backgroundColor: getEventColor(schedule.type) }}
-                                                                        onClick={() => onEventClick(schedule)} // You might pass the full schedule
+                                                                        onClick={() => handleScheduleViewModal(schedule)} // You might pass the full schedule
                                                                     >
                                                                         <div className="event-title">{schedule.title}</div>
                                                                         <div className="event-coach">Coach: {schedule?.assignedToUser?.name}</div>
-                                                                        {/* <div className="event-time">{new Date(schedule.timeSlot)}</div> */}
                                                                         <div className="event-time">
-                                                                            {new Date(schedule.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+                                                                            {new Date(schedule.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -
                                                                             {new Date(schedule.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                            </div>
+                                                                        </div>
                                                                         <div
                                                                             className="event-status-indicator"
                                                                             style={{
                                                                                 backgroundColor:
                                                                                     schedule.status === "Confirmed" ? "#4caf50" :
-                                                                                    schedule.status === "Pending" ? "#ff9800" :
-                                                                                    schedule.status === "Completed" ? "#8a7bff" : "#f44336"
+                                                                                        schedule.status === "Pending" ? "#ff9800" :
+                                                                                            schedule.status === "Completed" ? "#8a7bff" : "#f44336"
                                                                             }}
                                                                         ></div>
                                                                     </div>
-                                                                ))
-                                                            )}
+                                                                )
+                                                            )
+                                                        })
+                                                    )}
 
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )
-                                    )
-                                })}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -733,7 +789,7 @@ const WeeklyCalendar = ({
                                             setInputValue(e.target.value);
                                             setAssignToDropdown(true);
                                         }}
-                                        onClick={() => {setAssignToDropdown(prev => !prev); console.log(usersList, inputValue, "YYYYYYYYYYYYYYYYYYYGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")}}
+                                        onClick={() => setAssignToDropdown(prev => !prev)}
                                     />
                                     {/* {assignToDropdown && (
                                         <div style={{ position: "relative" }}>
@@ -990,6 +1046,133 @@ const WeeklyCalendar = ({
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {scheduleViewModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content-schedule">
+                            <div className="modal-header">
+                                {/* <h3>{modalMode === 'create' ? 'Add New Balagruha' : 'Edit Balagruha'}</h3> */}
+                                <h3>View schedule</h3>
+                                <button
+                                    className="close-button"
+                                    onClick={handleCloseViewSchedule}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div>
+                                <div className='master-div-schedule'>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Title: </label>
+                                        {editScheduleInput === 'title' ? (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <input className='schedule-edit-input' value={singleSchedule?.title} onChange={(e) => handleEditOnchange('title', e.target.value)} />
+                                                <button className='schedule-edit-btn' onClick={handleUpdate}>✅ </button>
+                                                <button className='schedule-edit-btn' onClick={() => setEditScheduleInput()}>❌ </button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <p className='schedule-p'>{singleSchedule?.title}</p>
+                                                <p className='edit-schedule' onClick={() => handleEditInput('title')}>✏️</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Description: </label>
+                                        {editScheduleInput === 'description' ? (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <input className='schedule-edit-input' value={singleSchedule?.description} onChange={(e) => handleEditOnchange('description', e.target.value)}/>
+                                                <button className='schedule-edit-btn' onClick={handleUpdate}>✅ </button>
+                                                <button className='schedule-edit-btn' onClick={() => setEditScheduleInput()}>❌ </button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <p className='schedule-p'>{singleSchedule?.description}</p>
+                                                <p className='edit-schedule' onClick={() => handleEditInput('description')}>✏️</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Date: </label>
+                                        {/* <p className='schedule-p'>{new Date(singleSchedule?.date).toLocaleDateString()}</p> */}
+                                        {editScheduleInput === 'date' ? (
+                                            <div>
+                                                <input
+                                                type='date'
+                                                className='schedule-edit-input'
+                                                value={new Date(singleSchedule?.date).toISOString().split('T')[0]}
+                                                onChange={(e) => handleEditOnchange('date', e.target.value)}
+                                            />
+                                              <button className='schedule-edit-btn' onClick={handleUpdate}>✅ </button>
+                                                <button className='schedule-edit-btn' onClick={() => setEditScheduleInput()}>❌ </button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <p className='schedule-p'>{new Date(singleSchedule?.date).toLocaleDateString()}</p>
+                                                <p className='edit-schedule' onClick={() => handleEditInput('date')}>✏️</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Start Time: </label>
+                                        {/* <p className='schedule-p'>{new Date(singleSchedule?.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p> */}
+                                        {editScheduleInput === 'startTime' ? (
+                                            <div>
+                                               <input
+                                                    type='time'
+                                                    className='schedule-edit-input'
+                                                    value={singleSchedule?.startTime ? getLocalTimeHHMM(singleSchedule.startTime) : ''}
+                                                    onChange={(e) => handleEditOnchangeForDate('startTime', e.target.value)}
+                                                    />
+                                              <button className='schedule-edit-btn' onClick={handleUpdate}>✅ </button>
+                                                <button className='schedule-edit-btn' onClick={() => setEditScheduleInput()}>❌ </button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <p className='schedule-p'>{new Date(singleSchedule?.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                <p className='edit-schedule' onClick={() => handleEditInput('startTime')}>✏️</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>End Time: </label>
+                                        {/* <p className='schedule-p'>{new Date(singleSchedule?.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p> */}
+                                         {editScheduleInput === 'endTime' ? (
+                                            <div>
+                                               <input
+                                                    type='time'
+                                                    className='schedule-edit-input'
+                                                    value={singleSchedule?.endTime ? getLocalTimeHHMM(singleSchedule.endTime) : ''}
+                                                    onChange={(e) => handleEditOnchangeForDate('endTime', e.target.value)}
+                                                    />
+                                              <button className='schedule-edit-btn' onClick={handleUpdate}>✅ </button>
+                                                <button className='schedule-edit-btn' onClick={() => setEditScheduleInput()}>❌ </button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", gap: "10px" }}>
+                                                <p className='schedule-p'>{new Date(singleSchedule?.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                <p className='edit-schedule' onClick={() => handleEditInput('endTime')}>✏️</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Balagruha: </label>
+                                        <p className='schedule-p'>{singleSchedule?.balagruha?.name}</p>
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Assigned To: </label>
+                                        <p className='schedule-p'>{singleSchedule?.assignedToUser?.name}</p>
+                                    </div>
+                                    <div className='view-container'>
+                                        <label htmlFor="" className='schedule-label'>Created By: </label>
+                                        <p className='schedule-p'>{singleSchedule?.createdByUser?.name}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => handleDelete(singleSchedule._id)} className='delete-btn-schedule'>🗑️ Delete Schedule</button>
+                            </div>
                         </div>
                     </div>
                 )}

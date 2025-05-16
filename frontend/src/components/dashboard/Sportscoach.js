@@ -1943,13 +1943,13 @@ const SportCoachDashboard = () => {
                                 />
                             )}
 
-                            <WeeklyCalendar
+                            {/* <WeeklyCalendar
                                 currentWeekOffset={currentWeekOffset}
                                 setCurrentWeekOffset={setCurrentWeekOffset}
                                 calendarEvents={calendarEvents}
                                 users={users}
                                 onEventClick={handleEventClick}
-                            />
+                            /> */}
 
                             {/* Training Sessions List */}
                             <div className="sport-sessions-list">

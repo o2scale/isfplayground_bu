@@ -813,12 +813,44 @@ export const createSchedule = async (formdata) => {
 
 export const getSchedules = async (formdata) => {
   try {
-    console.log(formdata, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     const api = await getApiInstance();
     const response = await api.post(`/api/schedules/admin`, formdata);
     return response.data;
   } catch (error) {
     console.error("Failed to load schedules", error);
+    throw error;
+  }
+}
+
+export const getSchedulesCoach = async (formdata) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.post(`/api/schedules/coach`, formdata);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to load schedules", error);
+    throw error;
+  }
+}
+
+export const updateSchedule = async (dataToSend, scheduleId) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.put(`/api/schedules/${scheduleId}`, dataToSend);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update schedule", error)
+    throw error;
+  }
+}
+
+export const deleteSchedule =  async (scheduleId) => {
+  try {
+    const api = await getApiInstance();
+    const response = await api.delete(`/api/schedules/${scheduleId}`, scheduleId);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to delete schedule", error)
     throw error;
   }
 }

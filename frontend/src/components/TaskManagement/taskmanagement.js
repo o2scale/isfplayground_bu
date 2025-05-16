@@ -2369,13 +2369,15 @@ export const TaskDetailsModal = ({ task, getTask, onClose, users, onStatusChange
                         >
                             {isUpdating ? 'Updating...' : 'Working On It'}
                         </button>
-                        <button
-                            className={`status-button completed ${selectedTask.status.toLowerCase() === 'completed' ? 'active' : ''}`}
-                            onClick={() => handleStatusChange('completed')}
-                            disabled={selectedTask.status.toLowerCase() === 'completed' || isUpdating}
-                        >
-                            {isUpdating ? 'Updating...' : 'All Done!'}
-                        </button>
+                        {(localStorage.getItem('role') === 'admin' || selectedTask.assignedUser._id === localStorage.getItem('userId') || selectedTask.createdBy._id === localStorage.getItem('userId')) && (
+                             <button
+                                className={`status-button completed ${selectedTask.status.toLowerCase() === 'completed' ? 'active' : ''}`}
+                                onClick={() => handleStatusChange('completed')}
+                                disabled={selectedTask.status.toLowerCase() === 'completed' || isUpdating}
+                            >
+                                {isUpdating ? 'Updating...' : 'All Done!'}
+                         </button>
+                        )}
                     </div>
                 </div>
 
