@@ -257,6 +257,7 @@ const getSchedulesForAdmin = async (balagruhaIds, assignedTo, startDate, endDate
                 'assignedTo': 1,
                 'startTime': 1,
                 'endTime': 1,
+                'status': 1,
                 'date': 1,
                 'title': 1,
                 'description': 1,
