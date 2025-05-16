@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './coach-styles.css';
 import WeeklyCalendar from './WeeklyCalendar';
-import { getBalagruha, getTasks, updateTask, fetchUsers, getTaskBytaskId, getBalagruhaById } from '../../api'
+import { getBalagruha, getTasks, updateTask, fetchUsers, getTaskBytaskId, getBalagruhaById, getSchedulesCoach } from '../../api'
 import { TaskDetailsModal } from '../TaskManagement/taskmanagement';
 
 function CoachDashboard() {
@@ -23,6 +23,7 @@ function CoachDashboard() {
     const [balagruhas, setBalagruhas] = useState([]);
     const [machines, setMachines] = useState([]);
     const [selectedBalagruha, setSelectedBalagruha] = useState();
+    const [schedules, setSchedules] = useState([]);
     const [chatMessages, setChatMessages] = useState({
         child: [
             { sender: "child", message: "Hello Coach! How are you today?", time: "10:30 AM" },
@@ -108,6 +109,36 @@ function CoachDashboard() {
             console.error('Error fetching users:', error);
         }
     };
+
+    const fetchSchedules = async (balagruha, startDate, endDate) => {
+        try {
+            console.log(balagruha, "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
+          let dataToSend;
+          if (balagruha) {
+            dataToSend = {
+              balagruhaIds: [balagruha],
+              assignedTo: localStorage.getItem('userId'),
+              startDate: startDate,
+              endDate: endDate,
+              status: [],
+            };
+          } else {
+            dataToSend = {
+              balagruhaIds: [selectedBalagruha],
+              assignedTo: localStorage.getItem('userId'),
+              startDate: startDate,
+              endDate: endDate,
+              status: [],
+            };
+          }
+    
+          const response = await getSchedulesCoach(dataToSend);
+          console.log(response, "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ")
+          setSchedules(response?.data?.schedules);
+        } catch (error) {
+          console.error("Error in fetching schedules", error);
+        }
+      };
 
     const getTaskDetailsByTaskId = async (id) => {
         try {
@@ -345,7 +376,26 @@ function CoachDashboard() {
                                 <div
                                     key={balagruha._id}
                                     className={`balagruha-item ${selectedBalagruha === balagruha._id ? 'selected' : ''}`}
-                                    onClick={() => setSelectedBalagruha(balagruha._id)}
+                                    onClick={() => {
+                                        setSelectedBalagruha(balagruha._id)
+
+                                        const today = new Date();
+                                        const dayOfWeek = today.getDay();
+                                        const monday = new Date(today);
+                                        monday.setDate(
+                                            today.getDate() - ((dayOfWeek + 6) % 7)
+                                        );
+                                        monday.setHours(0, 0, 0, 0);
+
+                                        const sunday = new Date(monday);
+                                        sunday.setDate(monday.getDate() + 6);
+                                        sunday.setHours(23, 59, 59, 999);
+
+                                        const startDate = monday.toISOString().slice(0, 10);
+                                        const endDate = sunday.toISOString().slice(0, 10);
+
+                                        fetchSchedules(balagruha._id, startDate, endDate);
+                                    }}
                                 >
                                     {balagruha.name}
                                 </div>
@@ -408,39 +458,44 @@ function CoachDashboard() {
 
                         {/* Weekly Calendar (shown when Daily Schedule is selected) */}
                         {coachMenuSelected === 1 && (
-                            <WeeklyCalendar
+                            <div className='full-calendar'>
+                                <WeeklyCalendar
                                 currentWeekOffset={currentWeekOffset}
                                 setCurrentWeekOffset={setCurrentWeekOffset}
-                                calendarEvents={tasks.length > 0 ? tasks : [
-                                    // Fallback dummy data if no tasks are loaded
-                                    {
-                                        id: 1,
-                                        title: "Visit to Sampare",
-                                        location: "Shelpimplegaon",
-                                        date: "2025-03-20",
-                                        time: "09:00-11:00",
-                                        type: "visit",
-                                        description: "Regular visit to check on children's progress",
-                                        attendees: ["Coach 1", "Admin", "Local Volunteer"],
-                                        status: "Confirmed",
-                                        taskData: {
-                                            _id: "1",
-                                            title: "Visit to Sampare",
-                                            description: "Regular visit to check on children's progress",
-                                            status: "pending",
-                                            priority: "High",
-                                            deadline: "2025-03-20T11:00:00",
-                                            createdAt: "2025-03-15T09:00:00",
-                                            assignedUser: "1",
-                                            createdBy: "2",
-                                            comments: [],
-                                            attachments: []
-                                        }
-                                    }
-                                ]}
+                                // calendarEvents={tasks.length > 0 ? tasks : [
+                                //     // Fallback dummy data if no tasks are loaded
+                                //     {
+                                //         id: 1,
+                                //         title: "Visit to Sampare",
+                                //         location: "Shelpimplegaon",
+                                //         date: "2025-03-20",
+                                //         time: "09:00-11:00",
+                                //         type: "visit",
+                                //         description: "Regular visit to check on children's progress",
+                                //         attendees: ["Coach 1", "Admin", "Local Volunteer"],
+                                //         status: "Confirmed",
+                                //         taskData: {
+                                //             _id: "1",
+                                //             title: "Visit to Sampare",
+                                //             description: "Regular visit to check on children's progress",
+                                //             status: "pending",
+                                //             priority: "High",
+                                //             deadline: "2025-03-20T11:00:00",
+                                //             createdAt: "2025-03-15T09:00:00",
+                                //             assignedUser: "1",
+                                //             createdBy: "2",
+                                //             comments: [],
+                                //             attachments: []
+                                //         }
+                                //     }
+                                // ]}
+                                calendarEvents={schedules}
                                 users={users}
                                 onEventClick={handleEventClick}
+                                fetchSchedules={fetchSchedules}
+                                selectedBalagruhaOfCoach={selectedBalagruha}
                             />
+                            </div>
                         )}
                     </div>
                 </div>
