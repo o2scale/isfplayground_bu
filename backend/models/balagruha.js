@@ -22,6 +22,30 @@ const BalagruhaSchema = new mongoose.Schema(
         generatedId: {
             type: String,
         },
+        establishedYear: {
+            type: Number,
+        },
+        isApprovedByCWC: {
+            type: Boolean,
+            default: false,
+        },
+        mapLocation: {
+            type: String,
+        },
+        balagruhaHeadContact: [{
+            name: { type: String },
+            phone: { type: String },
+        }],
+        noOfChildren: {
+            type: Number,
+        },
+        equipmentsSupplied: [
+            {
+                date: { type: Date },
+                equipments: { type: String },
+                qty: { type: Number },
+            }
+        ]
     },
     {
         timestamps: true,

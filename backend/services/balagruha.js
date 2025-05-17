@@ -11,6 +11,12 @@ class Balagruha {
         this.location = obj.location || "";
         this.assignedMachines = obj.assignedMachines || [];
         this.generatedId = obj.generatedId || null;
+        this.establishedYear = obj.establishedYear || null;
+        this.isApprovedByCWC = obj.isApprovedByCWC || false;
+        this.mapLocation = obj.mapLocation || null;
+        this.balagruhaHeadContact = obj.balagruhaHeadContact || [];
+        this.noOfChildren = obj.noOfChildren || null;
+        this.equipmentsSupplied = obj.equipmentsSupplied || [];
     }
 
     toJSON() {
@@ -19,7 +25,13 @@ class Balagruha {
             name: this.name,
             location: this.location,
             assignedMachines: this.assignedMachines,
-            generatedId: this.generatedId
+            generatedId: this.generatedId,
+            establishedYear: this.establishedYear,
+            isApprovedByCWC: this.isApprovedByCWC,
+            mapLocation: this.mapLocation,
+            balagruhaHeadContact: this.balagruhaHeadContact,
+            noOfChildren: this.noOfChildren,
+            equipmentsSupplied: this.equipmentsSupplied
         }
     }
 
@@ -110,9 +122,7 @@ class Balagruha {
                     let existingAssignedMachines = Array.isArray(balagruha.data.assignedMachines)
                         ? [...balagruha.data.assignedMachines]
                         : [];
-                    console.log('existingAssignedMachines', existingAssignedMachines)
                     let removedMachines = existingAssignedMachines.filter(machineId => {
-                        console.log('machineId', machineId)
                         return !updateData.assignedMachines.includes(machineId._id.toString())
                     });
                     let updateResult = await updateMachinesByIds(updateData.assignedMachines, { assignedBalagruha: id })
