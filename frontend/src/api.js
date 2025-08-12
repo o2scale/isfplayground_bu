@@ -531,12 +531,177 @@ export const getBalagruhaListbyUserID = async (id) => {
   }
 };
 
+export const getBalagruhaListByAssignedID = async (id) => {
+  try {
+    const response = await api.get(`/api/v1/balagruha/user/assigned/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error balagruha list by assigned id", error);
+    throw error;
+  }
+};
+
 export const getAnyUserBasedonRoleandBalagruha = async (role, balagruhaId) => {
   try {
     const response = await api.get(`/api/v1/users/role/${role}?${balagruhaId}`);
     return response.data;
   } catch (error) {
     console.error("Error balagruha list by user id", error);
+    throw error;
+  }
+};
+
+// ==================== SCHEDULE API FUNCTIONS ====================
+
+export const createSchedule = async (data) => {
+  try {
+    const response = await api.post("/api/schedules", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating schedule:", error);
+    throw error;
+  }
+};
+
+export const getSchedules = async (filters) => {
+  try {
+    const response = await api.post("/api/schedules/admin", filters);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching schedules:", error);
+    throw error;
+  }
+};
+
+export const updateSchedule = async (data, scheduleId) => {
+  try {
+    const response = await api.put(`/api/schedules/${scheduleId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating schedule:", error);
+    throw error;
+  }
+};
+
+export const deleteSchedule = async (scheduleId) => {
+  try {
+    const response = await api.delete(`/api/schedules/${scheduleId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting schedule:", error);
+    throw error;
+  }
+};
+
+export const getSchedulesByUser = async (userId) => {
+  try {
+    const response = await api.get(`/api/schedules/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching schedules by user:", error);
+    throw error;
+  }
+};
+
+export const getSchedulesForAdmin = async (filters) => {
+  try {
+    const response = await api.post("/api/schedules/admin", filters);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching schedules for admin:", error);
+    throw error;
+  }
+};
+
+export const getSchedulesForCoach = async (filters) => {
+  try {
+    const response = await api.post("/api/schedules/coach", filters);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching schedules for coach:", error);
+    throw error;
+  }
+};
+
+export const getSchedulesCoach = async (filters) => {
+  try {
+    const response = await api.post("/api/schedules/coach", filters);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching schedules for coach:", error);
+    throw error;
+  }
+};
+
+export const updateScheduleStatus = async (scheduleId, status) => {
+  try {
+    const response = await api.put(`/api/schedules/${scheduleId}/status`, {
+      status,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating schedule status:", error);
+    throw error;
+  }
+};
+
+// ==================== MEDICAL API FUNCTIONS ====================
+
+export const getMedicalConditionBasedOnBalagruha = async (balagruhaIds) => {
+  try {
+    const response = await api.post(
+      "/api/medical-check-ins/students/list",
+      balagruhaIds
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error fetching medical conditions based on balagruha:",
+      error
+    );
+    throw error;
+  }
+};
+
+export const getMoodBasedOnBalagruha = async (balagruhaIds) => {
+  try {
+    const response = await api.post(
+      "/api/v1/mood-tracker/latest",
+      balagruhaIds
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching mood based on balagruha:", error);
+    throw error;
+  }
+};
+
+export const createMedicalCheckin = async (data) => {
+  try {
+    const response = await api.post("/api/medical-check-ins", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating medical check-in:", error);
+    throw error;
+  }
+};
+
+export const createMood = async (data) => {
+  try {
+    const response = await api.post("/api/v1/mood-tracker", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating mood:", error);
+    throw error;
+  }
+};
+
+export const pinLogin = async (data) => {
+  try {
+    const response = await api.post("/api/auth/login", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error in pin login:", error);
     throw error;
   }
 };

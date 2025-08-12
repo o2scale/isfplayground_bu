@@ -7,6 +7,7 @@ const {
   updateBalagruha,
   deleteBalagruha,
   getAllBalagruhaDetails,
+  getBalagruhaByGeneratedId,
 } = require("../data-access/balagruha");
 const { updateMachinesByIds } = require("../data-access/machines");
 const { getBalagruhaDetailsByUserId } = require("../data-access/User");
@@ -17,6 +18,7 @@ class Balagruha {
     this.name = obj.name || "";
     this.location = obj.location || "";
     this.assignedMachines = obj.assignedMachines || [];
+    this.generatedId = obj.generatedId || null;
   }
 
   toJSON() {
@@ -25,6 +27,7 @@ class Balagruha {
       name: this.name,
       location: this.location,
       assignedMachines: this.assignedMachines,
+      generatedId: this.generatedId,
     };
   }
 
@@ -105,6 +108,33 @@ class Balagruha {
       errorLogger.error(
         { error: error.message },
         "Error in getById balagruha service"
+      );
+      throw error;
+    }
+  }
+
+  static async getByGeneratedId(generatedId) {
+    try {
+      const result = await getBalagruhaByGeneratedId(generatedId);
+      if (result.success) {
+        return {
+          success: true,
+          data: {
+            balagruha: result.data,
+          },
+          message: "Balagruha fetched successfully",
+        };
+      } else {
+        return {
+          success: false,
+          data: {},
+          message: "Balagruha not found",
+        };
+      }
+    } catch (error) {
+      errorLogger.error(
+        { error: error.message },
+        "Error in getByGeneratedId balagruha service"
       );
       throw error;
     }
@@ -242,6 +272,36 @@ class Balagruha {
       errorLogger.error(
         { error: error.message },
         "Error in getBalagruhaListByUserId service"
+      );
+      throw error;
+    }
+  }
+
+  // Function for fetch list of balagruhas by assigned user ID
+  static async getByAssignedUserId(assignedUserId) {
+    try {
+      const result = await getBalagruhaDetailsByUserId({
+        userId: assignedUserId,
+      });
+      if (result.success) {
+        return {
+          success: true,
+          data: {
+            balagruhas: result?.data?.balagruhas || [],
+          },
+          message: "Balagruhas by assigned user ID fetched successfully",
+        };
+      } else {
+        return {
+          success: false,
+          data: {},
+          message: "Error fetching balagruhas by assigned user ID",
+        };
+      }
+    } catch (error) {
+      errorLogger.error(
+        { error: error.message },
+        "Error in getByAssignedUserId service"
       );
       throw error;
     }

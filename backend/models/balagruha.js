@@ -13,6 +13,13 @@ const BalagruhaSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    // Optional generated identifier used by some APIs
+    generatedId: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
     assignedMachines: [
       {
         type: mongoose.Schema.Types.ObjectId,

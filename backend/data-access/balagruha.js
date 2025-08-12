@@ -55,6 +55,33 @@ exports.getBalagruhaById = async (id) => {
   }
 };
 
+// Function to get balagruha by generatedId
+exports.getBalagruhaByGeneratedId = async (generatedId) => {
+  try {
+    const result = await Balagruha.findOne({ generatedId }).populate(
+      "assignedMachines"
+    );
+    if (!result) {
+      return {
+        success: false,
+        data: null,
+        message: "Balagruha not found",
+      };
+    }
+    return {
+      success: true,
+      data: result,
+      message: "Balagruha fetched successfully",
+    };
+  } catch (error) {
+    errorLogger.error(
+      { error: error.message },
+      "Error in getBalagruhaByGeneratedId"
+    );
+    throw error;
+  }
+};
+
 // Function to update balagruha
 exports.updateBalagruha = async (id, updateData) => {
   try {
