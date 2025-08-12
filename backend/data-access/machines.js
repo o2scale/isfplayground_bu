@@ -7,128 +7,113 @@ const machine = require("../models/machine");
  */
 
 exports.fetchMachinesByIds = async (machineIds) => {
-    try {
-        return await machine.find({
-            _id: { $in: machineIds }
-        }).lean().then(result => {
-            return {
-                success: true,
-                data: result,
-                message: "Successfully fetched machines data"
-            }
-        }).catch(error => {
-            console.log('error', error)
-            throw error;
-        })
-    } catch (error) {
-        console.error('Error fetching machines by ids:', error);
+  try {
+    return await machine
+      .find({
+        _id: { $in: machineIds },
+      })
+      .lean()
+      .then((result) => {
+        return {
+          success: true,
+          data: result,
+          message: "Successfully fetched machines data",
+        };
+      })
+      .catch((error) => {
+        console.log("error", error);
         throw error;
-    }
-}
+      });
+  } catch (error) {
+    console.error("Error fetching machines by ids:", error);
+    throw error;
+  }
+};
 
-// Function for delete balagruha. 
+// Function for delete balagruha.
 exports.deleteMachine = async (machineId) => {
-    try {
-        return await machine.findByIdAndDelete(machineId).then(result => {
-            return {
-                success: true,
-                data: result,
-                message: "Successfully deleted machine"
-            }
-        }).catch(error => {
-            console.log('error', error)
-            throw error;
-        })
-    } catch (error) {
-        console.error('Error deleting machine:', error);
+  try {
+    return await machine
+      .findByIdAndDelete(machineId)
+      .then((result) => {
+        return {
+          success: true,
+          data: result,
+          message: "Successfully deleted machine",
+        };
+      })
+      .catch((error) => {
+        console.log("error", error);
         throw error;
-    }
-}
-// Function for get the machine by id 
+      });
+  } catch (error) {
+    console.error("Error deleting machine:", error);
+    throw error;
+  }
+};
+// Function for get the machine by id
 exports.getMachineById = async (machineId) => {
-    try {
-        return await machine
-            .findOne({ _id: machineId })
-            .then(result => {
-                return {
-                    success: true,
-                    data: result,
-                    message: "Successfully fetched machine data"
-                }
-            })
-            .catch(error => {
-                console.log('error', error)
-                throw error;
-            })
-    } catch (error) {
-        console.error('Error fetching machine by id:', error);
+  try {
+    return await machine
+      .findOne({ _id: machineId })
+      .then((result) => {
+        return {
+          success: true,
+          data: result,
+          message: "Successfully fetched machine data",
+        };
+      })
+      .catch((error) => {
+        console.log("error", error);
         throw error;
-    }
-}
+      });
+  } catch (error) {
+    console.error("Error fetching machine by id:", error);
+    throw error;
+  }
+};
 
 // Function to get unassigned machines
 exports.getUnassignedMachines = async () => {
-    try {
-        return await machine
-            .find({ assignedBalagruha: null })
-            .lean()
-            .then(result => {
-                return {
-                    success: true,
-                    data: result,
-                    message: "Successfully fetched unassigned machines"
-                }
-            })
-            .catch(error => {
-                console.log('error', error)
-                throw error;
-            })
-    } catch (error) {
-        console.error('Error fetching unassigned machines:', error);
+  try {
+    return await machine
+      .find({ assignedBalagruha: null })
+      .lean()
+      .then((result) => {
+        return {
+          success: true,
+          data: result,
+          message: "Successfully fetched unassigned machines",
+        };
+      })
+      .catch((error) => {
+        console.log("error", error);
         throw error;
-    }
-}
+      });
+  } catch (error) {
+    console.error("Error fetching unassigned machines:", error);
+    throw error;
+  }
+};
 
-// Function for update machines by ids 
+// Function for update machines by ids
 exports.updateMachinesByIds = async (machineIds, updateData) => {
-    try {
-        return await machine
-            .updateMany({ _id: { $in: machineIds } }, updateData)
-            .then(result => {
-                return {
-                    success: true,
-                    data: result,
-                    message: "Successfully updated machines"
-                }
-            })
-            .catch(error => {
-                console.log('error', error)
-                throw error;
-            })
-    } catch (error) {
-        console.error('Error updating machines:', error);
+  try {
+    return await machine
+      .updateMany({ _id: { $in: machineIds } }, updateData)
+      .then((result) => {
+        return {
+          success: true,
+          data: result,
+          message: "Successfully updated machines",
+        };
+      })
+      .catch((error) => {
+        console.log("error", error);
         throw error;
-    }
-}
-
-// Function for fetch the machine id by generated Id 
-exports.getMachineIdByGeneratedId = async ({ generatedId }) => {
-    try {
-        return await machine.findOne({ generatedId: generatedId })
-            .then(result => {
-                return {
-                    success: true,
-                    data: result,
-                    message: "Successfully fetched machine id by generated id"
-                }
-            })
-            .catch(error => {
-                console.log('error', error)
-                throw error;
-            })
-    }
-    catch (error) {
-        console.error('Error fetching machine id by generated id:', error);
-        throw error;
-    }
-}
+      });
+  } catch (error) {
+    console.error("Error updating machines:", error);
+    throw error;
+  }
+};

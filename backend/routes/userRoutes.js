@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const {
-    getAllUsers,
-    getUserById,
-    createUser,
-    updateUser,
-    deleteUser,
-} = require('../controllers/userController');
-const { authenticate, authorize } = require('../middleware/auth');
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} = require("../controllers/userController");
+const { authenticate, authorize } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -199,10 +199,35 @@ const router = express.Router();
  *         description: Unauthorized - Authentication required
  */
 
-router.get('/', authenticate, getAllUsers);
-router.get('/:_id', authenticate, authorize('User Management', 'Read'), getUserById);
-router.post('/', authenticate, authorize('User Management', 'Create'), createUser);
-router.put('/:id', authenticate, authorize('User Management', 'Update'), updateUser);
-router.delete('/:id', authenticate, authorize('User Management', 'Delete'), deleteUser);
+router.get(
+  "/",
+  authenticate,
+  authorize("User Management", "Read"),
+  getAllUsers
+);
+router.get(
+  "/:_id",
+  authenticate,
+  authorize("User Management", "Read"),
+  getUserById
+);
+router.post(
+  "/",
+  authenticate,
+  authorize("User Management", "Create"),
+  createUser
+);
+router.put(
+  "/:id",
+  authenticate,
+  authorize("User Management", "Update"),
+  updateUser
+);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("User Management", "Delete"),
+  deleteUser
+);
 
 module.exports = router;

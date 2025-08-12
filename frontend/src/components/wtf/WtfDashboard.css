@@ -1,0 +1,40 @@
+/* WTF Dashboard Styles */
+.wtf-dashboard {
+  background-color: #f9fafb;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.wtf-management {
+  background-color: #f9fafb;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+.wtf-submit {
+  background-color: #f9fafb;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* Ensure the main content area has proper padding reset for full width components */
+.main-content:has(.wtf-management),
+.main-content:has(.wtf-dashboard),
+.main-content:has(.wtf-submit) {
+  padding: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+}

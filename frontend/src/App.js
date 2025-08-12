@@ -1,27 +1,29 @@
 // src/App.js
-import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import TaskManagement from './components/TaskManagement/taskmanagement';
-import AccessDenied from './components/AccessDenied';
-import NotFound from './components/NotFound';
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './contexts/AuthContext';
-import { RBACProvider } from './contexts/RBACContext';
-import LoginCard from './components/login/logincard';
-import UserManagement from './components/usermanagement/usermanagement';
-import RBACManagement from './components/RBAC/RBACManagement';
-import MachineManagement from './components/machineManagement/machineManagement';
-import Dashboard from './components/dashboard/dashboard';
-import PermissionDebugger from './PermissionDebugger';
-import BalagruhaDashboard from './components/dashboard/balagruha';
-import AttendanceComponent from './components/Attendance/attendance';
-import BalagruhaManagement from './components/balagruhaManagement/balagruhamanagement';
-import CourseManagement from './components/courseManagement/CourseManagement';
-import StudentLogin from './components/login/StudentLogin';
-import RepairManagement from './components/repairManagement/RepairManagement';
-import PurchaseManagement from './components/purchaseManagement/PurchaseManagement';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import TaskManagement from "./components/TaskManagement/taskmanagement";
+import AccessDenied from "./components/AccessDenied";
+import NotFound from "./components/NotFound";
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
+import { RBACProvider } from "./contexts/RBACContext";
+import LoginCard from "./components/login/logincard";
+import UserManagement from "./components/usermanagement/usermanagement";
+import RBACManagement from "./components/RBAC/RBACManagement";
+import MachineManagement from "./components/machineManagement/machineManagement";
+import Dashboard from "./components/dashboard/dashboard";
+import PermissionDebugger from "./PermissionDebugger";
+import BalagruhaDashboard from "./components/dashboard/balagruha";
+import AttendanceComponent from "./components/Attendance/attendance";
+import BalagruhaManagement from "./components/balagruhaManagement/balagruhamanagement";
+import WtfDashboard from "./components/wtf/WtfDashboard";
 
 const App = () => {
   return (
@@ -33,13 +35,15 @@ const App = () => {
             <Toaster position="top-right" />
             <Routes>
               {/* Public route for login */}
-              <Route path="/login" element={<StudentLogin />} />
-              <Route path="/admin/login" element={<LoginCard />} />
+              <Route path="/login" element={<LoginCard />} />
 
               {/* Routes inside the layout */}
               <Route element={<Layout />}>
                 {/* Redirect root to dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route
+                  path="/"
+                  element={<Navigate to="/dashboard" replace />}
+                />
 
                 {/* Dashboard - accessible to all authenticated users */}
                 <Route
@@ -96,37 +100,22 @@ const App = () => {
                     // </ProtectedRoute>
                   }
                 />
-                 <Route
+                <Route
                   path="/attendance"
                   element={
                     // <ProtectedRoute module="Machine Management" action="Read">
-                    // <BalagruhaDashboard />
                     <AttendanceComponent />
                     // </ProtectedRoute>
                   }
                 />
+
+                {/* WTF (Wall of Fame) Route */}
                 <Route
-                  path="/course"
+                  path="/wtf"
                   element={
-                    // <ProtectedRoute module="Machine Management" action="Read">
-                    <CourseManagement />
-                    // </ProtectedRoute>  
-                  }
-                />
-                <Route
-                  path="/repair"
-                  element={
-                    // <ProtectedRoute module="Machine Management" action="Read">
-                    <RepairManagement />
-                    // </ProtectedRoute>  
-                  }
-                />
-                <Route
-                  path="/purchase"
-                  element={
-                    // <ProtectedRoute module="Machine Management" action="Read">
-                    <PurchaseManagement />
-                    // </ProtectedRoute>  
+                    <ProtectedRoute>
+                      <WtfDashboard />
+                    </ProtectedRoute>
                   }
                 />
 

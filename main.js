@@ -7,8 +7,8 @@ const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
 
 autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'debug';
-log.info('App starting...');
+autoUpdater.logger.transports.file.level = "debug";
+log.info("App starting...");
 log.info(`🛠️  Current app version: ${app.getVersion()}`);
 console.log("Electron log file location:", log.transports.file.getFile().path);
 
@@ -41,7 +41,7 @@ function checkOnlineStatus() {
     onlineStatus = false;
     wasOffline = true;
     console.log("❌ Still offline");
-    // console.error("Error occurred in net.request:", err); 
+    // console.error("Error occurred in net.request:", err);
   });
 
   request.end();
@@ -144,7 +144,6 @@ const nodePaths = {
   originalBin: getResourcePath("resources", "nodejs"),
 };
 
-
 function copyMongoBinariesIfNeeded() {
   return new Promise((resolve, reject) => {
     ensureDirectoryExists(mongoPaths.bin);
@@ -173,7 +172,7 @@ function startMongoDB() {
 
     mongoProcess = spawn(mongodPath, ["--dbpath", mongoPaths.dbpath], {
       stdio: "inherit",
-      windowsHide: true
+      windowsHide: true,
     });
 
     mongoProcess.on("error", (err) => {
@@ -348,7 +347,6 @@ function startBackendServer() {
         log.info("✅ Backend server started");
         resolve();
       }, 2000);
-
     } catch (err) {
       console.error("❌ Error starting backend:", err);
       log.error("❌ Error starting backend:", err);
@@ -356,7 +354,6 @@ function startBackendServer() {
     }
   });
 }
-
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -372,7 +369,6 @@ function createWindow() {
   // mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
   mainWindow.loadURL("http://localhost:3000");
   mainWindow.webContents.openDevTools();
-
 }
 
 // MAC address API
@@ -407,7 +403,9 @@ const createAppMenu = () => {
               type: "info",
               title: "About",
               message: "About This Application",
-              detail: `Version: ${app.getVersion()}\nElectron: ${process.versions.electron}\nNode.js: ${process.versions.node}`,
+              detail: `Version: ${app.getVersion()}\nElectron: ${
+                process.versions.electron
+              }\nNode.js: ${process.versions.node}`,
               buttons: ["OK"],
             });
           },
@@ -472,13 +470,11 @@ app.whenReady().then(async () => {
 
     log.info("⏳ Step 9: Checking for updates...");
     autoUpdater.checkForUpdatesAndNotify();
-
   } catch (err) {
     log.error("❌ App initialization failed:", err);
     app.quit();
   }
 });
-
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
@@ -492,89 +488,93 @@ app.on("before-quit", () => {
   if (backendProcess) backendProcess.kill();
 });
 
-
-
-
 // app.on("ready", () => {
 //   // your usual app launching logic
 
 // });
 // --- Auto Updater Event Handlers ---
-autoUpdater.on('checking-for-update', () => {
-  log.info('Checking for update...');
+autoUpdater.on("checking-for-update", () => {
+  log.info("Checking for update...");
   // Optional: send status to renderer process
   // mainWindow.webContents.send('update-status', 'Checking for update...');
 });
 
-
-autoUpdater.on('error', (err) => {
-  log.error('Error in auto-updater. ' + err);
+autoUpdater.on("error", (err) => {
+  log.error("Error in auto-updater. " + err);
   // Optional: send status to renderer process
   // mainWindow.webContents.send('update-status', `Update error: ${err.message}`);
 });
 
-autoUpdater.on('update-not-available', (info) => {
-  log.info('Update not available.', info);
+autoUpdater.on("update-not-available", (info) => {
+  log.info("Update not available.", info);
   // Optional: send status to renderer process
   // mainWindow.webContents.send('update-status', 'You are running the latest version.');
 });
 
-autoUpdater.on('update-available', (info) => {
-  log.info('Update available.', info);
+autoUpdater.on("update-available", (info) => {
+  log.info("Update available.", info);
   // Optional: send status to renderer process
   // mainWindow.webContents.send('update-status', `Update available: ${info.version}`);
 });
 
-autoUpdater.on('download-progress', (progressObj) => {
+autoUpdater.on("download-progress", (progressObj) => {
   let log_message = "Download speed: " + progressObj.bytesPerSecond;
-  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  log_message = log_message + " - Downloaded " + progressObj.percent + "%";
+  log_message =
+    log_message +
+    " (" +
+    progressObj.transferred +
+    "/" +
+    progressObj.total +
+    ")";
   log.info(log_message);
   // Send progress to renderer window
   // mainWindow.webContents.send('update-progress', progressObj.percent);
 });
 
-
 let updateDownloadedHandled = false; // Flag to prevent multiple dialogs
 
-autoUpdater.on('update-downloaded', (info) => {
-  log.info('Update downloaded.', info);
+autoUpdater.on("update-downloaded", (info) => {
+  log.info("Update downloaded.", info);
   if (updateDownloadedHandled) {
-    log.warn('Update downloaded event received again, ignoring.');
+    log.warn("Update downloaded event received again, ignoring.");
     return;
   }
   updateDownloadedHandled = true;
 
   // The update is ready. Prompt the user to restart.
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Ready',
-    message: `A new version (${info.version}) has been downloaded. Restart the application to apply the updates.`,
-    buttons: ['Restart Now', 'Later'],
-    defaultId: 0, // Default to Restart Now
-    cancelId: 1 // If user closes dialog, it acts like "Later"
-  }).then(({ response }) => {
-    if (response === 0) {
-      log.info('User chose to restart. Quitting and installing...');
-      // Ensure processes are killed cleanly *before* quitAndInstall
-      if (mongoProcess) mongoProcess.kill();
-      if (backendProcess) backendProcess.kill();
-      setImmediate(() => {
-        autoUpdater.quitAndInstall();
-      });
-    } else {
-      log.info('User chose "Later". Update will be installed on next quit.');
-      // No action needed here, the update will be installed automatically
-      // when the app quits normally because Squirrel (macOS/Windows) handles it.
-    }
-  }).catch(err => {
-    log.error('Error showing update downloaded dialog:', err);
-  }).finally(() => {
-    // Reset flag if needed, though usually app restarts or quits after this
-    // updateDownloadedHandled = false;
-  });
+  dialog
+    .showMessageBox({
+      type: "info",
+      title: "Update Ready",
+      message: `A new version (${info.version}) has been downloaded. Restart the application to apply the updates.`,
+      buttons: ["Restart Now", "Later"],
+      defaultId: 0, // Default to Restart Now
+      cancelId: 1, // If user closes dialog, it acts like "Later"
+    })
+    .then(({ response }) => {
+      if (response === 0) {
+        log.info("User chose to restart. Quitting and installing...");
+        // Ensure processes are killed cleanly *before* quitAndInstall
+        if (mongoProcess) mongoProcess.kill();
+        if (backendProcess) backendProcess.kill();
+        setImmediate(() => {
+          autoUpdater.quitAndInstall();
+        });
+      } else {
+        log.info('User chose "Later". Update will be installed on next quit.');
+        // No action needed here, the update will be installed automatically
+        // when the app quits normally because Squirrel (macOS/Windows) handles it.
+      }
+    })
+    .catch((err) => {
+      log.error("Error showing update downloaded dialog:", err);
+    })
+    .finally(() => {
+      // Reset flag if needed, though usually app restarts or quits after this
+      // updateDownloadedHandled = false;
+    });
 });
-
 
 // If user chooses "Later" and just closes the app manually
 app.on("before-quit", () => {
@@ -590,10 +590,9 @@ app.on("before-quit", () => {
   // No need to call quitAndInstall here anymore, handle it in update-downloaded
 });
 
-autoUpdater.on('before-quit-for-update', () => {
+autoUpdater.on("before-quit-for-update", () => {
   log.info("⚡ App is quitting to install the update.");
 });
-
 
 process.on("uncaughtException", (err) => {
   log.error("❌ Uncaught Exception:", err);

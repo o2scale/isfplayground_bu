@@ -1,28 +1,62 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { authorize, authenticate } = require('../../middleware/auth');
-const machineController = require('../../controllers/machineController');
+const { authorize, authenticate } = require("../../middleware/auth");
+const machineController = require("../../controllers/machineController");
 
 // Get all machines
-router.get('/', authenticate, authorize('Machine Management', 'Read'), machineController.getAllMachines);
+router.get(
+  "/",
+  authenticate,
+  authorize("Machine Management", "Read"),
+  machineController.getAllMachines
+);
 
 // Register a new machine
-router.post('/', authenticate, authorize('Machine Management', 'Create'), machineController.registerMachine);
+router.post(
+  "/",
+  authenticate,
+  authorize("Machine Management", "Create"),
+  machineController.registerMachine
+);
 
 // Toggle machine status
-router.put('/:id/status', authenticate, authorize('Machine Management', 'Update'), machineController.toggleMachineStatus);
+router.put(
+  "/:id/status",
+  authenticate,
+  authorize("Machine Management", "Update"),
+  machineController.toggleMachineStatus
+);
 
 // Assign or reassign a machine
-router.put('/:id/assign', authenticate, authorize('Machine Management', 'Update'), machineController.assignMachine);
+router.put(
+  "/:id/assign",
+  authenticate,
+  authorize("Machine Management", "Update"),
+  machineController.assignMachine
+);
 
 // Get machine history
-router.get('/:id/history', authenticate, authorize('Machine Management', 'Read'), machineController.getMachineHistory);
+router.get(
+  "/:id/history",
+  authenticate,
+  authorize("Machine Management", "Read"),
+  machineController.getMachineHistory
+);
 
 // Delete a machine
-router.delete('/:id', authenticate, authorize('Machine Management', 'Delete'), machineController.deleteMachine);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("Machine Management", "Delete"),
+  machineController.deleteMachine
+);
 
 // API for fetch the unassigned machines list
-router.get('/unassigned', authenticate, authorize('Machine Management', 'Read'), machineController.getUnassignedMachines);
-// API for fetch the machine details by machine generated id 
-router.get('/details/:generatedId', authenticate, authorize('Machine Management', 'Read'), machineController.getMachineDetailsByGeneratedId);
+router.get(
+  "/unassigned",
+  authenticate,
+  authorize("Machine Management", "Read"),
+  machineController.getUnassignedMachines
+);
+
 module.exports = router;

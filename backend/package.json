@@ -4,8 +4,17 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/wtf/unit",
+    "test:integration": "jest tests/wtf/integration",
+    "test:performance": "jest tests/wtf/performance",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup:roles": "node scripts/setupDefaultRoles.js",
+    "debug:roles": "node scripts/debugRoles.js",
+    "force:roles": "node scripts/forceSetupRoles.js"
   },
   "keywords": [],
   "author": "",
@@ -21,15 +30,21 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^7.4.1",
     "express-validator": "^7.2.1",
     "face-api.js": "^0.22.2",
     "helmet": "^8.0.0",
+    "jest": "^30.0.5",
     "jsonwebtoken": "^9.0.2",
+    "mongodb-memory-server": "^10.2.0",
     "mongoose": "^8.10.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.2.1",
     "pino": "^9.6.0",
+    "supertest": "^7.1.4",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "ws": "^8.18.3"
   }
 }

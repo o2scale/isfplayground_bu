@@ -1,0 +1,362 @@
+# WTF (Wall of Fame) Feature - Development Todo
+
+## Phase 1: Core Infrastructure & Foundation
+
+### Database & Backend Setup
+- [ ] MongoDB Collections Setup
+  - [ ] Create wtf_pins collection with proper schema
+  - [ ] Create wtf_student_interactions collection with proper schema
+  - [ ] Create wtf_submissions collection with proper schema
+  - [ ] Set up database indexes for performance optimization
+  - [ ] Implement data validation and sanitization
+
+### AWS S3 & CloudFront Setup
+- [ ] Create S3 bucket for media storage
+- [ ] Configure CloudFront CDN for content delivery
+- [ ] Set up pre-signed URL generation for secure uploads
+- [ ] Implement file naming conventions
+- [ ] Configure CORS policies
+
+### Authentication & Authorization
+- [ ] Implement JWT-based authentication for WTF APIs
+- [ ] Set up Role-Based Access Control (RBAC)
+- [ ] Define permissions: wtf:pin:create, wtf:submission:review, wtf:submission:suggest, wtf:like:create, wtf:submission:create
+
+### Core API Development
+- [ ] WTF Pins Management APIs
+  - [ ] GET /api/wtf/pins - Fetch active pins for student view
+  - [ ] POST /api/wtf/pins - Create new pin (Admin only)
+  - [ ] PUT /api/wtf/pins/:pinId - Update pin (Admin only)
+  - [ ] DELETE /api/wtf/pins/:pinId - Delete pin (Admin only)
+  - [ ] PATCH /api/wtf/pins/:pinId/status - Change pin status
+
+- [ ] Student Interactions APIs
+  - [ ] POST /api/wtf/pins/:pinId/like - Like/unlike pin
+  - [ ] POST /api/wtf/pins/:pinId/seen - Mark pin as seen
+  - [ ] GET /api/wtf/pins/:pinId/interactions - Get interaction counts
+
+- [ ] Submissions APIs
+  - [ ] POST /api/wtf/submissions/voice - Submit voice note
+  - [ ] POST /api/wtf/submissions/article - Submit article
+  - [ ] GET /api/wtf/submissions - Get submissions (Admin only)
+  - [ ] PUT /api/wtf/submissions/:submissionId/review - Review submission
+
+## Phase 2: Student-Facing UI Components
+
+### WTF Softboard (Main View)
+- [ ] Core Softboard Component
+  - [ ] Create WallOfFame.tsx component
+  - [ ] Implement "Softboard" visual design with pin layout
+  - [ ] Display 15-20 pins in grid layout
+  - [ ] Implement "seen" state visual indicators (opacity/greyscale)
+  - [ ] Add loading states and error handling
+
+- [ ] Pin Components
+  - [ ] Create PinCard.tsx component for individual pins
+  - [ ] Implement different pin types (Image, Video, Audio, Text)
+  - [ ] Add like buttons (Thumbs Up, Green Heart) with counts
+  - [ ] Display seen counts and engagement metrics
+  - [ ] Add "ISF Official" badge for official content
+
+### Content Viewers (Modals)
+- [ ] Image Viewer Modal
+  - [ ] Create ImageViewer.tsx component
+  - [ ] Implement full-resolution image display
+  - [ ] Add zoom functionality (if feasible for MVP)
+  - [ ] Display caption and author credit
+  - [ ] Add close button and keyboard navigation
+
+- [ ] Video Player Modal
+  - [ ] Create VideoPlayer.tsx component
+  - [ ] Implement video player with standard controls
+  - [ ] Add play/pause, volume, seek bar, fullscreen
+  - [ ] Display title and author credit
+  - [ ] Handle different video formats
+
+- [ ] Audio Player Modal
+  - [ ] Create AudioPlayer.tsx component
+  - [ ] Implement audio player with controls
+  - [ ] Add playback speed controls (0.75x, 1x, 1.5x)
+  - [ ] Display title and speaker information
+  - [ ] Add progress bar and volume control
+
+- [ ] Text Reader Modal
+  - [ ] Create TextReader.tsx component
+  - [ ] Implement clean text display with formatting
+  - [ ] Add Text-to-Speech (TTS) functionality
+  - [ ] Support Hindi and English content
+  - [ ] Add scrollbar for longer texts
+
+### Student Submission Features
+- [ ] Voice Note Recording
+  - [ ] Create VoiceRecorder.tsx component
+  - [ ] Implement press-and-hold recording interface
+  - [ ] Add visual recording indicator (pulsating waveform)
+  - [ ] Include 1-minute timer and review functionality
+  - [ ] Add "Listen" and "Submit" buttons
+  - [ ] Handle microphone permissions
+
+- [ ] Article Writing
+  - [ ] Create ArticleEditor.tsx component
+  - [ ] Implement WYSIWYG text editor
+  - [ ] Add title input and language selector (Hindi/English)
+  - [ ] Include basic formatting (bold, italics, lists)
+  - [ ] Add "Submit Story" and "Save as Draft" buttons
+  - [ ] Implement character limits and validation
+
+## Phase 3: Admin & Coach Management UI
+
+### WTF Management Dashboard
+- [ ] Admin Dashboard Layout
+  - [ ] Create WTFManagement.tsx component
+  - [ ] Add navigation to Admin Dashboard
+  - [ ] Implement tabs: Pins, Submissions, Analytics
+  - [ ] Add search and filter functionality
+  - [ ] Include bulk actions for pin management
+
+- [ ] Pin Management Interface
+  - [ ] Create pin list view with thumbnails
+  - [ ] Display pin metadata (title, type, date, author)
+  - [ ] Add "Unpin", "Edit", "Delete" actions
+  - [ ] Implement pin status indicators
+  - [ ] Add confirmation dialogs for destructive actions
+
+- [ ] Create New Pin Form
+  - [ ] Create CreatePinForm.tsx component
+  - [ ] Add content type selector (Text, Image, Video, Audio, Link)
+  - [ ] Implement file upload for media content
+  - [ ] Add title and caption inputs
+  - [ ] Include "ISF Official Post" checkbox
+  - [ ] Add validation and preview functionality
+
+### Submissions Review System
+- [ ] Submissions Queue
+  - [ ] Create SubmissionsQueue.tsx component
+  - [ ] Implement tabs for "Voice Notes" and "Articles"
+  - [ ] Display submission metadata (student, date, status)
+  - [ ] Add "Review" and "Archive" actions
+  - [ ] Include submission count badges
+
+- [ ] Submission Review Modal
+  - [ ] Create SubmissionReview.tsx component
+  - [ ] Display voice note with audio player
+  - [ ] Show article text in clean reader view
+  - [ ] Add "Pin to WTF" and "Archive" buttons
+  - [ ] Include internal notes field for admins
+
+### Coach Suggestion System
+- [ ] Coach Suggestion Interface
+  - [ ] Add "Suggest for WTF" button to LMS interfaces
+  - [ ] Create suggestion confirmation modal
+  - [ ] Implement suggestion status indicators
+  - [ ] Add success notifications for coaches
+
+## Phase 4: Analytics & Reporting
+
+### Analytics Dashboard
+- [ ] Summary Cards
+  - [ ] Display "Total Active Pins"
+  - [ ] Show "Total Likes (Last 7 Days)"
+  - [ ] Include "Total Seen Events (Last 7 Days)"
+  - [ ] Add "New Submissions Pending Review"
+
+- [ ] Engagement Charts
+  - [ ] Create line/bar chart for engagement trends
+  - [ ] Display likes and seen events over 30 days
+  - [ ] Add date range filters
+  - [ ] Implement chart responsiveness
+
+- [ ] Top Performing Pins Table
+  - [ ] Create sortable table with pin performance data
+  - [ ] Include columns: Title, Author, Type, Date, Likes, Seen
+  - [ ] Add sorting by any count column
+  - [ ] Implement "Export to CSV" functionality
+
+## Phase 5: Notifications & Real-time Features
+
+### Notification System
+- [ ] Student Notifications
+  - [ ] Implement "Work Featured" notification
+  - [ ] Add "Submission Received" notification
+  - [ ] Create "New ISF Post" notification (for critical announcements)
+  - [ ] Add notification click handlers
+
+- [ ] Admin Notifications
+  - [ ] Implement "New Submission" notification
+  - [ ] Add "New Coach Suggestion" notification
+  - [ ] Create notification routing to appropriate queues
+
+- [ ] Coach Notifications
+  - [ ] Add "Suggestion Pinned" notification
+  - [ ] Implement notification click handlers
+
+### Real-time Updates
+- [ ] WebSocket Integration
+  - [ ] Set up WebSocket connections for real-time updates
+  - [ ] Implement "like" interaction real-time updates
+  - [ ] Add new pin notifications
+  - [ ] Handle connection state management
+
+## Phase 6: ISF Coin Integration
+
+### Coin Reward System
+- [ ] Admin Configuration
+  - [ ] Create coin reward configuration interface
+  - [ ] Add "ISF Coins to award" input field
+  - [ ] Set default value to 25 coins
+  - [ ] Implement save functionality
+
+- [ ] Automated Awarding
+  - [ ] Implement coin awarding logic on pin creation
+  - [ ] Add transaction logging to coinTransactionHistory
+  - [ ] Update student totalCoinBalance
+  - [ ] Add error handling for coin transactions
+
+## Phase 7: Automated Lifecycle Management
+
+### Pin Lifecycle Rules
+- [ ] 7-Day Expiration
+  - [ ] Create scheduled backend job for pin expiration
+  - [ ] Implement automatic status change from "ACTIVE" to "UNPINNED"
+  - [ ] Add logging for automated actions
+  - [ ] Handle edge cases and errors
+
+- [ ] FIFO Management
+  - [ ] Implement pin limit enforcement (20 active pins)
+  - [ ] Add automatic unpinning of oldest pin when limit reached
+  - [ ] Ensure atomic operations for pin management
+  - [ ] Add monitoring for pin lifecycle events
+
+## Phase 8: Security & Performance
+
+### Security Implementation
+- [ ] Input Sanitization
+  - [ ] Sanitize all user-generated text content
+  - [ ] Implement XSS prevention measures
+  - [ ] Add content validation for submissions
+  - [ ] Test security measures thoroughly
+
+- [ ] Access Control
+  - [ ] Implement proper JWT validation
+  - [ ] Add role-based access control for all endpoints
+  - [ ] Secure file upload endpoints
+  - [ ] Add rate limiting for API calls
+
+### Performance Optimization
+- [ ] Image & Video Optimization
+  - [ ] Set up AWS Lambda for image processing
+  - [ ] Implement WebP conversion and compression
+  - [ ] Configure video transcoding with MediaConvert
+  - [ ] Add thumbnail generation for videos
+
+- [ ] Caching Strategy
+  - [ ] Implement browser caching for static assets
+  - [ ] Add CDN caching for media files
+  - [ ] Cache frequently accessed pin data
+  - [ ] Optimize database queries with proper indexing
+
+## Phase 9: Offline Support & Electron Integration
+
+### Offline Functionality
+- [ ] WTF Caching
+  - [ ] Implement local storage for pin data
+  - [ ] Cache thumbnails for offline viewing
+  - [ ] Add offline interaction queuing
+  - [ ] Handle sync when connection restored
+
+### Electron Integration
+- [ ] Integrate WTF with Electron app
+- [ ] Handle file system access for caching
+- [ ] Implement app-specific optimizations
+- [ ] Test offline functionality thoroughly
+
+## Phase 10: Testing & Quality Assurance
+
+### Testing Implementation
+- [ ] Unit Tests
+  - [ ] Test all React components
+  - [ ] Test API endpoints
+  - [ ] Test utility functions
+  - [ ] Achieve >80% code coverage
+
+- [ ] Integration Tests
+  - [ ] Test complete user flows
+  - [ ] Test admin workflows
+  - [ ] Test submission and review process
+  - [ ] Test real-time features
+
+- [ ] Performance Tests
+  - [ ] Test load times (3s initial, 1.5s cached)
+  - [ ] Test concurrent user interactions
+  - [ ] Test media loading performance
+  - [ ] Test database query performance
+
+### Quality Assurance
+- [ ] Accessibility Testing
+  - [ ] Ensure WCAG 2.1 compliance
+  - [ ] Test keyboard navigation
+  - [ ] Verify screen reader compatibility
+  - [ ] Check color contrast ratios
+
+- [ ] Cross-browser Testing
+  - [ ] Test on target browsers
+  - [ ] Verify responsive design
+  - [ ] Test media playback compatibility
+  - [ ] Check for visual consistency
+
+## Phase 11: Deployment & Documentation
+
+### Deployment Preparation
+- [ ] Production Setup
+  - [ ] Configure production environment
+  - [ ] Set up monitoring and logging
+  - [ ] Implement error tracking
+  - [ ] Configure backup strategies
+
+- [ ] Documentation
+  - [ ] Create API documentation
+  - [ ] Write user guides for admins
+  - [ ] Document deployment procedures
+  - [ ] Create troubleshooting guides
+
+### Final Testing & Launch
+- [ ] User Acceptance Testing
+  - [ ] Test with actual students
+  - [ ] Test with admin users
+  - [ ] Test with coach users
+  - [ ] Gather feedback and iterate
+
+- [ ] Launch Preparation
+  - [ ] Final security review
+  - [ ] Performance optimization
+  - [ ] Backup verification
+  - [ ] Launch checklist completion
+
+## Priority Order
+
+### High Priority (Must Have for MVP)
+1. Core Infrastructure & Database Setup
+2. Basic WTF Softboard Display
+3. Content Viewers (Image, Video, Audio, Text)
+4. Admin Pin Management
+5. Student Like/Seen Interactions
+6. Basic Notifications
+
+### Medium Priority (Important for MVP)
+1. Student Submissions (Voice Notes & Articles)
+2. Coach Suggestion System
+3. Analytics Dashboard
+4. ISF Coin Integration
+5. Automated Lifecycle Management
+
+### Low Priority (Nice to Have)
+1. Advanced Analytics
+2. Offline Support
+3. Performance Optimizations
+4. Advanced Security Features
+
+## Notes
+- Focus on High Priority items first for MVP
+- Each phase can be developed incrementally
+- Regular testing and feedback loops recommended
+- Consider user experience at every stage 

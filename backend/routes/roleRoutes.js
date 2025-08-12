@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const roleController = require('../controllers/roleController');
-const checkPermission = require('../middleware/checkPermission');
-const { authorize, authenticate } = require('../middleware/auth');
+const roleController = require("../controllers/roleController");
+const checkPermission = require("../middleware/checkPermission");
+const { authorize, authenticate } = require("../middleware/auth");
 
 /**
  * @swagger
@@ -258,14 +258,34 @@ const { authorize, authenticate } = require('../middleware/auth');
  *           description: The date and time when the role was last updated
  */
 
-router.post('/', authenticate, authorize('Role Management', 'Create'), roleController.createRole);
+router.post(
+  "/",
+  authenticate,
+  authorize("Role Management", "Create"),
+  roleController.createRole
+);
 
-router.put('/:roleId', authenticate, authorize('Role Management', 'Update'), roleController.updateRolePermissions);
+router.put(
+  "/:roleId",
+  authenticate,
+  authorize("Role Management", "Update"),
+  roleController.updateRolePermissions
+);
 
-router.get('/', authenticate, authorize('Role Management', 'Read'), roleController.getAllRoles);
+router.get(
+  "/",
+  authenticate,
+  authorize("Role Management", "Read"),
+  roleController.getAllRoles
+);
 
-router.get('/getAllRolePermissions', roleController.getAllRolePermissions);
+router.get("/getAllRolePermissions", roleController.getAllRolePermissions);
 
-router.delete('/:roleId', authenticate, authorize('Role Management', 'Delete'), roleController.deleteRole);
+router.delete(
+  "/:roleId",
+  authenticate,
+  authorize("Role Management", "Delete"),
+  roleController.deleteRole
+);
 
 module.exports = router;
